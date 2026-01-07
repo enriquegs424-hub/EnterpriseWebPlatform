@@ -288,14 +288,19 @@ export async function revokeShare(id: string) {
 // STATS
 // ============================================
 
-export async function getDocumentStats() {
+export async function getDocumentStats(projectId?: string) {
+    const where: any = {};
+    if (projectId) where.projectId = projectId;
+
     const [total, byType, recent] = await Promise.all([
-        prisma.document.count(),
+        prisma.document.count({ where }),
         prisma.document.groupBy({
             by: ['fileType'],
+            where,
             _count: true,
         }),
         prisma.document.findMany({
+            where,
             take: 5,
             orderBy: { createdAt: 'desc' },
             include: {

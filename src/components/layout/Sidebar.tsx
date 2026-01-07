@@ -36,12 +36,33 @@ const navItems = [
 
 import { useSession } from 'next-auth/react';
 
+import { getUnreadCount } from '@/app/(protected)/notifications/actions';
+import { useState, useEffect } from 'react';
+
+// ... (imports)
+
 export default function Sidebar() {
     const pathname = usePathname();
     const { data: session } = useSession();
+    const [unreadCount, setUnreadCount] = useState(0);
+
+    useEffect(() => {
+        const fetchUnread = async () => {
+            const count = await getUnreadCount();
+            setUnreadCount(count);
+        };
+
+        if (session?.user) {
+            fetchUnread();
+            // Simple polling every 30 seconds
+            const interval = setInterval(fetchUnread, 30000);
+            return () => clearInterval(interval);
+        }
+    }, [session, pathname]); // Re-fetch on navigation too
 
     return (
         <aside className="w-64 bg-white border-r border-neutral-200 flex flex-col h-screen fixed left-0 top-0 overflow-y-auto z-20">
+            {/* ... header ... */}
             <div className="h-16 flex items-center px-6 border-b border-neutral-200 bg-gradient-to-r from-white to-olive-50/20">
                 <div className="w-8 h-8 relative mr-3">
                     <Image src="/M_max.png" alt="Logo" fill className="object-contain" />
@@ -66,6 +87,8 @@ export default function Sidebar() {
                             <div className="space-y-1">
                                 {section.items.map((item) => {
                                     const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
+                                    const isNotificationItem = item.href === '/notifications';
+
                                     return (
                                         <Link
                                             key={item.href}
@@ -76,10 +99,20 @@ export default function Sidebar() {
                                                 }`}
                                             title={item.desc}
                                         >
-                                            <item.icon className={`w-5 h-5 mr-3 transition-transform group-hover:scale-110 ${isActive ? 'text-white' : 'text-neutral-400'}`} />
+                                            <div className="relative">
+                                                <item.icon className={`w-5 h-5 mr-3 transition-transform group-hover:scale-110 ${isActive ? 'text-white' : 'text-neutral-400'}`} />
+                                                {isNotificationItem && unreadCount > 0 && (
+                                                    <span className={`absolute -top-1 right-2 w-2.5 h-2.5 rounded-full border-2 ${isActive ? 'bg-red-400 border-olive-600' : 'bg-red-500 border-white'}`}></span>
+                                                )}
+                                            </div>
                                             <span className="flex-1">{item.label}</span>
-                                            {isActive && (
-                                                <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></div>
+                                            {isNotificationItem && unreadCount > 0 && (
+                                                <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-md ml-auto ${isActive ? 'bg-white/20 text-white' : 'bg-red-100 text-red-600'}`}>
+                                                    {unreadCount}
+                                                </span>
+                                            )}
+                                            {!isNotificationItem && isActive && (
+                                                <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse ml-auto"></div>
                                             )}
                                         </Link>
                                     );
@@ -90,6 +123,7 @@ export default function Sidebar() {
                 })}
             </nav>
 
+            {/* ... user ... */}
             <div className="p-4 border-t border-neutral-200 bg-neutral-50/50">
                 <div className="flex items-center">
                     <div className="w-9 h-9 rounded-full bg-olive-100 flex items-center justify-center text-olive-700 text-xs font-bold mr-3 border border-olive-200">

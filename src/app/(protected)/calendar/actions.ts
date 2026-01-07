@@ -5,7 +5,7 @@ import { auth } from '@/auth';
 import { revalidatePath } from 'next/cache';
 import { EventType } from '@prisma/client';
 
-export async function getEvents(startDate: Date, endDate: Date) {
+export async function getEvents(startDate: Date, endDate: Date, projectId?: string) {
     const session = await auth();
     if (!session?.user?.email) throw new Error('Unauthorized');
 
@@ -15,25 +15,36 @@ export async function getEvents(startDate: Date, endDate: Date) {
 
     if (!user) throw new Error('User not found');
 
-    const events = await prisma.event.findMany({
-        where: {
-            OR: [
-                // Events created by user
-                { userId: user.id },
-                // Events user is attending
-                {
-                    attendees: {
-                        some: {
-                            userId: user.id
-                        }
-                    }
+    const where: any = {
+        startDate: {
+            gte: startDate,
+            lte: endDate
+        }
+    };
+
+    if (projectId) {
+        where.projectId = projectId;
+    }
+
+    // Access control: User sees events they created OR are attending
+    // If Admin, maybe they should see all? For now adhere to same rule or maybe check role.
+    // Let's stick to personal relevance for now unless it's a project view where we might want to show all project events?
+    // For safety, let's keep the personal restriction + project filter.
+    // So: (CreatedByMe OR AmAttending) AND (ProjectId == X if specified) AND (DateRange)
+
+    where.OR = [
+        { userId: user.id },
+        {
+            attendees: {
+                some: {
+                    userId: user.id
                 }
-            ],
-            startDate: {
-                gte: startDate,
-                lte: endDate
             }
-        },
+        }
+    ];
+
+    const events = await prisma.event.findMany({
+        where,
         include: {
             attendees: {
                 include: {
@@ -149,4 +160,43 @@ export async function deleteEvent(eventId: string) {
     });
 
     revalidatePath('/calendar');
+}
+
+export async function updateEvent(eventId: string, data: {
+    title?: string;
+    description?: string;
+    startDate?: Date;
+    endDate?: Date;
+    location?: string;
+    type?: EventType;
+    projectId?: string;
+}) {
+    const session = await auth();
+    if (!session?.user?.email) throw new Error('Unauthorized');
+
+    const user = await prisma.user.findUnique({
+        where: { email: session.user.email },
+    });
+
+    if (!user) throw new Error('User not found');
+
+    // Only creator can update
+    const event = await prisma.event.findUnique({
+        where: { id: eventId }
+    });
+
+    if (!event || event.userId !== user.id) {
+        throw new Error('Not authorized to update this event');
+    }
+
+    const updatedEvent = await prisma.event.update({
+        where: { id: eventId },
+        data: {
+            ...data,
+            updatedAt: new Date()
+        }
+    });
+
+    revalidatePath('/calendar');
+    return updatedEvent;
 }

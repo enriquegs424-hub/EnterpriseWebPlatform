@@ -10,9 +10,10 @@ interface CreateEventModalProps {
     isOpen: boolean;
     onClose: () => void;
     currentDate?: Date;
+    projectId?: string;
 }
 
-export default function CreateEventModal({ isOpen, onClose, currentDate }: CreateEventModalProps) {
+export default function CreateEventModal({ isOpen, onClose, currentDate, projectId }: CreateEventModalProps) {
     const [loading, setLoading] = useState(false);
     const [title, setTitle] = useState('');
     const [location, setLocation] = useState('');
@@ -61,7 +62,8 @@ export default function CreateEventModal({ isOpen, onClose, currentDate }: Creat
                 endDate: new Date(end),
                 description,
                 location,
-                type
+                type,
+                projectId
             });
             onClose();
         } catch (error) {
@@ -173,8 +175,8 @@ export default function CreateEventModal({ isOpen, onClose, currentDate }: Creat
                                     key={option.value}
                                     onClick={() => setType(option.value)}
                                     className={`px-3 py-1.5 rounded-lg text-sm font-medium border transition-all ${type === option.value
-                                            ? 'bg-olive-50 border-olive-500 text-olive-700 ring-1 ring-olive-500'
-                                            : 'border-neutral-200 hover:bg-neutral-50 hover:border-neutral-300 text-neutral-600'
+                                        ? 'bg-olive-50 border-olive-500 text-olive-700 ring-1 ring-olive-500'
+                                        : 'border-neutral-200 hover:bg-neutral-50 hover:border-neutral-300 text-neutral-600'
                                         }`}
                                 >
                                     {option.label}

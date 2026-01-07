@@ -277,7 +277,7 @@ export async function addTaskComment(taskId: string, content: string) {
 }
 
 // Obtener estadísticas de tareas
-export async function getTaskStats() {
+export async function getTaskStats(projectId?: string) {
     const session = await auth();
     if (!session?.user?.id) return null;
 
@@ -288,6 +288,10 @@ export async function getTaskStats() {
             { assignedToId: session.user.id },
             { createdById: session.user.id }
         ];
+    }
+
+    if (projectId) {
+        where.projectId = projectId;
     }
 
     const [total, pending, inProgress, completed, overdue] = await Promise.all([
