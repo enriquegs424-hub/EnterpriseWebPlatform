@@ -3,6 +3,7 @@ import Header from '@/components/layout/Header';
 import { auth } from '@/auth';
 import { redirect } from 'next/navigation';
 import SessionProvider from '@/components/providers/SessionProvider';
+import GlobalSearch from '@/components/GlobalSearch';
 
 export default async function ProtectedLayout({ children }: { children: React.ReactNode }) {
     const session = await auth();
@@ -21,6 +22,7 @@ export default async function ProtectedLayout({ children }: { children: React.Re
                         {children}
                     </main>
                 </div>
+                <GlobalSearch />
             </div>
         </SessionProvider>
     );

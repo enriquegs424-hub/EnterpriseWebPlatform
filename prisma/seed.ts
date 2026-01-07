@@ -557,6 +557,281 @@ async function main() {
     console.log(`✅ ${timeEntries.length} registros de horas creados\n`)
 
     // ============================================
+    // CARPETAS
+    // ============================================
+    console.log('📁 Creando carpetas...')
+
+    const folders = await Promise.all([
+        prisma.folder.create({
+            data: {
+                name: 'Planos',
+                description: 'Planos técnicos y arquitectónicos',
+                createdById: admin.id,
+            },
+        }),
+        prisma.folder.create({
+            data: {
+                name: 'Cálculos',
+                description: 'Memorias de cálculo y hojas de cálculo',
+                createdById: admin.id,
+            },
+        }),
+        prisma.folder.create({
+            data: {
+                name: 'Informes',
+                description: 'Informes técnicos y reportes',
+                createdById: admin.id,
+            },
+        }),
+        prisma.folder.create({
+            data: {
+                name: 'Documentación Técnica',
+                description: 'Documentación técnica del proyecto',
+                projectId: projects[0].id,
+                createdById: workers[0].id,
+            },
+        }),
+        prisma.folder.create({
+            data: {
+                name: 'Presentaciones',
+                description: 'Presentaciones para clientes',
+                projectId: projects[1].id,
+                createdById: workers[1].id,
+            },
+        }),
+    ])
+
+    console.log(`✅ ${folders.length} carpetas creadas\n`)
+
+    // ============================================
+    // DOCUMENTOS
+    // ============================================
+    console.log('📄 Creando documentos...')
+
+    const documents = await Promise.all([
+        prisma.document.create({
+            data: {
+                name: 'Planos Estructurales - Edificio Centro',
+                description: 'Planos estructurales completos del proyecto de rehabilitación',
+                fileName: 'planos-estructurales-centro.pdf',
+                fileSize: 2457600,
+                fileType: 'application/pdf',
+                filePath: '/uploads/planos-estructurales-centro.pdf',
+                projectId: projects[0].id,
+                folderId: folders[0].id,
+                uploadedById: workers[0].id,
+                version: 2,
+            },
+        }),
+        prisma.document.create({
+            data: {
+                name: 'Memoria de Cálculo - Climatización',
+                description: 'Cálculos detallados del sistema de climatización',
+                fileName: 'memoria-calculo-climatizacion.pdf',
+                fileSize: 1843200,
+                fileType: 'application/pdf',
+                filePath: '/uploads/memoria-calculo-climatizacion.pdf',
+                projectId: projects[1].id,
+                folderId: folders[1].id,
+                uploadedById: workers[2].id,
+                version: 1,
+            },
+        }),
+        prisma.document.create({
+            data: {
+                name: 'Informe de Inspección - Plaza Mayor',
+                description: 'Informe técnico de inspección del estado actual',
+                fileName: 'informe-inspeccion-plaza.pdf',
+                fileSize: 3145728,
+                fileType: 'application/pdf',
+                filePath: '/uploads/informe-inspeccion-plaza.pdf',
+                projectId: projects[2].id,
+                folderId: folders[2].id,
+                uploadedById: workers[1].id,
+                version: 1,
+            },
+        }),
+        prisma.document.create({
+            data: {
+                name: 'Presupuesto Detallado - Hotel',
+                description: 'Desglose completo de costos del proyecto hotelero',
+                fileName: 'presupuesto-hotel.xlsx',
+                fileSize: 524288,
+                fileType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                filePath: '/uploads/presupuesto-hotel.xlsx',
+                projectId: projects[3].id,
+                folderId: folders[1].id,
+                uploadedById: workers[3].id,
+                version: 3,
+            },
+        }),
+        prisma.document.create({
+            data: {
+                name: 'Mediciones - Oficinas Barcelona',
+                description: 'Mediciones detalladas de instalaciones MEP',
+                fileName: 'mediciones-oficinas-bcn.xlsx',
+                fileSize: 409600,
+                fileType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                filePath: '/uploads/mediciones-oficinas-bcn.xlsx',
+                projectId: projects[4].id,
+                uploadedById: workers[2].id,
+                version: 1,
+            },
+        }),
+        prisma.document.create({
+            data: {
+                name: 'Especificaciones Técnicas - Planta Industrial',
+                description: 'Especificaciones técnicas de equipos y materiales',
+                fileName: 'especificaciones-planta.docx',
+                fileSize: 307200,
+                fileType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                filePath: '/uploads/especificaciones-planta.docx',
+                projectId: projects[5].id,
+                folderId: folders[2].id,
+                uploadedById: workers[4].id,
+                version: 1,
+            },
+        }),
+        prisma.document.create({
+            data: {
+                name: 'Plano de Instalaciones Eléctricas',
+                description: 'Plano CAD de instalaciones eléctricas',
+                fileName: 'instalaciones-electricas.dwg',
+                fileSize: 1048576,
+                fileType: 'application/acad',
+                filePath: '/uploads/instalaciones-electricas.dwg',
+                projectId: projects[0].id,
+                folderId: folders[0].id,
+                uploadedById: workers[0].id,
+                version: 1,
+            },
+        }),
+        prisma.document.create({
+            data: {
+                name: 'Foto de Obra - Estado Actual',
+                description: 'Fotografía del estado actual de la obra',
+                fileName: 'foto-obra-actual.jpg',
+                fileSize: 2097152,
+                fileType: 'image/jpeg',
+                filePath: '/uploads/foto-obra-actual.jpg',
+                projectId: projects[2].id,
+                uploadedById: workers[1].id,
+                version: 1,
+            },
+        }),
+        prisma.document.create({
+            data: {
+                name: 'Render 3D - Fachada Principal',
+                description: 'Renderizado 3D de la fachada principal',
+                fileName: 'render-fachada.png',
+                fileSize: 3145728,
+                fileType: 'image/png',
+                filePath: '/uploads/render-fachada.png',
+                projectId: projects[0].id,
+                folderId: folders[4].id,
+                uploadedById: workers[1].id,
+                version: 1,
+            },
+        }),
+        prisma.document.create({
+            data: {
+                name: 'Manual de Procedimientos MEP',
+                description: 'Manual interno de procedimientos de ingeniería MEP',
+                fileName: 'manual-procedimientos.pdf',
+                fileSize: 4194304,
+                fileType: 'application/pdf',
+                filePath: '/uploads/manual-procedimientos.pdf',
+                uploadedById: admin.id,
+                version: 1,
+            },
+        }),
+    ])
+
+    console.log(`✅ ${documents.length} documentos creados\n`)
+
+    // ============================================
+    // VERSIONES DE DOCUMENTOS
+    // ============================================
+    console.log('🔄 Creando versiones de documentos...')
+
+    const versions = await Promise.all([
+        prisma.documentVersion.create({
+            data: {
+                documentId: documents[0].id,
+                version: 1,
+                fileName: 'planos-estructurales-centro-v1.pdf',
+                filePath: '/uploads/versions/planos-estructurales-centro-v1.pdf',
+                fileSize: 2300000,
+                uploadedById: workers[0].id,
+                changes: 'Versión inicial de los planos estructurales',
+            },
+        }),
+        prisma.documentVersion.create({
+            data: {
+                documentId: documents[3].id,
+                version: 1,
+                fileName: 'presupuesto-hotel-v1.xlsx',
+                filePath: '/uploads/versions/presupuesto-hotel-v1.xlsx',
+                fileSize: 480000,
+                uploadedById: workers[3].id,
+                changes: 'Versión inicial del presupuesto',
+            },
+        }),
+        prisma.documentVersion.create({
+            data: {
+                documentId: documents[3].id,
+                version: 2,
+                fileName: 'presupuesto-hotel-v2.xlsx',
+                filePath: '/uploads/versions/presupuesto-hotel-v2.xlsx',
+                fileSize: 500000,
+                uploadedById: workers[3].id,
+                changes: 'Actualización de precios de materiales',
+            },
+        }),
+    ])
+
+    console.log(`✅ ${versions.length} versiones de documentos creadas\n`)
+
+    // ============================================
+    // COMPARTICIONES DE DOCUMENTOS
+    // ============================================
+    console.log('🔗 Creando comparticiones de documentos...')
+
+    const shares = await Promise.all([
+        prisma.documentShare.create({
+            data: {
+                documentId: documents[0].id,
+                sharedWithId: workers[1].id,
+                accessLevel: 'VIEW',
+            },
+        }),
+        prisma.documentShare.create({
+            data: {
+                documentId: documents[0].id,
+                sharedWithId: workers[2].id,
+                accessLevel: 'DOWNLOAD',
+            },
+        }),
+        prisma.documentShare.create({
+            data: {
+                documentId: documents[3].id,
+                sharedWithId: admin.id,
+                accessLevel: 'EDIT',
+            },
+        }),
+        prisma.documentShare.create({
+            data: {
+                documentId: documents[2].id,
+                sharedWithEmail: clients[2].email,
+                accessLevel: 'VIEW',
+                expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+            },
+        }),
+    ])
+
+    console.log(`✅ ${shares.length} comparticiones creadas\n`)
+
+    // ============================================
     // RESUMEN
     // ============================================
     console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
@@ -570,7 +845,11 @@ async function main() {
     console.log(`   ✅ Tareas: ${tasks.length}`)
     console.log(`   💬 Comentarios: ${comments.length}`)
     console.log(`   🔔 Notificaciones: ${notifications.length}`)
-    console.log(`   ⏱️  Registros de horas: ${timeEntries.length}\n`)
+    console.log(`   ⏱️  Registros de horas: ${timeEntries.length}`)
+    console.log(`   📂 Carpetas: ${folders.length}`)
+    console.log(`   📄 Documentos: ${documents.length}`)
+    console.log(`   🔄 Versiones: ${versions.length}`)
+    console.log(`   🔗 Comparticiones: ${shares.length}\n`)
 
     console.log('🔐 CREDENCIALES DE ACCESO:\n')
     console.log('   ADMIN:')

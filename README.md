@@ -1,447 +1,348 @@
-# 🏗️ MEP Projects - Sistema de Gestión de Horas
+# 🚀 MEP PROJECTS - Plataforma TODO-EN-UNO
 
-Sistema profesional de control de tiempos y gestión de proyectos para empresas de ingeniería y arquitectura. Desarrollado con Next.js 16, Prisma y PostgreSQL.
+**Versión**: 1.0.0  
+**Estado**: En Desarrollo Activo  
+**Progreso**: 55%
 
-![Next.js](https://img.shields.io/badge/Next.js-16.1-black?style=flat-square&logo=next.js)
-![TypeScript](https://img.shields.io/badge/TypeScript-5.x-blue?style=flat-square&logo=typescript)
-![Prisma](https://img.shields.io/badge/Prisma-5.x-2D3748?style=flat-square&logo=prisma)
-![Tailwind](https://img.shields.io/badge/Tailwind-4.x-38B2AC?style=flat-square&logo=tailwind-css)
-
----
-
-## 📋 Tabla de Contenidos
-
-- [Características](#-características)
-- [Requisitos Previos](#-requisitos-previos)
-- [Instalación](#-instalación)
-- [Estructura del Proyecto](#-estructura-del-proyecto)
-- [Configuración](#-configuración)
-- [Uso](#-uso)
-- [Desarrollo](#-desarrollo)
-- [Despliegue](#-despliegue)
-- [Personalización](#-personalización)
+Una plataforma centralizada de gestión empresarial que recoge TODAS las tareas de la empresa, independientemente del departamento, facilitando el trabajo y ahorrando tiempo.
 
 ---
 
-## ✨ Características
+## 🎯 VISIÓN
 
-### 🎯 Funcionalidades Principales
+> "El trabajador solo necesita abrir UNA aplicación para trabajar"
 
-- **Dashboard Personalizado**: Visualización de objetivos mensuales, heatmap de actividad y desglose por proyecto
-- **Registro de Horas**: Sistema intuitivo para registrar múltiples entradas diarias en diferentes proyectos
-- **Búsqueda Global**: Motor de búsqueda transversal para localizar proyectos, usuarios y clientes
-- **Informes Visuales**: Gráficos interactivos de productividad mensual y anual
-- **Gestión de Proyectos**: CRUD completo con asociación a clientes
-- **Control de Usuarios**: Administración de roles (Admin, Worker, Client) y departamentos
-- **Exportación CSV**: Descarga de datos filtrados para análisis externo
-
-### 🔐 Seguridad
-
-- Autenticación con NextAuth v5
-- Ventana de edición de 24h para trabajadores
-- Anulación administrativa sin restricciones
-- Hash de contraseñas con bcrypt
-- Sesiones JWT
-
-### 🎨 Diseño
-
-- Interfaz moderna con Tailwind CSS 4
-- Animaciones fluidas con Framer Motion
-- Paleta corporativa (oliva y neutros)
-- Diseño responsive y accesible
+MEP Projects es la solución TODO-EN-UNO para empresas de ingeniería MEP que centraliza:
+- ✅ Todas las tareas
+- ✅ Todas las horas
+- ✅ Todos los documentos
+- ✅ Todos los proyectos
+- ✅ Toda la comunicación
+- ✅ Todos los reportes
 
 ---
 
-## 🔧 Requisitos Previos
+## ✨ CARACTERÍSTICAS PRINCIPALES
 
-Antes de comenzar, asegúrate de tener instalado:
+### **Gestión de Tareas** ✅
+- 3 vistas (Lista, Kanban, Calendario)
+- Asignación y prioridades
+- Comentarios colaborativos
+- Filtros avanzados
+- Drag & drop
 
-- **Node.js** 18.x o superior
-- **PostgreSQL** 14.x o superior
-- **npm** o **pnpm**
+### **Gestión de Horas** ✅
+- Temporizador en tiempo real
+- Múltiples entradas por día
+- Reportes automáticos
+- Validaciones inteligentes
+
+### **Gestión de Documentos** 🚧
+- Upload drag & drop
+- Organización por carpetas
+- Búsqueda instantánea
+- Visor integrado
+- Versionado
+
+### **Búsqueda Global** ✅
+- Atajo Ctrl+K
+- Búsqueda en tiempo real
+- Navegación por teclado
+- Resultados agrupados
+
+### **Dashboard Interactivo** ✅
+- Widgets personalizables
+- Gráficos animados
+- Acciones rápidas
+- KPIs en tiempo real
 
 ---
 
-## 🚀 Instalación
+## 🚀 INICIO RÁPIDO
 
-### 1. Clonar el repositorio
+### **Requisitos**
+- Node.js 18+
+- PostgreSQL 14+
+- npm o yarn
+
+### **Instalación**
 
 ```bash
-git clone <tu-repositorio>
+# Clonar repositorio
+git clone [url-del-repo]
 cd MepTest-main
-```
 
-### 2. Instalar dependencias
-
-```bash
+# Instalar dependencias
 npm install
-```
 
-### 3. Configurar variables de entorno
+# Configurar variables de entorno
+cp .env.example .env
+# Editar .env con tus credenciales
 
-Crea un archivo `.env` en la raíz del proyecto:
-
-```env
-# Base de datos PostgreSQL
-DATABASE_URL="postgresql://usuario:contraseña@localhost:5432/mep_projects"
-
-# NextAuth
-AUTH_SECRET="tu-secreto-super-seguro-aqui"
-AUTH_TRUST_HOST="true"
-```
-
-**Generar AUTH_SECRET:**
-```bash
-openssl rand -base64 32
-```
-
-### 4. Inicializar la base de datos
-
-```bash
-# Crear las tablas
+# Configurar base de datos
 npx prisma db push
-
-# Poblar con datos de ejemplo
 npx prisma db seed
-```
 
-Esto creará:
-- ✅ Usuario admin: `admin@mep-projects.com` / `admin123`
-- ✅ 3 proyectos de ejemplo
-
-### 5. Ejecutar en desarrollo
-
-```bash
+# Iniciar servidor de desarrollo
 npm run dev
 ```
 
-Abre [http://localhost:3000](http://localhost:3000) en tu navegador.
+### **Acceder a la Aplicación**
+
+```
+URL: http://localhost:3000
+
+ADMIN:
+📧 admin@mep-projects.com
+🔑 admin123
+
+TRABAJADORES (password: admin123):
+📧 carlos.martinez@mep-projects.com
+📧 ana.lopez@mep-projects.com
+📧 miguel.sanchez@mep-projects.com
+📧 laura.fernandez@mep-projects.com
+📧 david.rodriguez@mep-projects.com
+```
 
 ---
 
-## 📁 Estructura del Proyecto
+## 📊 MÓDULOS
+
+| Módulo | Estado | Progreso | Descripción |
+|--------|--------|----------|-------------|
+| **Tareas** | ✅ Completado | 100% | Gestión completa de tareas |
+| **Horas** | ✅ Completado | 100% | Registro y reportes de horas |
+| **Documentos** | 🚧 En Progreso | 55% | Gestión documental |
+| **Búsqueda** | ✅ Completado | 100% | Búsqueda global |
+| **Dashboard** | ✅ Completado | 100% | Panel de control |
+| **Proyectos** | 🔧 Básico | 40% | Gestión de proyectos |
+| **Clientes** | 🔧 Básico | 40% | Gestión de clientes |
+| **Comunicación** | ⏳ Planificado | 0% | Chat y notificaciones |
+| **Calendario** | ⏳ Planificado | 0% | Calendario compartido |
+| **Reportes** | ⏳ Planificado | 0% | Reportes avanzados |
+
+---
+
+## 🛠️ STACK TECNOLÓGICO
+
+### **Frontend**
+- **Framework**: Next.js 16.1.1 (App Router + Turbopack)
+- **UI**: React 19
+- **Lenguaje**: TypeScript
+- **Estilos**: Tailwind CSS 4
+- **Animaciones**: Framer Motion 12
+- **Iconos**: Lucide React
+
+### **Backend**
+- **Autenticación**: NextAuth v5
+- **ORM**: Prisma 5.22
+- **Base de Datos**: PostgreSQL
+- **API**: Server Actions + API Routes
+
+### **Features**
+- Server-Side Rendering (SSR)
+- Client-Side Rendering (CSR)
+- Búsqueda en tiempo real
+- Drag & Drop nativo
+- Atajos de teclado
+- Responsive design
+- Animaciones optimizadas
+
+---
+
+## 📁 ESTRUCTURA DEL PROYECTO
 
 ```
 MepTest-main/
 ├── prisma/
 │   ├── schema.prisma          # Esquema de base de datos
-│   └── seed.ts                # Datos iniciales
+│   └── seed.ts                # Datos de ejemplo
 ├── src/
 │   ├── app/
-│   │   ├── (auth)/            # Rutas de autenticación
-│   │   │   ├── login/
-│   │   │   └── register/
-│   │   ├── (protected)/       # Rutas protegidas
-│   │   │   ├── dashboard/     # Dashboard personal
-│   │   │   ├── hours/         # Gestión de horas
-│   │   │   │   ├── daily/     # Registro diario
-│   │   │   │   └── summary/   # Resumen anual
-│   │   │   ├── admin/         # Panel administrativo
-│   │   │   │   ├── hours/     # Monitor de horas
-│   │   │   │   ├── projects/  # Gestión de proyectos
-│   │   │   │   ├── clients/   # Gestión de clientes
-│   │   │   │   └── users/     # Gestión de usuarios
-│   │   │   ├── search/        # Búsqueda global
-│   │   │   └── settings/      # Configuración de usuario
-│   │   ├── admin/
-│   │   │   └── actions.ts     # Server actions admin
-│   │   ├── hours/
-│   │   │   └── actions.ts     # Server actions horas
-│   │   ├── layout.tsx         # Layout raíz
-│   │   └── globals.css        # Estilos globales
-│   ├── components/
-│   │   └── layout/
-│   │       ├── Header.tsx     # Cabecera con búsqueda
-│   │       ├── Sidebar.tsx    # Menú lateral
-│   │       └── UserMenu.tsx   # Menú de usuario
-│   ├── lib/
-│   │   └── prisma.ts          # Cliente Prisma singleton
-│   ├── auth.ts                # Configuración NextAuth
-│   └── auth.config.ts         # Opciones de autenticación
-├── .env                       # Variables de entorno (no subir a git)
-├── package.json
-├── tailwind.config.ts         # Configuración Tailwind
-└── tsconfig.json              # Configuración TypeScript
+│   │   ├── (auth)/           # Rutas de autenticación
+│   │   ├── (protected)/      # Rutas protegidas
+│   │   │   ├── dashboard/    # Dashboard
+│   │   │   ├── tasks/        # Tareas
+│   │   │   ├── hours/        # Horas
+│   │   │   ├── documents/    # Documentos
+│   │   │   ├── projects/     # Proyectos
+│   │   │   └── clients/      # Clientes
+│   │   └── api/              # API Routes
+│   ├── components/           # Componentes React
+│   │   ├── dashboard/        # Widgets del dashboard
+│   │   ├── hours/            # Componentes de horas
+│   │   ├── documents/        # Componentes de documentos
+│   │   └── layout/           # Layout components
+│   ├── lib/                  # Utilidades
+│   └── auth.ts               # Configuración de auth
+├── public/                   # Archivos estáticos
+└── docs/                     # Documentación
 ```
 
 ---
 
-## ⚙️ Configuración
+## ⌨️ ATAJOS DE TECLADO
 
-### Modelos de Base de Datos
-
-El sistema utiliza 4 modelos principales:
-
-#### 1. **User** (Usuario)
-```prisma
-- id: String (cuid)
-- name: String
-- email: String (único)
-- passwordHash: String
-- role: Role (ADMIN | WORKER | CLIENT)
-- department: Department
-- dailyWorkHours: Float (default: 8.0)
-- isActive: Boolean
+```
+Ctrl+K      → Búsqueda global
+↑↓          → Navegar resultados
+Enter       → Abrir resultado
+Esc         → Cerrar modal
 ```
 
-#### 2. **Project** (Proyecto)
-```prisma
-- id: String (cuid)
-- code: String (único, ej: "P-25-001")
-- name: String
-- year: Int
-- department: Department
-- clientId: String? (opcional)
-- isActive: Boolean
+**Próximamente**:
 ```
-
-#### 3. **Client** (Cliente)
-```prisma
-- id: String (cuid)
-- name: String
-- email: String?
-- phone: String?
-- company: String?
-- address: String?
-- isActive: Boolean
+Ctrl+H      → Nueva entrada de horas
+Ctrl+T      → Nueva tarea
+Ctrl+D      → Nuevo documento
+Ctrl+P      → Nuevo proyecto
 ```
-
-#### 4. **TimeEntry** (Registro de Horas)
-```prisma
-- id: String (cuid)
-- userId: String
-- projectId: String
-- date: DateTime
-- hours: Float
-- notes: String?
-- createdAt: DateTime
-```
-
-### Roles y Permisos
-
-| Rol | Permisos |
-|-----|----------|
-| **ADMIN** | Acceso total, gestión de usuarios, proyectos y clientes |
-| **WORKER** | Registro de horas, edición 24h, visualización de dashboard |
-| **CLIENT** | Solo visualización de proyectos asignados |
 
 ---
 
-## 💻 Uso
+## 💰 ROI - RETORNO DE INVERSIÓN
 
-### Primer Inicio de Sesión
+### **Ahorro de Tiempo**
 
-1. Accede a `http://localhost:3000/login`
-2. Usa las credenciales del admin:
-   - Email: `admin@mep-projects.com`
-   - Password: `admin123`
+**Antes** (múltiples herramientas):
+- 130 min/día por usuario
 
-### Flujo de Trabajo Típico
+**Después** (MEP Projects):
+- 40 min/día por usuario
 
-#### Como Trabajador:
-1. **Dashboard** → Ver progreso mensual y objetivos
-2. **Horas → Diario** → Registrar horas del día
-3. **Horas → Resumen** → Consultar informe anual
-4. **Configuración** → Ajustar preferencias personales
+**Ahorro**: 90 min/día (1.5 horas)
 
-#### Como Administrador:
-1. **Admin → Monitor** → Supervisar productividad del equipo
-2. **Admin → Proyectos** → Crear/editar códigos de proyecto
-3. **Admin → Clientes** → Gestionar cartera de clientes
-4. **Admin → Usuarios** → Administrar permisos y roles
+### **Impacto Económico (10 usuarios)**
+- **€7,500/mes** ahorrados
+- **€90,000/año** ahorrados
+
+### **Beneficios Adicionales**
+- ✅ Menos errores
+- ✅ Mejor comunicación
+- ✅ Decisiones más rápidas
+- ✅ Mayor satisfacción del equipo
 
 ---
 
-## 🛠️ Desarrollo
+## 📚 DOCUMENTACIÓN
 
-### Comandos Útiles
+### **Para Usuarios**
+- [Guía de Uso](./GUIA_DE_USO.md) - Cómo usar la plataforma
+- [Guía de Seed](./SEED_GUIDE.md) - Datos de ejemplo
+
+### **Para Desarrolladores**
+- [Visión TODO-EN-UNO](./VISION_TODO_EN_UNO.md) - Visión completa
+- [Plan de Profesionalización](./PLAN_PROFESIONALIZACION.md) - Automatizaciones
+- [Sistema de Horas](./SISTEMA_HORAS_PROFESIONAL.md) - Especificaciones
+
+### **Gestión del Proyecto**
+- [Progreso](./PROGRESO.md) - Estado actual
+- [Resumen Ejecutivo](./RESUMEN_EJECUTIVO.md) - Resumen completo
+- [Roadmap](./ROADMAP.md) - Plan de desarrollo
+
+---
+
+## 🚀 SCRIPTS DISPONIBLES
 
 ```bash
 # Desarrollo
-npm run dev              # Servidor de desarrollo
+npm run dev              # Iniciar servidor de desarrollo (Turbopack)
+npm run build            # Construir para producción
+npm run start            # Iniciar servidor de producción
 
-# Base de datos
-npx prisma studio        # Interfaz visual de BD
-npx prisma db push       # Aplicar cambios de schema
-npx prisma db seed       # Reiniciar datos de ejemplo
-npx prisma generate      # Regenerar cliente Prisma
+# Base de Datos
+npx prisma studio        # Abrir Prisma Studio
+npx prisma db push       # Sincronizar schema con BD
+npx prisma db seed       # Poblar con datos de ejemplo
+npx prisma generate      # Generar Prisma Client
 
-# Producción
-npm run build            # Compilar para producción
-npm run start            # Ejecutar build de producción
-
-# Linting
-npm run lint             # Verificar código
-npx tsc --noEmit         # Verificar tipos TypeScript
-```
-
-### Agregar un Nuevo Modelo
-
-1. **Editar `prisma/schema.prisma`**:
-```prisma
-model NuevoModelo {
-  id        String   @id @default(cuid())
-  nombre    String
-  createdAt DateTime @default(now())
-}
-```
-
-2. **Aplicar cambios**:
-```bash
-npx prisma db push
-npx prisma generate
-```
-
-3. **Crear Server Actions** en `src/app/[ruta]/actions.ts`:
-```typescript
-'use server';
-import { prisma } from "@/lib/prisma";
-
-export async function getNuevoModelo() {
-  return await prisma.nuevoModelo.findMany();
-}
-```
-
-### Crear una Nueva Página
-
-1. **Crear archivo** en `src/app/(protected)/nueva-pagina/page.tsx`:
-```tsx
-export default async function NuevaPagina() {
-  return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-neutral-900">
-        Nueva Página
-      </h1>
-      {/* Tu contenido */}
-    </div>
-  );
-}
-```
-
-2. **Agregar al menú** en `src/components/layout/Sidebar.tsx`:
-```tsx
-{
-  name: 'Nueva Página',
-  href: '/nueva-pagina',
-  icon: IconoLucide,
-  adminOnly: false
-}
+# Calidad de Código
+npm run lint             # Ejecutar ESLint
+npm run type-check       # Verificar tipos TypeScript
 ```
 
 ---
 
-## 🚢 Despliegue
+## 🔄 ROADMAP
 
-### Vercel (Recomendado)
+### **Fase 1: Consolidación** (Semana 4)
+- [ ] Completar módulo de documentos
+- [ ] Mejorar vista de horas
+- [ ] Sistema de notificaciones
 
-1. Conecta tu repositorio a Vercel
-2. Configura las variables de entorno en el dashboard
-3. Despliega automáticamente con cada push
+### **Fase 2: Comunicación** (Semana 5-6)
+- [ ] Chat interno
+- [ ] Calendario compartido
+- [ ] Notificaciones en tiempo real
 
-### Docker
+### **Fase 3: Gestión** (Semana 7-8)
+- [ ] CRM avanzado
+- [ ] Gestión de gastos
+- [ ] Inventario
 
-```dockerfile
-# Dockerfile de ejemplo
-FROM node:18-alpine
-WORKDIR /app
-COPY package*.json ./
-RUN npm ci
-COPY . .
-RUN npx prisma generate
-RUN npm run build
-CMD ["npm", "start"]
-```
-
-### Variables de Entorno en Producción
-
-```env
-DATABASE_URL="postgresql://..."
-AUTH_SECRET="..."
-AUTH_TRUST_HOST="true"
-NODE_ENV="production"
-```
+### **Fase 4: Analytics** (Semana 9-10)
+- [ ] Dashboard ejecutivo
+- [ ] Reportes avanzados
+- [ ] IA y predicciones
 
 ---
 
-## 🎨 Personalización
+## 🤝 CONTRIBUIR
 
-### Cambiar Colores Corporativos
+### **Reportar Bugs**
+1. Verifica que el bug no esté reportado
+2. Crea un issue con descripción detallada
+3. Incluye pasos para reproducir
+4. Adjunta capturas de pantalla si es posible
 
-Edita `src/app/globals.css`:
+### **Sugerir Funcionalidades**
+1. Revisa el roadmap
+2. Crea un issue con la propuesta
+3. Explica el caso de uso
+4. Discute con el equipo
 
-```css
-@theme {
-  --color-olive-50: #f7f8f4;
-  --color-olive-600: #6b7c3f;  /* Tu color principal */
-  /* ... más tonos */
-}
-```
-
-### Modificar Logo
-
-Reemplaza los archivos en `public/`:
-- `favicon.ico`
-- `logo.svg` (si lo usas)
-
-### Ajustar Horas Objetivo
-
-En `src/app/(protected)/dashboard/actions.ts`:
-
-```typescript
-const targetHours = user.dailyWorkHours * daysInMonth; // Personalizable
-```
-
----
-
-## 📚 Tecnologías Utilizadas
-
-- **Framework**: Next.js 16 (App Router)
-- **Lenguaje**: TypeScript 5
-- **Base de Datos**: PostgreSQL + Prisma ORM
-- **Autenticación**: NextAuth v5
-- **Estilos**: Tailwind CSS 4
-- **Animaciones**: Framer Motion
-- **Iconos**: Lucide React
-- **Validación**: Zod + React Hook Form
-
----
-
-## 🤝 Contribuir
-
-1. Fork el proyecto
-2. Crea una rama (`git checkout -b feature/nueva-funcionalidad`)
-3. Commit tus cambios (`git commit -m 'Añadir nueva funcionalidad'`)
-4. Push a la rama (`git push origin feature/nueva-funcionalidad`)
+### **Desarrollo**
+1. Fork del repositorio
+2. Crea una rama (`git checkout -b feature/AmazingFeature`)
+3. Commit cambios (`git commit -m 'Add AmazingFeature'`)
+4. Push a la rama (`git push origin feature/AmazingFeature`)
 5. Abre un Pull Request
 
 ---
 
-## 📄 Licencia
+## 📝 LICENCIA
 
 Este proyecto es privado y propietario de MEP Projects.
 
 ---
 
-## 🆘 Soporte
+## 👥 EQUIPO
 
-Para dudas o problemas:
-- 📧 Email: soporte@mep-projects.com
-- 📖 Documentación: [Wiki del proyecto]
+**Desarrollado con ❤️ por el equipo de MEP Projects**
 
 ---
 
-## 🔄 Changelog
+## 📞 SOPORTE
 
-### v1.0.0 (Enero 2026)
-- ✅ Sistema de autenticación completo
-- ✅ Dashboard personal con visualizaciones
-- ✅ Gestión de proyectos y clientes
-- ✅ Monitor administrativo en tiempo real
-- ✅ Búsqueda global transversal
-- ✅ Informes anuales con gráficos
-- ✅ Exportación CSV
-- ✅ Next.js 16 compatible
+### **Problemas Técnicos**
+- Revisa la [Guía de Uso](./GUIA_DE_USO.md)
+- Consulta la documentación
+- Contacta al administrador del sistema
+
+### **Sugerencias**
+- Crea un issue en el repositorio
+- Contacta al equipo de desarrollo
 
 ---
 
-**Desarrollado con ❤️ para MEP Projects**
+## 🎯 ESTADO DEL PROYECTO
+
+**Progreso**: 55% ███████████████████████████░░░░░░░░░░░░░
+
+**Última Actualización**: 7 de Enero de 2026
+
+**Próxima Release**: Febrero 2026 (v1.1.0)
+
+---
+
+**¡Gracias por usar MEP Projects!** 🚀

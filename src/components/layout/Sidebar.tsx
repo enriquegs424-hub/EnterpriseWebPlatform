@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
     LayoutDashboard, Briefcase, Users, Settings,
-    Clock, FileText, BarChart, CheckSquare
+    Clock, FileText, BarChart, CheckSquare, FolderOpen, Calendar, Bell
 } from 'lucide-react';
 import Image from 'next/image';
 
@@ -12,9 +12,11 @@ const navItems = [
     {
         section: 'Principal', items: [
             { label: 'Inicio', href: '/dashboard', icon: LayoutDashboard, desc: 'Panel de control personal' },
-            { label: 'Registro Diario', href: '/hours/daily', icon: Clock, desc: 'Registrar horas del día' },
+            { label: 'Calendario', href: '/calendar', icon: Calendar, desc: 'Eventos y reuniones' },
             { label: 'Mis Tareas', href: '/tasks', icon: CheckSquare, desc: 'Gestionar tareas asignadas' },
-            { label: 'Resumen Anual', href: '/hours/summary', icon: BarChart, desc: 'Informe consolidado' },
+            { label: 'Documentos', href: '/documents', icon: FolderOpen, desc: 'Gestión de archivos' },
+            { label: 'Registro Diario', href: '/hours/daily', icon: Clock, desc: 'Registrar horas del día' },
+            { label: 'Notificaciones', href: '/notifications', icon: Bell, desc: 'Centro de avisos' },
         ]
     },
     {

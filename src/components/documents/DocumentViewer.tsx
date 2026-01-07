@@ -1,7 +1,14 @@
 'use client';
 
-import { X, Download, Share2, Clock, User, Folder, FileText, ChevronRight } from 'lucide-react';
+import { X, Download, Share2, Clock, User, Folder, FileText } from 'lucide-react';
 import { motion } from 'framer-motion';
+import dynamic from 'next/dynamic';
+
+// Lazy load PDFViewer to avoid SSR issues
+const PDFViewer = dynamic(() => import('./PDFViewer'), {
+    ssr: false,
+    loading: () => <div className="flex items-center justify-center h-full"><div className="animate-spin rounded-full h-12 w-12 border-4 border-olive-600 border-t-transparent"></div></div>
+});
 
 interface DocumentViewerProps {
     document: any;
@@ -16,6 +23,13 @@ export default function DocumentViewer({ document, isOpen, onClose }: DocumentVi
         if (bytes < 1024) return bytes + ' B';
         if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
         return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+    };
+
+    const handleDownload = () => {
+        const link = document.createElement('a');
+        link.href = document.filePath;
+        link.download = document.fileName;
+        link.click();
     };
 
     const isImage = document.fileType.startsWith('image/');
@@ -56,7 +70,10 @@ export default function DocumentViewer({ document, isOpen, onClose }: DocumentVi
                             </div>
                         </div>
                         <div className="flex items-center space-x-2">
-                            <button className="p-3 bg-white hover:bg-neutral-100 rounded-xl border border-neutral-200 transition-all">
+                            <button
+                                onClick={handleDownload}
+                                className="p-3 bg-white hover:bg-neutral-100 rounded-xl border border-neutral-200 transition-all"
+                            >
                                 <Download size={20} />
                             </button>
                             <button className="p-3 bg-white hover:bg-neutral-100 rounded-xl border border-neutral-200 transition-all">
@@ -73,9 +90,9 @@ export default function DocumentViewer({ document, isOpen, onClose }: DocumentVi
                 </div>
 
                 {/* Content */}
-                <div className="flex-1 overflow-y-auto p-6 bg-neutral-50">
+                <div className="flex-1 overflow-hidden">
                     {isImage ? (
-                        <div className="flex items-center justify-center h-full">
+                        <div className="flex items-center justify-center h-full p-6 bg-neutral-50">
                             <img
                                 src={document.filePath}
                                 alt={document.name}
@@ -83,27 +100,22 @@ export default function DocumentViewer({ document, isOpen, onClose }: DocumentVi
                             />
                         </div>
                     ) : isPDF ? (
-                        <div className="bg-white rounded-2xl p-8 shadow-lg h-full flex items-center justify-center">
-                            <div className="text-center">
-                                <FileText size={64} className="mx-auto text-neutral-300 mb-4" />
-                                <p className="text-neutral-600 font-medium mb-2">Vista previa de PDF</p>
-                                <p className="text-sm text-neutral-400 mb-4">
-                                    La vista previa de PDFs estará disponible próximamente
-                                </p>
-                                <button className="px-6 py-3 bg-olive-600 hover:bg-olive-700 text-white rounded-xl font-bold transition-all">
-                                    Descargar PDF
-                                </button>
-                            </div>
-                        </div>
+                        <PDFViewer
+                            fileUrl={document.filePath}
+                            fileName={document.fileName}
+                        />
                     ) : (
-                        <div className="bg-white rounded-2xl p-8 shadow-lg h-full flex items-center justify-center">
-                            <div className="text-center">
+                        <div className="bg-neutral-50 p-6 h-full flex items-center justify-center">
+                            <div className="bg-white rounded-2xl p-8 shadow-lg text-center">
                                 <FileText size={64} className="mx-auto text-neutral-300 mb-4" />
                                 <p className="text-neutral-600 font-medium mb-2">Vista previa no disponible</p>
                                 <p className="text-sm text-neutral-400 mb-4">
                                     Este tipo de archivo no tiene vista previa
                                 </p>
-                                <button className="px-6 py-3 bg-olive-600 hover:bg-olive-700 text-white rounded-xl font-bold transition-all">
+                                <button
+                                    onClick={handleDownload}
+                                    className="px-6 py-3 bg-olive-600 hover:bg-olive-700 text-white rounded-xl font-bold transition-all"
+                                >
                                     Descargar Archivo
                                 </button>
                             </div>

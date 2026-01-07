@@ -3,7 +3,6 @@
 import { useState, useCallback } from 'react';
 import { Upload, X, FileText, CheckCircle, AlertCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { createDocument } from '../actions';
 
 interface UploadModalProps {
     isOpen: boolean;
@@ -92,9 +91,26 @@ export default function UploadModal({ isOpen, onClose, onSuccess, projectId, fol
             });
 
             try {
-                // Simulate upload progress
-                for (let progress = 0; progress <= 100; progress += 10) {
-                    await new Promise(resolve => setTimeout(resolve, 100));
+                // Create FormData
+                const formData = new FormData();
+                formData.append('file', file);
+                if (projectId) formData.append('projectId', projectId);
+                if (folderId) formData.append('folderId', folderId);
+                formData.append('description', file.name);
+
+                // Upload file
+                const response = await fetch('/api/upload', {
+                    method: 'POST',
+                    body: formData,
+                });
+
+                if (!response.ok) {
+                    throw new Error('Upload failed');
+                }
+
+                // Simulate progress for better UX
+                for (let progress = 0; progress <= 100; progress += 20) {
+                    await new Promise(resolve => setTimeout(resolve, 50));
                     setFiles(prev => {
                         const newFiles = [...prev];
                         newFiles[i].progress = progress;
@@ -102,25 +118,11 @@ export default function UploadModal({ isOpen, onClose, onSuccess, projectId, fol
                     });
                 }
 
-                // In a real implementation, you would upload to a storage service here
-                // For now, we'll create a mock file path
-                const mockFilePath = `/uploads/${Date.now()}-${file.name}`;
-
-                // Create document in database
-                await createDocument({
-                    name: file.name.replace(/\.[^/.]+$/, ''), // Remove extension
-                    fileName: file.name,
-                    fileSize: file.size,
-                    fileType: file.type,
-                    filePath: mockFilePath,
-                    projectId,
-                    folderId,
-                });
-
                 // Update status to success
                 setFiles(prev => {
                     const newFiles = [...prev];
                     newFiles[i].status = 'success';
+                    newFiles[i].progress = 100;
                     return newFiles;
                 });
             } catch (error) {
@@ -194,8 +196,8 @@ export default function UploadModal({ isOpen, onClose, onSuccess, projectId, fol
                         onDragLeave={handleDragLeave}
                         onDrop={handleDrop}
                         className={`border-2 border-dashed rounded-2xl p-12 text-center transition-all ${isDragging
-                                ? 'border-olive-600 bg-olive-50'
-                                : 'border-neutral-300 hover:border-olive-400'
+                            ? 'border-olive-600 bg-olive-50'
+                            : 'border-neutral-300 hover:border-olive-400'
                             }`}
                     >
                         <Upload size={48} className={`mx-auto mb-4 ${isDragging ? 'text-olive-600' : 'text-neutral-400'}`} />
