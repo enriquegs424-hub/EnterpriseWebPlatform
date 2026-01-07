@@ -60,7 +60,46 @@ export async function getDashboardStats() {
         monthHours,
         targetHours,
         diff: Math.round((monthHours - targetHours) * 10) / 10,
-        latestEntries: monthEntries.slice(-5).reverse(), // Last 5 entries
-        projectBreakdown,
+        recentEntries: monthEntries.slice(-5).reverse(), // Last 5 entries
+        projectBreakdown: projectBreakdown.map((p: any, index) => ({
+            ...p,
+            projectId: Object.keys(breakdownMap)[index],
+            entries: monthEntries.filter((e: any) => e.project.code === p.code).length
+        })),
     };
+}
+
+// Obtener tareas pendientes del usuario
+export async function getMyPendingTasks() {
+    const session = await auth();
+    if (!session?.user?.id) return [];
+
+    try {
+        const tasks = await prisma.task.findMany({
+            where: {
+                assignedToId: session.user.id,
+                status: {
+                    in: ['PENDING', 'IN_PROGRESS']
+                }
+            },
+            include: {
+                project: {
+                    select: {
+                        code: true,
+                        name: true
+                    }
+                }
+            },
+            orderBy: [
+                { priority: 'desc' },
+                { dueDate: 'asc' }
+            ],
+            take: 5
+        });
+
+        return tasks;
+    } catch (error) {
+        console.error('Error fetching pending tasks:', error);
+        return [];
+    }
 }

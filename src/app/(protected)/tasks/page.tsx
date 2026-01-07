@@ -6,12 +6,18 @@ import { getAllUsers } from '@/app/admin/actions';
 import { getAllProjects } from '@/app/admin/actions';
 import {
     CheckSquare, Plus, Filter, Calendar, User, Flag,
-    Clock, MessageSquare, Trash2, Edit2, X, AlertCircle
+    Clock, MessageSquare, Trash2, Edit2, X, AlertCircle,
+    LayoutList, LayoutGrid
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
+import KanbanBoard from './kanban/KanbanBoard';
+import CalendarView from './calendar/CalendarView';
+
+type ViewMode = 'list' | 'kanban' | 'calendar';
 
 export default function TasksPage() {
+    const [viewMode, setViewMode] = useState<ViewMode>('list');
     const [tasks, setTasks] = useState<any[]>([]);
     const [users, setUsers] = useState<any[]>([]);
     const [projects, setProjects] = useState<any[]>([]);
@@ -115,13 +121,44 @@ export default function TasksPage() {
                     </h1>
                     <p className="text-neutral-500 mt-1 font-medium">Organiza y asigna tareas al equipo</p>
                 </div>
-                <button
-                    onClick={() => setShowCreateModal(true)}
-                    className="flex items-center space-x-2 bg-olive-600 hover:bg-olive-700 text-white px-6 py-3 rounded-xl font-bold transition-all shadow-lg shadow-olive-600/20"
-                >
-                    <Plus size={20} />
-                    <span>Nueva Tarea</span>
-                </button>
+                <div className="flex items-center space-x-3">
+                    {/* View Switcher */}
+                    <div className="flex items-center space-x-2 bg-neutral-100 p-1 rounded-xl">
+                        <button
+                            onClick={() => setViewMode('list')}
+                            className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-all ${viewMode === 'list' ? 'bg-white shadow-sm' : 'hover:bg-white/50'
+                                }`}
+                            title="Vista Lista"
+                        >
+                            <LayoutList size={20} className={viewMode === 'list' ? 'text-olive-600' : 'text-neutral-600'} />
+                        </button>
+                        <button
+                            onClick={() => setViewMode('kanban')}
+                            className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-all ${viewMode === 'kanban' ? 'bg-white shadow-sm' : 'hover:bg-white/50'
+                                }`}
+                            title="Vista Kanban"
+                        >
+                            <LayoutGrid size={20} className={viewMode === 'kanban' ? 'text-olive-600' : 'text-neutral-600'} />
+                        </button>
+                        <button
+                            onClick={() => setViewMode('calendar')}
+                            className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-all ${viewMode === 'calendar' ? 'bg-white shadow-sm' : 'hover:bg-white/50'
+                                }`}
+                            title="Vista Calendario"
+                        >
+                            <Calendar size={20} className={viewMode === 'calendar' ? 'text-olive-600' : 'text-neutral-600'} />
+                        </button>
+                    </div>
+
+                    {/* New Task Button */}
+                    <button
+                        onClick={() => setShowCreateModal(true)}
+                        className="flex items-center space-x-2 bg-olive-600 hover:bg-olive-700 text-white px-6 py-3 rounded-xl font-bold transition-all shadow-lg shadow-olive-600/20"
+                    >
+                        <Plus size={20} />
+                        <span>Nueva Tarea</span>
+                    </button>
+                </div>
             </div>
 
             {/* Stats */}
@@ -150,138 +187,181 @@ export default function TasksPage() {
                 </div>
             )}
 
-            {/* Filters */}
-            <div className="bg-white rounded-2xl p-6 border border-neutral-200 shadow-sm">
-                <div className="flex items-center space-x-2 mb-4">
-                    <Filter className="w-5 h-5 text-neutral-400" />
-                    <h3 className="font-bold text-neutral-900">Filtros</h3>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <select
-                        value={filters.status}
-                        onChange={(e) => setFilters({ ...filters, status: e.target.value })}
-                        className="px-4 py-2.5 bg-neutral-50 border border-neutral-200 rounded-xl focus:ring-4 focus:ring-olive-500/10 focus:border-olive-500 outline-none"
-                    >
-                        <option value="">Todos los estados</option>
-                        <option value="PENDING">Pendiente</option>
-                        <option value="IN_PROGRESS">En Progreso</option>
-                        <option value="COMPLETED">Completada</option>
-                        <option value="CANCELLED">Cancelada</option>
-                    </select>
-                    <select
-                        value={filters.priority}
-                        onChange={(e) => setFilters({ ...filters, priority: e.target.value })}
-                        className="px-4 py-2.5 bg-neutral-50 border border-neutral-200 rounded-xl focus:ring-4 focus:ring-olive-500/10 focus:border-olive-500 outline-none"
-                    >
-                        <option value="">Todas las prioridades</option>
-                        <option value="URGENT">Urgente</option>
-                        <option value="HIGH">Alta</option>
-                        <option value="MEDIUM">Media</option>
-                        <option value="LOW">Baja</option>
-                    </select>
-                    <select
-                        value={filters.assignedToId}
-                        onChange={(e) => setFilters({ ...filters, assignedToId: e.target.value })}
-                        className="px-4 py-2.5 bg-neutral-50 border border-neutral-200 rounded-xl focus:ring-4 focus:ring-olive-500/10 focus:border-olive-500 outline-none"
-                    >
-                        <option value="">Todos los usuarios</option>
-                        {users.map(u => (
-                            <option key={u.id} value={u.id}>{u.name}</option>
-                        ))}
-                    </select>
-                </div>
-            </div>
-
-            {/* Tasks List */}
-            <div className="space-y-4">
-                {loading ? (
-                    <div className="text-center py-20">
-                        <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-olive-600 border-t-transparent"></div>
-                        <p className="mt-4 text-neutral-500 font-medium">Cargando tareas...</p>
+            {/* Filters - Only show in list view */}
+            {viewMode === 'list' && (
+                <div className="bg-white rounded-2xl p-6 border border-neutral-200 shadow-sm">
+                    <div className="flex items-center space-x-2 mb-4">
+                        <Filter className="w-5 h-5 text-neutral-400" />
+                        <h3 className="font-bold text-neutral-900">Filtros</h3>
                     </div>
-                ) : tasks.length === 0 ? (
-                    <div className="bg-neutral-50 rounded-3xl p-20 text-center border-2 border-dashed border-neutral-200">
-                        <CheckSquare size={64} className="mx-auto text-neutral-200 mb-4" />
-                        <h3 className="text-xl font-bold text-neutral-400 mb-2">Sin tareas</h3>
-                        <p className="text-neutral-400">Crea la primera tarea para empezar</p>
-                    </div>
-                ) : (
-                    tasks.map((task) => (
-                        <motion.div
-                            key={task.id}
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            className="bg-white rounded-2xl p-6 border border-neutral-200 shadow-sm hover:shadow-md transition-all"
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <select
+                            value={filters.status}
+                            onChange={(e) => setFilters({ ...filters, status: e.target.value })}
+                            className="px-4 py-2.5 bg-neutral-50 border border-neutral-200 rounded-xl focus:ring-4 focus:ring-olive-500/10 focus:border-olive-500 outline-none"
                         >
-                            <div className="flex items-start justify-between">
-                                <div className="flex-1">
-                                    <div className="flex items-center space-x-3 mb-3">
-                                        <h3 className="text-lg font-bold text-neutral-900">{task.title}</h3>
-                                        <span className={`px-3 py-1 rounded-full text-xs font-bold border ${getPriorityColor(task.priority)}`}>
-                                            {task.priority}
-                                        </span>
-                                        <span className={`px-3 py-1 rounded-full text-xs font-bold ${getStatusColor(task.status)}`}>
-                                            {task.status}
-                                        </span>
-                                    </div>
-                                    {task.description && (
-                                        <p className="text-neutral-600 mb-4">{task.description}</p>
-                                    )}
-                                    <div className="flex flex-wrap items-center gap-4 text-sm text-neutral-500">
-                                        <div className="flex items-center space-x-2">
-                                            <User size={16} className="text-neutral-400" />
-                                            <span>{task.assignedTo.name}</span>
+                            <option value="">Todos los estados</option>
+                            <option value="PENDING">Pendiente</option>
+                            <option value="IN_PROGRESS">En Progreso</option>
+                            <option value="COMPLETED">Completada</option>
+                            <option value="CANCELLED">Cancelada</option>
+                        </select>
+                        <select
+                            value={filters.priority}
+                            onChange={(e) => setFilters({ ...filters, priority: e.target.value })}
+                            className="px-4 py-2.5 bg-neutral-50 border border-neutral-200 rounded-xl focus:ring-4 focus:ring-olive-500/10 focus:border-olive-500 outline-none"
+                        >
+                            <option value="">Todas las prioridades</option>
+                            <option value="URGENT">Urgente</option>
+                            <option value="HIGH">Alta</option>
+                            <option value="MEDIUM">Media</option>
+                            <option value="LOW">Baja</option>
+                        </select>
+                        <select
+                            value={filters.assignedToId}
+                            onChange={(e) => setFilters({ ...filters, assignedToId: e.target.value })}
+                            className="px-4 py-2.5 bg-neutral-50 border border-neutral-200 rounded-xl focus:ring-4 focus:ring-olive-500/10 focus:border-olive-500 outline-none"
+                        >
+                            <option value="">Todos los usuarios</option>
+                            {users.map(u => (
+                                <option key={u.id} value={u.id}>{u.name}</option>
+                            ))}
+                        </select>
+                    </div>
+                </div>
+            )}
+
+            {/* Content - Switch between views */}
+            {loading ? (
+                <div className="text-center py-20">
+                    <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-olive-600 border-t-transparent"></div>
+                    <p className="mt-4 text-neutral-500 font-medium">Cargando tareas...</p>
+                </div>
+            ) : (
+                <AnimatePresence mode="wait">
+                    {viewMode === 'list' && (
+                        <motion.div
+                            key="list"
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -20 }}
+                            transition={{ duration: 0.2 }}
+                            className="space-y-4"
+                        >
+                            {tasks.length === 0 ? (
+                                <div className="bg-neutral-50 rounded-3xl p-20 text-center border-2 border-dashed border-neutral-200">
+                                    <CheckSquare size={64} className="mx-auto text-neutral-200 mb-4" />
+                                    <h3 className="text-xl font-bold text-neutral-400 mb-2">Sin tareas</h3>
+                                    <p className="text-neutral-400">Crea la primera tarea para empezar</p>
+                                </div>
+                            ) : (
+                                tasks.map((task) => (
+                                    <motion.div
+                                        key={task.id}
+                                        initial={{ opacity: 0, y: 10 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        className="bg-white rounded-2xl p-6 border border-neutral-200 shadow-sm hover:shadow-md transition-all"
+                                    >
+                                        <div className="flex items-start justify-between">
+                                            <div className="flex-1">
+                                                <div className="flex items-center space-x-3 mb-3">
+                                                    <h3 className="text-lg font-bold text-neutral-900">{task.title}</h3>
+                                                    <span className={`px-3 py-1 rounded-full text-xs font-bold border ${getPriorityColor(task.priority)}`}>
+                                                        {task.priority}
+                                                    </span>
+                                                    <span className={`px-3 py-1 rounded-full text-xs font-bold ${getStatusColor(task.status)}`}>
+                                                        {task.status}
+                                                    </span>
+                                                </div>
+                                                {task.description && (
+                                                    <p className="text-neutral-600 mb-4">{task.description}</p>
+                                                )}
+                                                <div className="flex flex-wrap items-center gap-4 text-sm text-neutral-500">
+                                                    <div className="flex items-center space-x-2">
+                                                        <User size={16} className="text-neutral-400" />
+                                                        <span>{task.assignedTo.name}</span>
+                                                    </div>
+                                                    {task.project && (
+                                                        <div className="flex items-center space-x-2">
+                                                            <Flag size={16} className="text-neutral-400" />
+                                                            <span>{task.project.code}</span>
+                                                        </div>
+                                                    )}
+                                                    {task.dueDate && (
+                                                        <div className="flex items-center space-x-2">
+                                                            <Calendar size={16} className="text-neutral-400" />
+                                                            <span>{new Date(task.dueDate).toLocaleDateString()}</span>
+                                                        </div>
+                                                    )}
+                                                    {task.comments.length > 0 && (
+                                                        <div className="flex items-center space-x-2">
+                                                            <MessageSquare size={16} className="text-neutral-400" />
+                                                            <span>{task.comments.length} comentarios</span>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                            <div className="flex items-center space-x-2 ml-4">
+                                                {task.status !== 'COMPLETED' && (
+                                                    <button
+                                                        onClick={() => handleUpdateStatus(task.id, task.status === 'PENDING' ? 'IN_PROGRESS' : 'COMPLETED')}
+                                                        className="p-2 text-success-600 hover:bg-success-50 rounded-lg transition-all"
+                                                        title={task.status === 'PENDING' ? 'Iniciar' : 'Completar'}
+                                                    >
+                                                        <CheckSquare size={20} />
+                                                    </button>
+                                                )}
+                                                <Link
+                                                    href={`/tasks/${task.id}`}
+                                                    className="p-2 text-neutral-600 hover:bg-neutral-50 rounded-lg transition-all"
+                                                    title="Ver detalles"
+                                                >
+                                                    <Edit2 size={20} />
+                                                </Link>
+                                                <button
+                                                    onClick={() => handleDeleteTask(task.id)}
+                                                    className="p-2 text-error-600 hover:bg-error-50 rounded-lg transition-all"
+                                                    title="Eliminar"
+                                                >
+                                                    <Trash2 size={20} />
+                                                </button>
+                                            </div>
                                         </div>
-                                        {task.project && (
-                                            <div className="flex items-center space-x-2">
-                                                <Flag size={16} className="text-neutral-400" />
-                                                <span>{task.project.code}</span>
-                                            </div>
-                                        )}
-                                        {task.dueDate && (
-                                            <div className="flex items-center space-x-2">
-                                                <Calendar size={16} className="text-neutral-400" />
-                                                <span>{new Date(task.dueDate).toLocaleDateString()}</span>
-                                            </div>
-                                        )}
-                                        {task.comments.length > 0 && (
-                                            <div className="flex items-center space-x-2">
-                                                <MessageSquare size={16} className="text-neutral-400" />
-                                                <span>{task.comments.length} comentarios</span>
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-                                <div className="flex items-center space-x-2 ml-4">
-                                    {task.status !== 'COMPLETED' && (
-                                        <button
-                                            onClick={() => handleUpdateStatus(task.id, task.status === 'PENDING' ? 'IN_PROGRESS' : 'COMPLETED')}
-                                            className="p-2 text-success-600 hover:bg-success-50 rounded-lg transition-all"
-                                            title={task.status === 'PENDING' ? 'Iniciar' : 'Completar'}
-                                        >
-                                            <CheckSquare size={20} />
-                                        </button>
-                                    )}
-                                    <Link
-                                        href={`/tasks/${task.id}`}
-                                        className="p-2 text-neutral-600 hover:bg-neutral-50 rounded-lg transition-all"
-                                        title="Ver detalles"
-                                    >
-                                        <Edit2 size={20} />
-                                    </Link>
-                                    <button
-                                        onClick={() => handleDeleteTask(task.id)}
-                                        className="p-2 text-error-600 hover:bg-error-50 rounded-lg transition-all"
-                                        title="Eliminar"
-                                    >
-                                        <Trash2 size={20} />
-                                    </button>
-                                </div>
-                            </div>
+                                    </motion.div>
+                                ))
+                            )}
                         </motion.div>
-                    ))
-                )}
-            </div>
+                    )}
+
+                    {viewMode === 'kanban' && (
+                        <motion.div
+                            key="kanban"
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -20 }}
+                            transition={{ duration: 0.2 }}
+                        >
+                            <KanbanBoard
+                                initialTasks={tasks}
+                                onUpdateStatus={handleUpdateStatus}
+                                onDelete={handleDeleteTask}
+                            />
+                        </motion.div>
+                    )}
+
+                    {viewMode === 'calendar' && (
+                        <motion.div
+                            key="calendar"
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -20 }}
+                            transition={{ duration: 0.2 }}
+                        >
+                            <CalendarView tasks={tasks} />
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+            )}
 
             {/* Create Modal */}
             <AnimatePresence>

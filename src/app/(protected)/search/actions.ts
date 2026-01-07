@@ -24,7 +24,6 @@ export async function globalSearch(query: string) {
                 OR: [
                     { name: { contains: query, mode: 'insensitive' } },
                     { email: { contains: query, mode: 'insensitive' } },
-                    { department: { contains: query, mode: 'insensitive' } },
                 ],
             },
             select: {

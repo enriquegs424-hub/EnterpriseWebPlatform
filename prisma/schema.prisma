@@ -23,6 +23,10 @@ model User {
   createdTasks      Task[]         @relation("CreatedTasks")
   notifications     Notification[]
   taskComments      TaskComment[]
+  uploadedDocuments Document[]     @relation("UploadedDocuments")
+  documentVersions  DocumentVersion[]
+  createdFolders    Folder[]
+  documentShares    DocumentShare[]
 }
 
 model Project {
@@ -36,6 +40,8 @@ model Project {
   client      Client?     @relation(fields: [clientId], references: [id])
   timeEntries TimeEntry[]
   tasks       Task[]
+  documents   Document[]
+  folders     Folder[]
 
   @@index([clientId])
 }
@@ -125,6 +131,88 @@ model Notification {
   @@index([createdAt])
 }
 
+model Document {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  fileName    String
+  fileSize    Int
+  fileType    String
+  filePath    String
+  version     Int      @default(1)
+  projectId   String?
+  folderId    String?
+  uploadedById String
+  isPublic    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  project     Project?  @relation(fields: [projectId], references: [id])
+  folder      Folder?   @relation(fields: [folderId], references: [id])
+  uploadedBy  User      @relation("UploadedDocuments", fields: [uploadedById], references: [id])
+  versions    DocumentVersion[]
+  shares      DocumentShare[]
+  
+  @@index([projectId])
+  @@index([folderId])
+  @@index([uploadedById])
+  @@index([createdAt])
+}
+
+model DocumentVersion {
+  id          String   @id @default(cuid())
+  documentId  String
+  version     Int
+  fileName    String
+  filePath    String
+  fileSize    Int
+  uploadedById String
+  changes     String?
+  createdAt   DateTime @default(now())
+  
+  document    Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  uploadedBy  User     @relation(fields: [uploadedById], references: [id])
+  
+  @@index([documentId])
+  @@index([createdAt])
+}
+
+model Folder {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  projectId   String?
+  parentId    String?
+  createdById String
+  createdAt   DateTime @default(now())
+  
+  project     Project?  @relation(fields: [projectId], references: [id])
+  parent      Folder?   @relation("FolderHierarchy", fields: [parentId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  children    Folder[]  @relation("FolderHierarchy")
+  createdBy   User      @relation(fields: [createdById], references: [id])
+  documents   Document[]
+  
+  @@index([projectId])
+  @@index([parentId])
+  @@index([createdById])
+}
+
+model DocumentShare {
+  id              String   @id @default(cuid())
+  documentId      String
+  sharedWithId    String?
+  sharedWithEmail String?
+  accessLevel     AccessLevel @default(VIEW)
+  expiresAt       DateTime?
+  createdAt       DateTime @default(now())
+  
+  document    Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  sharedWith  User?    @relation(fields: [sharedWithId], references: [id])
+  
+  @@index([documentId])
+  @@index([sharedWithId])
+}
+
 enum Role {
   ADMIN
   WORKER
@@ -168,4 +256,10 @@ enum NotificationType {
   HOURS_APPROVED
   PROJECT_ASSIGNED
   SYSTEM
+}
+
+enum AccessLevel {
+  VIEW
+  DOWNLOAD
+  EDIT
 }

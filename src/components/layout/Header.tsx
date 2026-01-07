@@ -7,6 +7,13 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { getMyNotifications, markNotificationAsRead, markAllNotificationsAsRead, getUnreadCount } from '@/app/(protected)/notifications/actions';
 import Link from 'next/link';
+import dynamic from 'next/dynamic';
+
+// Lazy load Timer to avoid SSR issues
+const TimerWrapper = dynamic(() => import('@/components/hours/TimerWrapper'), {
+    ssr: false,
+    loading: () => <div className="w-32 h-10 bg-neutral-100 rounded-lg animate-pulse"></div>
+});
 
 export default function Header() {
     const [searchQuery, setSearchQuery] = useState('');
@@ -75,7 +82,7 @@ export default function Header() {
                         type="text"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        placeholder="🔍 Buscar proyectos, usuarios, clientes..."
+                        placeholder="Buscar proyectos, usuarios, clientes..."
                         className="w-full pl-10 pr-10 py-2.5 border border-neutral-200 rounded-full text-sm focus:outline-none focus:ring-4 focus:ring-olive-500/10 focus:border-olive-500 bg-neutral-50 hover:bg-white transition-all placeholder:text-neutral-400"
                     />
                     {searchQuery && (
@@ -92,6 +99,11 @@ export default function Header() {
             </div>
 
             <div className="flex items-center space-x-4 ml-6">
+                {/* Timer - Lazy loaded to avoid SSR issues */}
+                <div className="hidden md:block">
+                    <TimerWrapper />
+                </div>
+
                 {/* Notifications */}
                 <div className="relative">
                     <button
