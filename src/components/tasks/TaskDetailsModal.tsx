@@ -70,7 +70,7 @@ export default function TaskDetailsModal({ task, isOpen, onClose, onUpdate }: Ta
                 description,
                 status: status as any,
                 priority: priority as any,
-                dueDate: dueDate ? new Date(dueDate) : undefined
+                dueDate: dueDate || undefined
             });
             setIsEditing(false);
             if (onUpdate) onUpdate();

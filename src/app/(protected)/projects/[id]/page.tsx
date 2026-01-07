@@ -7,11 +7,13 @@ import {
     TrendingUp, Users, ArrowRight, MoreVertical, AlertCircle
 } from 'lucide-react';
 import { format } from 'date-fns';
-import { es } from 'date-fns/locale';
 import { getProjectDetails, getProjectStats, getProjectTeam } from './actions';
 import Link from 'next/link';
 
+import { useAppLocale } from '@/providers/LocaleContext';
+
 export default function ProjectDetailsPage({ params }: { params: { id: string } }) {
+    const { locale } = useAppLocale();
     const [project, setProject] = useState<any>(null);
     const [stats, setStats] = useState<any>(null);
     const [team, setTeam] = useState<any[]>([]);
@@ -118,7 +120,7 @@ export default function ProjectDetailsPage({ params }: { params: { id: string } 
                                             <h3 className="font-bold text-neutral-800">{task.title}</h3>
                                             <div className="flex items-center text-xs text-neutral-500 mt-1">
                                                 {task.assignedTo && <span className="mr-3 flex items-center"><Users size={12} className="mr-1" /> {task.assignedTo.name}</span>}
-                                                {task.dueDate && <span className="flex items-center"><Calendar size={12} className="mr-1" /> {format(new Date(task.dueDate), 'd MMM', { locale: es })}</span>}
+                                                {task.dueDate && <span className="flex items-center"><Calendar size={12} className="mr-1" /> {format(new Date(task.dueDate), 'd MMM', { locale })}</span>}
                                             </div>
                                         </div>
                                         <div className="text-xs font-bold px-2 py-1 rounded-md bg-neutral-100 text-neutral-600 uppercase">
@@ -157,7 +159,7 @@ export default function ProjectDetailsPage({ params }: { params: { id: string } 
                                         <div className="overflow-hidden">
                                             <h3 className="font-bold text-neutral-800 text-sm truncate">{doc.name}</h3>
                                             <p className="text-xs text-neutral-500 mt-0.5">
-                                                {format(new Date(doc.createdAt), 'd MMM yyyy', { locale: es })}
+                                                {format(new Date(doc.createdAt), 'd MMM yyyy', { locale })}
                                             </p>
                                         </div>
                                     </div>
@@ -209,7 +211,7 @@ export default function ProjectDetailsPage({ params }: { params: { id: string } 
                                     <div key={event.id} className="flex space-x-3 border-l-2 border-olive-500 pl-3 py-1">
                                         <div className="flex flex-col text-center min-w-[3rem]">
                                             <span className="text-xs font-bold text-neutral-400 uppercase">
-                                                {format(new Date(event.startDate), 'MMM', { locale: es })}
+                                                {format(new Date(event.startDate), 'MMM', { locale })}
                                             </span>
                                             <span className="text-xl font-black text-neutral-900">
                                                 {format(new Date(event.startDate), 'd')}
@@ -260,3 +262,4 @@ export default function ProjectDetailsPage({ params }: { params: { id: string } 
         </div>
     );
 }
+

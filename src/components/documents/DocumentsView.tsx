@@ -10,6 +10,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import { format } from 'date-fns';
+import ImagePreviewModal from './ImagePreviewModal';
 
 type ViewMode = 'grid' | 'list';
 
@@ -27,6 +28,9 @@ export default function DocumentsView({ projectId }: DocumentsViewProps) {
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedFolder, setSelectedFolder] = useState<string | null>(null);
     const [showUploadModal, setShowUploadModal] = useState(false);
+    const [filterType, setFilterType] = useState<string>('all');
+    const [previewDoc, setPreviewDoc] = useState<any | null>(null);
+    const [isFilterOpen, setIsFilterOpen] = useState(false);
 
     const handleFileUpload = async (file: File) => {
         setUploading(true);
@@ -78,7 +82,11 @@ export default function DocumentsView({ projectId }: DocumentsViewProps) {
     };
 
     const handleView = (doc: any) => {
-        alert(`Visualizando ${doc.name}... (Simulación)\nAbriría un visor para el tipo: ${doc.fileType}`);
+        if (doc.fileType.includes('image')) {
+            setPreviewDoc(doc);
+        } else {
+            alert(`Visualizando ${doc.name}... (Simulación)\nAbriría un visor para el tipo: ${doc.fileType}`);
+        }
     };
 
     const handleShare = (doc: any) => {
@@ -109,10 +117,20 @@ export default function DocumentsView({ projectId }: DocumentsViewProps) {
         return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
     };
 
-    const filteredDocuments = documents.filter(doc =>
-        doc.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        doc.description?.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    const filteredDocuments = documents.filter(doc => {
+        const matchesSearch = doc.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            doc.description?.toLowerCase().includes(searchQuery.toLowerCase());
+
+        if (!matchesSearch) return false;
+
+        if (filterType === 'all') return true;
+        if (filterType === 'pdf') return doc.fileType.includes('pdf');
+        if (filterType === 'image') return doc.fileType.includes('image');
+        if (filterType === 'spreadsheet') return doc.fileType.includes('sheet') || doc.fileType.includes('excel');
+        if (filterType === 'other') return !doc.fileType.includes('pdf') && !doc.fileType.includes('image') && !doc.fileType.includes('sheet') && !doc.fileType.includes('excel');
+
+        return true;
+    });
 
     return (
         <div className="space-y-6">
@@ -196,10 +214,50 @@ export default function DocumentsView({ projectId }: DocumentsViewProps) {
                             className="w-full pl-12 pr-4 py-3 bg-neutral-50 border border-neutral-200 rounded-xl focus:ring-4 focus:ring-olive-500/10 focus:border-olive-500 outline-none"
                         />
                     </div>
-                    <button className="flex items-center space-x-2 px-6 py-3 border border-neutral-200 rounded-xl hover:bg-neutral-50 transition-all">
-                        <Filter size={20} />
-                        <span className="font-bold">Filtros</span>
-                    </button>
+                    <div className="relative">
+                        <button
+                            onClick={() => setIsFilterOpen(!isFilterOpen)}
+                            className={`flex items-center space-x-2 px-6 py-3 border rounded-xl transition-all ${filterType !== 'all' ? 'bg-olive-50 border-olive-200 text-olive-800' : 'border-neutral-200 hover:bg-neutral-50'}`}
+                        >
+                            <Filter size={20} />
+                            <span className="font-bold">
+                                {filterType === 'all' ? 'Todos' :
+                                    filterType === 'pdf' ? 'PDFs' :
+                                        filterType === 'image' ? 'Imágenes' :
+                                            filterType === 'spreadsheet' ? 'Excel' : 'Otros'}
+                            </span>
+                        </button>
+
+                        <AnimatePresence>
+                            {isFilterOpen && (
+                                <motion.div
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: 10 }}
+                                    className="absolute right-0 top-full mt-2 w-48 bg-white rounded-xl shadow-xl border border-neutral-100 z-20 overflow-hidden"
+                                >
+                                    {[
+                                        { id: 'all', label: 'Todos' },
+                                        { id: 'pdf', label: 'PDFs' },
+                                        { id: 'image', label: 'Imágenes' },
+                                        { id: 'spreadsheet', label: 'Hojas de Cálculo' },
+                                        { id: 'other', label: 'Otros' }
+                                    ].map((type) => (
+                                        <button
+                                            key={type.id}
+                                            onClick={() => {
+                                                setFilterType(type.id);
+                                                setIsFilterOpen(false);
+                                            }}
+                                            className={`w-full text-left px-4 py-3 hover:bg-neutral-50 text-sm font-medium transition-colors ${filterType === type.id ? 'text-olive-600 bg-olive-50' : 'text-neutral-600'}`}
+                                        >
+                                            {type.label}
+                                        </button>
+                                    ))}
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+                    </div>
                     {projectId && (
                         <div className="px-4 py-2 bg-olive-100 text-olive-800 rounded-xl font-bold text-sm">
                             Proyecto Activo
@@ -414,6 +472,13 @@ export default function DocumentsView({ projectId }: DocumentsViewProps) {
                     </div>
                 </div>
             )}
+            {/* Image Preview Modal */}
+            <ImagePreviewModal
+                isOpen={!!previewDoc}
+                onClose={() => setPreviewDoc(null)}
+                imageUrl={previewDoc?.fileUrl || ''}
+                title={previewDoc?.name || ''}
+            />
         </div>
     );
 }

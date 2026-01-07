@@ -66,7 +66,7 @@ El trabajador tiene en una sola pantalla:
 ## 🚀 ROADMAP: PRÓXIMOS PASOS (Fase 2)
 
 ### **⏳ MÓDULO 7: COMUNICACIÓN (Alta Prioridad)**
-**Objetivo**: Eliminar el email interno y WhatsApp.
+**Objetivo**: Eliminar el email interno.
 - [ ] **Chat de Proyecto**: Canales temáticos por obra.
 - [ ] **Menciones**: Sistema @usuario para alertas directas.
 - [ ] **Videoconferencia**: Integración ligera para reuniones rápidas.

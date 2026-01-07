@@ -15,7 +15,11 @@ const TimerWrapper = dynamic(() => import('@/components/hours/TimerWrapper'), {
     loading: () => <div className="w-32 h-10 bg-neutral-100 rounded-lg animate-pulse"></div>
 });
 
+
+import CommandPalette from './CommandPalette';
+
 export default function Header() {
+    const [isCommandOpen, setIsCommandOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [showNotifications, setShowNotifications] = useState(false);
     const [notifications, setNotifications] = useState<any[]>([]);
@@ -26,7 +30,19 @@ export default function Header() {
         loadNotifications();
         // Actualizar cada 30 segundos
         const interval = setInterval(loadNotifications, 30000);
-        return () => clearInterval(interval);
+
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === 'k' && (e.metaKey || e.ctrlKey)) {
+                e.preventDefault();
+                setIsCommandOpen(true);
+            }
+        };
+        window.addEventListener('keydown', handleKeyDown);
+
+        return () => {
+            clearInterval(interval);
+            window.removeEventListener('keydown', handleKeyDown);
+        };
     }, []);
 
     const loadNotifications = async () => {
@@ -38,11 +54,8 @@ export default function Header() {
         setUnreadCount(count);
     };
 
-    const handleSearch = (e: React.FormEvent) => {
-        e.preventDefault();
-        if (searchQuery.trim()) {
-            router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
-        }
+    const handleSearchClick = () => {
+        setIsCommandOpen(true);
     };
 
     const handleNotificationClick = async (notification: any) => {
@@ -75,27 +88,16 @@ export default function Header() {
 
     return (
         <header className="h-16 bg-white border-b border-neutral-200 flex items-center justify-between px-6 sticky top-0 z-20 shadow-sm">
+            <CommandPalette isOpen={isCommandOpen} onClose={() => setIsCommandOpen(false)} />
+
             <div className="flex-1 max-w-md">
-                <form onSubmit={handleSearch} className="relative group">
+                <div onClick={handleSearchClick} className="relative group cursor-pointer">
                     <Search className="w-5 h-5 text-neutral-400 group-focus-within:text-olive-600 absolute left-3 top-1/2 transform -translate-y-1/2 pointer-events-none transition-colors" />
-                    <input
-                        type="text"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        placeholder="Buscar proyectos, usuarios, clientes..."
-                        className="w-full pl-10 pr-10 py-2.5 border border-neutral-200 rounded-full text-sm focus:outline-none focus:ring-4 focus:ring-olive-500/10 focus:border-olive-500 bg-neutral-50 hover:bg-white transition-all placeholder:text-neutral-400"
-                    />
-                    {searchQuery && (
-                        <button
-                            type="button"
-                            onClick={() => setSearchQuery('')}
-                            className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600 hover:bg-neutral-100 rounded-full p-1 transition-all"
-                            title="Limpiar búsqueda"
-                        >
-                            <X size={16} />
-                        </button>
-                    )}
-                </form>
+                    <div className="w-full pl-10 pr-10 py-2.5 border border-neutral-200 rounded-full text-sm bg-neutral-50 hover:bg-white transition-all text-neutral-400 flex items-center justify-between">
+                        <span>Buscar (Ctrl + K)</span>
+                        <kbd className="hidden sm:inline-block border border-neutral-200 rounded px-1 text-xs font-sans">⌘K</kbd>
+                    </div>
+                </div>
             </div>
 
             <div className="flex items-center space-x-4 ml-6">
@@ -205,3 +207,4 @@ export default function Header() {
         </header>
     );
 }
+

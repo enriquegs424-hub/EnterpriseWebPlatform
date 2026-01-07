@@ -4,16 +4,18 @@ import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Clock, MapPin, Users, Plus } from 'lucide-react';
 import { format, addMonths, subMonths, addWeeks, subWeeks, addDays, subDays, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, isToday, startOfWeek, endOfWeek } from 'date-fns';
-import { es } from 'date-fns/locale';
 import { getEvents } from '@/app/(protected)/calendar/actions';
 import CreateEventModal from '@/components/calendar/CreateEventModal';
 import EventDetailsModal from '@/components/calendar/EventDetailsModal';
+
+import { useAppLocale } from '@/providers/LocaleContext';
 
 interface EventsViewProps {
     projectId?: string;
 }
 
 export default function EventsView({ projectId }: EventsViewProps) {
+    const { locale } = useAppLocale();
     const [currentDate, setCurrentDate] = useState(new Date());
     const [view, setView] = useState<'month' | 'week' | 'day'>('month');
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -198,7 +200,7 @@ export default function EventsView({ projectId }: EventsViewProps) {
             <div className="flex items-center justify-between bg-white p-4 rounded-2xl shadow-sm border border-neutral-200">
                 <div className="flex items-center space-x-4">
                     <h2 className="text-xl font-bold text-neutral-900 capitalize min-w-[200px] flex items-center">
-                        {format(currentDate, 'MMMM yyyy', { locale: es })}
+                        {format(currentDate, 'MMMM yyyy', { locale })}
                         {loading && <div className="ml-3 w-4 h-4 border-2 border-olive-600 border-t-transparent rounded-full animate-spin"></div>}
                     </h2>
                     <div className="flex items-center space-x-1">
@@ -292,7 +294,7 @@ export default function EventsView({ projectId }: EventsViewProps) {
                                 end: endOfWeek(currentDate, { weekStartsOn: 1 })
                             }).map(day => (
                                 <div key={day.toString()} className={`py-3 text-center border-r border-neutral-100 ${isToday(day) ? 'bg-olive-50/50' : ''}`}>
-                                    <div className="text-sm font-bold text-neutral-600">{format(day, 'EEE', { locale: es })}</div>
+                                    <div className="text-sm font-bold text-neutral-600">{format(day, 'EEE', { locale })}</div>
                                     <div className={`text-xl font-black ${isToday(day) ? 'text-olive-600' : 'text-neutral-800'}`}>
                                         {format(day, 'd')}
                                     </div>
@@ -348,7 +350,7 @@ export default function EventsView({ projectId }: EventsViewProps) {
                 {view === 'day' && (
                     <div className="flex-1 flex flex-col overflow-hidden">
                         <div className="p-4 border-b border-neutral-200 bg-neutral-50 text-center flex-shrink-0">
-                            <div className="text-sm font-bold text-neutral-600">{format(currentDate, 'EEEE', { locale: es })}</div>
+                            <div className="text-sm font-bold text-neutral-600">{format(currentDate, 'EEEE', { locale })}</div>
                             <div className={`text-3xl font-black ${isToday(currentDate) ? 'text-olive-600' : 'text-neutral-800'}`}>
                                 {format(currentDate, 'd')}
                             </div>
@@ -408,3 +410,4 @@ export default function EventsView({ projectId }: EventsViewProps) {
         </div>
     );
 }
+

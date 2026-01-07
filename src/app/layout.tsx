@@ -12,18 +12,28 @@ export const metadata: Metadata = {
   description: "Sistema avanzado de control de tiempos y gestión de proyectos",
 };
 
-export default function RootLayout({
+import { auth } from "@/auth";
+import { LocaleProvider } from "@/providers/LocaleContext";
+
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const session = await auth();
+  const preferences = (session?.user as any)?.preferences as any;
+  const language = preferences?.language || 'es';
+  const timezone = preferences?.timezone || 'Europe/Madrid';
+
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang={language} suppressHydrationWarning>
       <body
         suppressHydrationWarning
         className={`${inter.variable} font-sans antialiased bg-neutral-50 text-neutral-900`}
       >
-        {children}
+        <LocaleProvider initialLocale={language} initialTimeZone={timezone}>
+          {children}
+        </LocaleProvider>
       </body>
     </html>
   );

@@ -3,8 +3,12 @@ import HoursWidget from "@/components/dashboard/HoursWidget";
 import TasksWidget from "@/components/dashboard/TasksWidget";
 import QuickActions from "@/components/dashboard/QuickActions";
 import { Clock, TrendingUp, AlertCircle, Target, Calendar, Award, BarChart3 } from "lucide-react";
+import { auth } from "@/auth";
 
 export default async function DashboardPage() {
+    const session = await auth();
+    const language = (session?.user as any)?.preferences?.language || 'es-ES';
+
     const [stats, pendingTasks] = await Promise.all([
         getDashboardStats(),
         getMyPendingTasks()
@@ -106,7 +110,7 @@ export default async function DashboardPage() {
                                 <div className="flex items-center space-x-4">
                                     <div className="flex flex-col items-center justify-center w-12 h-12 bg-white rounded-lg border border-neutral-200">
                                         <span className="text-xs font-bold text-neutral-500">
-                                            {new Date(entry.date).toLocaleDateString('es-ES', { month: 'short' })}
+                                            {new Date(entry.date).toLocaleDateString(language, { month: 'short' })}
                                         </span>
                                         <span className="text-lg font-black text-neutral-900">
                                             {new Date(entry.date).getDate()}

@@ -9,7 +9,7 @@ export async function globalSearch(query: string) {
 
     if (!query || query.length < 2) return { results: [] };
 
-    const [projects, users, clients] = await Promise.all([
+    const [projects, tasks, documents] = await Promise.all([
         prisma.project.findMany({
             where: {
                 OR: [
@@ -17,40 +17,32 @@ export async function globalSearch(query: string) {
                     { code: { contains: query, mode: 'insensitive' } },
                 ],
             },
-            take: 10,
+            take: 5,
         }),
-        prisma.user.findMany({
+        prisma.task.findMany({
             where: {
                 OR: [
-                    { name: { contains: query, mode: 'insensitive' } },
-                    { email: { contains: query, mode: 'insensitive' } },
-                ],
+                    { title: { contains: query, mode: 'insensitive' } },
+                    { description: { contains: query, mode: 'insensitive' } },
+                ]
             },
-            select: {
-                id: true,
-                name: true,
-                email: true,
-                role: true,
-                department: true,
-            },
-            take: 10,
+            take: 5,
+            include: { project: true }
         }),
-        prisma.client.findMany({
+        prisma.document.findMany({
             where: {
-                OR: [
-                    { name: { contains: query, mode: 'insensitive' } },
-                    { company: { contains: query, mode: 'insensitive' } },
-                ],
+                name: { contains: query, mode: 'insensitive' }
             },
-            take: 10,
-        }),
+            take: 5,
+            include: { project: true }
+        })
     ]);
 
     return {
         results: [
-            ...projects.map((p: any) => ({ id: p.id, type: 'PROYECTO', title: p.name, subtitle: p.code, link: `/admin/projects` })),
-            ...users.map((u: any) => ({ id: u.id, type: 'USUARIO', title: u.name, subtitle: `${u.role} - ${u.department}`, link: `/admin/users` })),
-            ...clients.map((c: any) => ({ id: c.id, type: 'CLIENTE', title: c.name, subtitle: c.company || '—', link: `/admin/clients` })),
+            ...projects.map((p: any) => ({ id: p.id, type: 'PROYECTO', title: p.name, subtitle: p.code, link: `/projects/${p.id}` })),
+            ...tasks.map((t: any) => ({ id: t.id, type: 'TAREA', title: t.title, subtitle: t.project.name, link: `/projects/${t.projectId}/tasks` })),
+            ...documents.map((d: any) => ({ id: d.id, type: 'DOCUMENTO', title: d.name, subtitle: d.project?.name || 'General', link: d.project ? `/projects/${d.projectId}/documents` : '/documents' })),
         ]
     };
 }

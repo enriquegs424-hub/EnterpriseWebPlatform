@@ -51,10 +51,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     },
     callbacks: {
         ...authConfig.callbacks,
-        async jwt({ token, user }) {
+        async jwt({ token, user, trigger, session }) {
             if (user && user.id) {
                 token.id = user.id;
                 token.role = user.role;
+                token.preferences = (user as any).preferences;
+            }
+            if (trigger === "update" && session) {
+                token.preferences = session.user.preferences;
             }
             return token;
         },
@@ -62,6 +66,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             if (token && session.user) {
                 session.user.id = token.id;
                 session.user.role = token.role;
+                (session.user as any).preferences = token.preferences;
             }
             return session;
         },
