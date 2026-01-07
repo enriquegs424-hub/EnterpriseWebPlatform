@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MEP-Projects - Premium Business Suite</title>
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  
+  <!-- Icons -->
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+  
+  <!-- Styles -->
+  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/modules.css"> 
+  <link rel="stylesheet" href="css/support.css">
+  <link rel="stylesheet" href="css/visual_improvements.css">
+  <link rel="stylesheet" href="css/responsive.css">
+  <link rel="stylesheet" href="css/dark_mode.css">
+  <link rel="stylesheet" href="css/hover-effects.css">
+  <link rel="stylesheet" href="css/users-module.css">
+  
+   <link rel="stylesheet" href="css/components/buttons.css">
+   <link rel="stylesheet" href="css/components/cards.css">
+<link rel="stylesheet" href="css/components/forms.css">
+<link rel="stylesheet" href="css/components/layout.css">
+<link rel="stylesheet" href="css/components/modals.css">
+<link rel="stylesheet" href="css/components/navigation.css">
+
+    <link rel="stylesheet" href="css/core/typography.css">
+    <link rel="stylesheet" href="css/core/variable.css">
+    <link rel="stylesheet" href="css/core/utilities.css">
+   <link rel="stylesheet" href="css/modules/dashboard.css">
+  <link rel="stylesheet" href="css/modules/projects.css">
+  <link rel="stylesheet" href="css/main.css">
+
+</head>
+
+
+<body data-theme="light">
+  <div class="app-container">
+    
+    <!-- SIDEBAR -->
+    <aside class="sidebar" id="sidebar">
+      
+      <!-- Logo Header -->
+      <div class="sidebar-header">
+        <a href="#dashboard" class="sidebar-logo">
+          <div class="sidebar-logo-icon">
+                  <img src="css/M_max.png" alt="Logo" class="sidebar-logo-icon-img">
+          </div>
+          <span class="sidebar-logo-text">MEP-Projects</span>
+        </a>
+      </div>
+      
+      <!-- Navigation -->
+      <nav class="sidebar-nav">
+        
+        <!-- Principal -->
+        <div class="sidebar-section">
+          <div class="sidebar-section-title">Principal</div>
+          
+          <a href="#dashboard" data-module="dashboard" class="sidebar-nav-item">
+            <i data-lucide="layout-dashboard" class="sidebar-nav-icon"></i>
+            <span class="sidebar-nav-text">Inicio</span>
+          </a>
+          
+          <a href="#projects" data-module="projects" class="sidebar-nav-item">
+            <i data-lucide="briefcase" class="sidebar-nav-icon"></i>
+            <span class="sidebar-nav-text">Proyectos</span>
+            <span class="sidebar-nav-badge">5</span>
+          </a>
+          
+          <a href="#tasks" data-module="tasks" class="sidebar-nav-item">
+            <i data-lucide="check-square" class="sidebar-nav-icon"></i>
+            <span class="sidebar-nav-text">Tareas</span>
+            <span class="sidebar-nav-badge">12</span>
+          </a>
+          
+          <a href="#chat" data-module="chat" class="sidebar-nav-item">
+            <i data-lucide="message-circle" class="sidebar-nav-icon"></i>
+            <span class="sidebar-nav-text">Chat</span>
+            <span class="sidebar-nav-badge">3</span>
+          </a>
+        </div>
+        
+        <!-- Módulos de Negocio -->
+        <div class="sidebar-section">
+          <div class="sidebar-section-title">Módulos</div>
+          
+          <a href="#crm" data-module="crm" class="sidebar-nav-item">
+            <i data-lucide="users" class="sidebar-nav-icon"></i>
+            <span class="sidebar-nav-text">CRM</span>
+          </a>
+          
+          <a href="#erp" data-module="erp" class="sidebar-nav-item">
+            <i data-lucide="bar-chart-3" class="sidebar-nav-icon"></i>
+            <span class="sidebar-nav-text">ERP</span>
+          </a>
+          
+          <a href="#rrhh" data-module="rrhh" class="sidebar-nav-item">
+            <i data-lucide="user-check" class="sidebar-nav-icon"></i>
+            <span class="sidebar-nav-text">RRHH</span>
+          </a>
+          
+          <a href="#inventory" data-module="inventory" class="sidebar-nav-item">
+            <i data-lucide="package" class="sidebar-nav-icon"></i>
+            <span class="sidebar-nav-text">Inventario</span>
+          </a>
+        </div>
+        
+        <!-- Administración -->
+        <div class="sidebar-section">
+          <div class="sidebar-section-title">Administración</div>
+          
+          <a href="#settings" data-module="settings" class="sidebar-nav-item">
+            <i data-lucide="settings" class="sidebar-nav-icon"></i>
+            <span class="sidebar-nav-text">Configuración</span>
+          </a>
+          
+          <a href="#users" data-module="users" class="sidebar-nav-item">
+            <i data-lucide="shield-check" class="sidebar-nav-icon"></i>
+            <span class="sidebar-nav-text">Usuarios</span>
+          </a>
+          
+          <a href="#support" data-module="support" class="sidebar-nav-item">
+            <i data-lucide="help-circle" class="sidebar-nav-icon"></i>
+            <span class="sidebar-nav-text">Soporte</span>
+          </a>
+        </div>
+        
+      </nav>
+      
+      <!-- User Profile Footer -->
+      <div class="sidebar-footer">
+        <div class="user-profile" onclick="toggleDropdown('user')">
+          <div class="user-avatar-small">
+  <img src="css\fotoEG.png" alt="Avatar" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
+</div>
+          <div class="user-info">
+            <div class="user-name">Enrique</div>
+            <div class="user-role">Administrador</div>
+          </div>
+          <button class="user-profile-menu">
+            <i data-lucide="more-horizontal"></i>
+          </button>
+        </div>
+      </div>
+      
+    </aside>
+    
+    
+    <!-- MAIN CONTENT -->
+    <main class="main-content" id="mainContent">
+      
+      <!-- HEADER -->
+      <header class="header">
+        <div class="header-left">
+          <button class="sidebar-toggle" onclick="toggleSidebar()">
+            <i data-lucide="menu"></i>
+          </button>
+          <div>
+            <h1 class="header-title" id="pageTitle">Inicio</h1>
+            <p class="header-subtitle">Bienvenido, Enrique • Martes, 02 Junio 2025</p>
+          </div>
+        </div>
+        
+        <div class="header-right">
+          
+          <!-- Search -->
+          <div class="search-container">
+            <input type="text" class="search-input" placeholder="Buscar proyectos, clientes, tareas..."   style="padding-left: 45px;">
+            <i data-lucide="search" class="search-icon"></i>
+          </div>
+          
+          <!-- Notifications -->
+          <div class="dropdown">
+            <button class="btn btn-ghost notification-trigger" onclick="toggleDropdown('notifications')">
+              <i data-lucide="bell"></i>
+              <span class="notification-badge">3</span>
+            </button>
+            <div class="dropdown-menu" id="notifications-menu">
+              <div class="dropdown-header">
+                <h3 class="dropdown-title">Notificaciones</h3>
+                <span class="badge badge-primary">3 nuevas</span>
+              </div>
+              <div class="notifications-list">
+                <div class="notification-item">
+                  <div class="notification-icon notification-icon-message">
+                    <i data-lucide="message-circle"></i>
+                  </div>
+                  <div class="notification-content">
+                    <div class="notification-title">Beatriz Tudela</div>
+                    <div class="notification-text">Nuevo comentario en proyecto MEP-2025</div>
+                    <div class="notification-time">hace 10 min</div>
+                  </div>
+                </div>
+                <div class="notification-item">
+                  <div class="notification-icon notification-icon-task">
+                    <i data-lucide="check-square"></i>
+                  </div>
+                  <div class="notification-content">
+                    <div class="notification-title">Tarea completada</div>
+                    <div class="notification-text">Carlos completó "Diseño de mockups"</div>
+                    <div class="notification-time">hace 2 horas</div>
+                  </div>
+                </div>
+                <div class="notification-item">
+                  <div class="notification-icon notification-icon-warning">
+                    <i data-lucide="alert-triangle"></i>
+                  </div>
+                  <div class="notification-content">
+                    <div class="notification-title">Fecha límite próxima</div>
+                    <div class="notification-text">Sistema ERP vence en 2 días</div>
+                    <div class="notification-time">hace 3 horas</div>
+                  </div>
+                </div>
+              </div>
+              <div class="dropdown-footer">
+                <a href="#" class="btn btn-ghost btn-full">Ver todas las notificaciones</a>
+              </div>
+            </div>
+          </div>
+          
+          <!-- User Menu -->
+          <div class="dropdown">
+            <button class="btn btn-ghost user-menu-trigger" onclick="toggleDropdown('user')">
+              <div class="user-avatar-small">
+  <img src="css\fotoEG.png" alt="Avatar" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
+</div>
+
+              <i data-lucide="chevron-down"></i>
+            </button>
+            <div class="dropdown-menu user-menu" id="user-menu">
+              <div class="dropdown-header">
+                <div class="user-menu-info">
+                  <div class="user-menu-name">Enrique</div>
+                  <div class="user-menu-email">admin@mep-projects.com</div>
+                </div>
+              </div>
+              <div class="user-menu-items">
+                <a href="#" class="user-menu-item">
+                  <i data-lucide="user"></i> Mi Perfil
+                </a>
+                <a href="#settings" data-module="settings" class="user-menu-item">
+                  <i data-lucide="settings"></i> Configuración
+                </a>
+                <a href="#" class="user-menu-item" onclick="toggleTheme()">
+                  <i data-lucide="moon" id="theme-icon-menu"></i>
+                  <span id="theme-text">Modo Oscuro</span>
+                </a>
+                <a href="#" class="user-menu-item">
+                  <i data-lucide="help-circle"></i> Ayuda
+                </a>
+                <div class="user-menu-divider"></div>
+                <a href="#" class="user-menu-item user-menu-item-danger">
+                  <i data-lucide="log-out"></i> Cerrar Sesión
+                </a>
+              </div>
+            </div>
+          </div>
+          
+        </div>
+      </header>
+      
+      <!-- PAGE CONTENT -->
+      <div class="page-content" id="pageContent">
+        <!-- Aquí se cargan los módulos dinámicamente -->
+      </div>
+      
+    </main>
+  </div>
+  
+  <!-- Scripts - ORDEN CORRECTO -->
+  <script src="js/config.js"></script>
+  <script src="js/utils.js"></script>
+  
+  <!-- Módulos -->
+  <script src="js/modules/dashboard.js"></script>
+  <script src="js/modules/projects.js"></script>
+  <script src="js/modules/tasks.js"></script>
+  <script src="js/modules/chat.js"></script>
+  <script src="js/modules/crm.js"></script>
+  <script src="js/modules/erp.js"></script>
+  <script src="js/modules/rrhh.js"></script>
+  <script src="js/modules/inventory.js"></script>
+  <script src="js/modules/settings.js"></script>
+  <script src="js/modules/support.js"></script>
+  <script src="js/modules/users.js" ></script>
+  
+  <!-- App Core -->
+  <script src="js/app.js"></script>
+  
+  <!-- Inicialización -->
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // Renderiza los iconos de Lucide
+      lucide.createIcons();
+      
+      // Inicia la app
+      if (typeof MEPApplication !== 'undefined') {
+        window.app = new MEPApplication();
+        window.app.init();
+      } else {
+        console.error('MEPApplication no está definida');
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,640 @@
+/* ===== VISUAL IMPROVEMENTS - MEP-PROJECTS ===== */
+/* Archivo: css/visual-improvements.css */
+/* Sistema global de mejoras visuales para mejor contraste y separación */
+
+/* ===== VARIABLES MEJORADAS ===== */
+
+:root {
+    /* Sombras mejoradas */
+    --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.05);
+    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
+    --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.12), 0 2px 4px rgba(0, 0, 0, 0.08);
+    --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.15), 0 4px 8px rgba(0, 0, 0, 0.1);
+    --shadow-xl: 0 12px 24px rgba(0, 0, 0, 0.18), 0 6px 12px rgba(0, 0, 0, 0.12);
+    --shadow-2xl: 0 20px 40px rgba(0, 0, 0, 0.2), 0 8px 16px rgba(0, 0, 0, 0.15);
+    
+    /* Bordes mejorados */
+    --border-width-thin: 1px;
+    --border-width-normal: 2px;
+    --border-width-thick: 3px;
+    --border-width-heavy: 4px;
+    
+    /* Transiciones suaves */
+    --transition-micro: 0.1s ease;
+    --transition-fast: 0.2s ease;
+    --transition-normal: 0.3s ease;
+    --transition-slow: 0.5s ease;
+    --transition-smooth: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    
+    /* Elevaciones */
+    --elevation-1: 2px;
+    --elevation-2: 4px;
+    --elevation-3: 6px;
+    --elevation-4: 8px;
+    --elevation-5: 12px;
+}
+
+/* Variables para modo oscuro */
+[data-theme="dark"] {
+    --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.3);
+    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.4);
+    --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.5), 0 2px 4px rgba(0, 0, 0, 0.3);
+    --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.6), 0 4px 8px rgba(0, 0, 0, 0.4);
+    --shadow-xl: 0 12px 24px rgba(0, 0, 0, 0.7), 0 6px 12px rgba(0, 0, 0, 0.5);
+    --shadow-2xl: 0 20px 40px rgba(0, 0, 0, 0.8), 0 8px 16px rgba(0, 0, 0, 0.6);
+}
+
+/* ===== SISTEMA DE CARDS MEJORADO ===== */
+
+/* Cards base con mejor contraste */
+.card,
+.stat-card,
+.project-card,
+.activity-item,
+.chat-item,
+.task-item,
+.setting-item,
+.ticket-card-enhanced,
+.quick-stat-enhanced,
+.ticket-grid-card,
+.kanban-ticket-enhanced,
+.knowledge-category-card-enhanced,
+.knowledge-article-card-enhanced,
+.agent-card-enhanced,
+.kpi-card-enhanced,
+.settings-card-enhanced,
+.widget {
+    border: var(--border-width-normal) solid var(--border-primary);
+    box-shadow: var(--shadow-sm);
+    transition: all var(--transition-smooth);
+    position: relative;
+    overflow: hidden;
+}
+
+/* Efectos de hover mejorados para cards */
+.activity-item:hover,
+.chat-item:hover,
+.task-item:hover,
+.setting-item:hover,
+.ticket-card-enhanced:hover,
+.quick-stat-enhanced:hover,
+.ticket-grid-card:hover,
+.kanban-ticket-enhanced:hover,
+.knowledge-category-card-enhanced:hover,
+.knowledge-article-card-enhanced:hover,
+.agent-card-enhanced:hover,
+.kpi-card-enhanced:hover,
+.settings-card-enhanced:hover,
+
+
+/* Cards con borde de color lateral */
+.card-with-accent,
+.ticket-card-enhanced,
+.quick-stat-enhanced,
+.stat-card {
+    border-left: var(--border-width-heavy) solid var(--mep-primary-500);
+}
+
+/* Variaciones de color para diferentes tipos */
+.card-accent-success { border-left-color: var(--mep-success-500); }
+.card-accent-warning { border-left-color: var(--mep-warning-500); }
+.card-accent-error { border-left-color: var(--mep-error-500); }
+.card-accent-info { border-left-color: var(--mep-info-500); }
+
+/* ===== SISTEMA DE CONTENEDORES ===== */
+
+/* Contenedores principales con fondo sutil */
+.main-container,
+.module-content,
+.tab-panel,
+.section-container {
+    background: linear-gradient(135deg, 
+        var(--bg-primary) 0%, 
+        rgba(16, 185, 129, 0.015) 30%,
+        var(--bg-primary) 70%,
+        rgba(16, 185, 129, 0.015) 100%);
+    border-radius: var(--radius-xl);
+    padding: var(--space-lg);
+    margin-bottom: var(--space-lg);
+}
+
+/* Secciones con separación visual clara */
+.section-enhanced {
+    background: var(--bg-primary);
+    border: var(--border-width-normal) solid var(--border-primary);
+    border-radius: var(--radius-lg);
+    padding: var(--space-xl);
+    margin-bottom: var(--space-xl);
+    box-shadow: var(--shadow-sm);
+    position: relative;
+}
+
+.section-enhanced::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: var(--border-width-thick);
+    background: linear-gradient(90deg, 
+        var(--mep-primary-500) 0%,
+        var(--mep-primary-300) 50%,
+        var(--mep-primary-500) 100%);
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+}
+
+/* Headers de sección mejorados */
+.section-header,
+.module-header {
+    background: linear-gradient(135deg, 
+        var(--bg-secondary) 0%, 
+        var(--bg-tertiary) 100%);
+    border: var(--border-width-normal) solid var(--border-primary);
+    border-radius: var(--radius-lg);
+    padding: var(--space-xl);
+    margin-bottom: var(--space-xl);
+    box-shadow: var(--shadow-md);
+    position: relative;
+}
+
+.section-header h2,
+.section-header h1,
+.module-header h1 {
+    color: var(--text-primary);
+    font-weight: 800;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    margin: 0;
+}
+
+/* ===== SISTEMA DE NAVEGACIÓN MEJORADO ===== */
+
+/* Pestañas con mejor contraste */
+.tab-btn,
+.crm-tab,
+.nav-tab {
+    background: var(--bg-secondary);
+    border: var(--border-width-normal) solid transparent;
+    border-radius: var(--radius-md) var(--radius-md) 0 0;
+    padding: var(--space-md) var(--space-lg);
+    margin-right: var(--space-xs);
+    transition: all var(--transition-smooth);
+    position: relative;
+    font-weight: 600;
+}
+
+.tab-btn:hover,
+.crm-tab:hover,
+.nav-tab:hover {
+    background: var(--bg-primary);
+    border-color: var(--border-primary);
+    transform: translateY(calc(-1 * var(--elevation-1)));
+    box-shadow: var(--shadow-sm);
+}
+
+.tab-btn.active,
+.crm-tab.active,
+.nav-tab.active {
+    background: var(--bg-primary);
+    border-color: var(--mep-primary-500);
+    border-bottom-color: var(--bg-primary);
+    color: var(--mep-primary-600);
+    font-weight: 700;
+    transform: translateY(calc(-1 * var(--elevation-1)));
+    box-shadow: var(--shadow-md);
+}
+
+.tab-btn.active::after,
+.crm-tab.active::after,
+.nav-tab.active::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    right: 0;
+    height: var(--border-width-thick);
+    background: var(--mep-primary-500);
+}
+
+/* ===== SIDEBAR MEJORADO ===== */
+
+/* Elementos del sidebar con mejor separación */
+.sidebar-nav-item {
+    border: var(--border-width-thin) solid transparent;
+    border-radius: var(--radius-md);
+    margin-bottom: var(--space-xs);
+    transition: all var(--transition-smooth);
+    position: relative;
+}
+
+.sidebar-nav-item:hover {
+    background: rgba(16, 185, 129, 0.1);
+    border-color: rgba(16, 185, 129, 0.2);
+    transform: translateX(var(--elevation-1));
+}
+
+.sidebar-nav-item.active {
+    background: var(--bg-sidebar-active);
+    border-color: var(--mep-primary-400);
+    box-shadow: var(--shadow-md);
+}
+
+.sidebar-nav-item.active::before {
+    content: '';
+    position: absolute;
+    left: -1px;
+    top: 0;
+    bottom: 0;
+    width: var(--border-width-thick);
+    background: var(--mep-primary-300);
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+}
+
+/* ===== SISTEMA DE BADGES Y ESTADOS ===== */
+
+/* Badges con mejor contraste */
+.badge,
+.tab-badge,
+.priority-badge-enhanced,
+.badge-enhanced,
+.ticket-id-enhanced,
+.notification-badge {
+    border: var(--border-width-thin) solid rgba(255, 255, 255, 0.2);
+    box-shadow: var(--shadow-xs);
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    transition: all var(--transition-fast);
+}
+
+/* Estados con colores más intensos */
+.badge-primary,
+.priority-low {
+    background: linear-gradient(135deg, var(--mep-success-400), var(--mep-success-600));
+    color: white;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.badge-secondary,
+.priority-medium {
+    background: linear-gradient(135deg, var(--mep-info-400), var(--mep-info-600));
+    color: white;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.badge-warning,
+.priority-high {
+    background: linear-gradient(135deg, var(--mep-warning-400), var(--mep-warning-600));
+    color: white;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.badge-error,
+.priority-urgent {
+    background: linear-gradient(135deg, var(--mep-error-400), var(--mep-error-600));
+    color: white;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+    animation: pulse-urgent 2s infinite;
+}
+
+@keyframes pulse-urgent {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.9; transform: scale(1.05); }
+}
+
+/* ===== SISTEMA DE FORMULARIOS MEJORADO ===== */
+
+/* Inputs con mejor feedback visual */
+.form-input,
+.form-select,
+.form-textarea,
+.search-input,
+.search-input-enhanced,
+.knowledge-search-input,
+.message-input-enhanced {
+    border: var(--border-width-normal) solid var(--border-primary);
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+    transition: all var(--transition-smooth);
+}
+
+.form-input:focus,
+.form-select:focus,
+.form-textarea:focus,
+.search-input:focus,
+.search-input-enhanced:focus,
+.knowledge-search-input:focus,
+.message-input-enhanced:focus {
+    border-color: var(--mep-primary-500);
+    box-shadow: 
+        inset 0 1px 3px rgba(0, 0, 0, 0.1),
+        0 0 0 3px rgba(16, 185, 129, 0.1),
+        var(--shadow-sm);
+    transform: translateY(calc(-1 * var(--elevation-1)));
+}
+
+/* ===== BOTONES MEJORADOS ===== */
+
+/* Botones con efectos mejorados */
+.btn,
+.btn-primary,
+.btn-secondary,
+.btn-icon-enhanced,
+.view-btn,
+.filter-btn,
+.quick-action {
+    border: var(--border-width-normal) solid transparent;
+    box-shadow: var(--shadow-sm);
+    transition: all var(--transition-smooth);
+    font-weight: 600;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn:hover,
+.btn-primary:hover,
+.btn-secondary:hover,
+.btn-icon-enhanced:hover,
+.view-btn:hover,
+.filter-btn:hover,
+.quick-action:hover {
+    transform: translateY(calc(-1 * var(--elevation-1)));
+    box-shadow: var(--shadow-md);
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, var(--mep-primary-500), var(--mep-primary-600));
+    border-color: var(--mep-primary-400);
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, var(--mep-primary-400), var(--mep-primary-500));
+    border-color: var(--mep-primary-300);
+}
+
+/* ===== SEPARADORES VISUALES ===== */
+
+/* Separadores entre secciones */
+.section-separator,
+.visual-separator {
+    height: var(--border-width-thick);
+    background: linear-gradient(90deg, 
+        transparent 0%, 
+        var(--border-primary) 10%, 
+        var(--mep-primary-300) 25%,
+        var(--mep-primary-500) 50%, 
+        var(--mep-primary-300) 75%,
+        var(--border-primary) 90%,
+        transparent 100%);
+    margin: var(--space-xl) 0;
+    border-radius: var(--radius-full);
+    opacity: 0.7;
+}
+
+/* Líneas divisorias sutiles */
+.divider {
+    height: 1px;
+    background: linear-gradient(90deg, 
+        transparent 0%, 
+        var(--border-primary) 20%, 
+        var(--border-primary) 80%, 
+        transparent 100%);
+    margin: var(--space-lg) 0;
+}
+
+/* ===== INDICADORES DE ESTADO ===== */
+
+/* Indicadores animados */
+.status-indicator,
+.status-indicator-enhanced,
+.chat-status-indicator {
+    box-shadow: 0 0 8px currentColor;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    animation: status-pulse 3s infinite;
+}
+
+@keyframes status-pulse {
+    0%, 100% { 
+        opacity: 1; 
+        transform: scale(1);
+        box-shadow: 0 0 8px currentColor;
+    }
+    50% { 
+        opacity: 0.8; 
+        transform: scale(1.1);
+        box-shadow: 0 0 12px currentColor;
+    }
+}
+
+/* Estados específicos */
+.status-online { 
+    background: var(--mep-success-500);
+    animation-duration: 3s;
+}
+
+.status-busy { 
+    background: var(--mep-warning-500);
+    animation-duration: 2s;
+}
+
+.status-away { 
+    background: var(--text-tertiary);
+    animation: none;
+}
+
+.status-urgent {
+    background: var(--mep-error-500);
+    animation-duration: 1.5s;
+}
+
+/* ===== GRIDS Y LAYOUTS MEJORADOS ===== */
+
+/* Grids con separación visual */
+.stats-grid,
+.kpi-grid,
+.stat-grid,
+.categories-grid-enhanced,
+.articles-grid-enhanced,
+.agents-grid-enhanced,
+.tickets-grid-container {
+    gap: var(--space-lg);
+    padding: var(--space-md);
+    background: rgba(16, 185, 129, 0.02);
+    border-radius: var(--radius-lg);
+    border: var(--border-width-thin) solid rgba(16, 185, 129, 0.1);
+}
+
+/* ===== KANBAN MEJORADO ===== */
+
+/* Columnas kanban con mejor separación */
+.kanban-column,
+.kanban-column-enhanced {
+    background: var(--bg-primary);
+    border: var(--border-width-normal) solid var(--border-primary);
+    box-shadow: var(--shadow-md);
+    border-radius: var(--radius-lg);
+    position: relative;
+}
+
+.kanban-column::before,
+.kanban-column-enhanced::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: var(--border-width-heavy);
+    background: var(--mep-primary-500);
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+}
+
+/* ===== MODO OSCURO OPTIMIZADO ===== */
+
+[data-theme="dark"] {
+    /* Cards en modo oscuro */
+    .card,
+    .stat-card,
+    .project-card,
+    .ticket-card-enhanced,
+    .quick-stat-enhanced,
+    .ticket-grid-card,
+    .kanban-ticket-enhanced,
+    .knowledge-category-card-enhanced,
+    .knowledge-article-card-enhanced,
+    .agent-card-enhanced,
+    .kpi-card-enhanced,
+    .settings-card-enhanced,
+    .widget {
+        border-color: rgba(255, 255, 255, 0.1);
+        background: var(--bg-surface);
+        box-shadow: var(--shadow-md);
+    }
+    
+    /* Hover effects en modo oscuro */
+    .card:hover,
+    .stat-card:hover,
+    .project-card:hover,
+    .ticket-card-enhanced:hover,
+    .quick-stat-enhanced:hover,
+    .ticket-grid-card:hover,
+    .kanban-ticket-enhanced:hover,
+    .knowledge-category-card-enhanced:hover,
+    .knowledge-article-card-enhanced:hover,
+    .agent-card-enhanced:hover,
+    .kpi-card-enhanced:hover,
+    .settings-card-enhanced:hover,
+    .widget:hover {
+        border-color: var(--mep-primary-400);
+        box-shadow: var(--shadow-xl);
+        background: rgba(255, 255, 255, 0.02);
+    }
+    
+    /* Separadores en modo oscuro */
+    .section-separator,
+    .visual-separator {
+        background: linear-gradient(90deg, 
+            transparent 0%, 
+            rgba(255, 255, 255, 0.1) 10%, 
+            var(--mep-primary-400) 25%,
+            var(--mep-primary-500) 50%, 
+            var(--mep-primary-400) 75%,
+            rgba(255, 255, 255, 0.1) 90%,
+            transparent 100%);
+    }
+    
+    /* Badges en modo oscuro */
+    .badge,
+    .priority-badge-enhanced,
+    .badge-enhanced {
+        border-color: rgba(255, 255, 255, 0.3);
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+    }
+}
+
+/* ===== ANIMACIONES GLOBALES ===== */
+
+/* Entrada suave para elementos */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(var(--space-md));
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideInFromLeft {
+    from {
+        opacity: 0;
+        transform: translateX(calc(-1 * var(--space-lg)));
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes scaleIn {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* Aplicar animaciones */
+.card,
+.stat-card,
+.ticket-card-enhanced,
+.quick-stat-enhanced {
+    animation: fadeInUp 0.4s ease-out;
+}
+
+.sidebar-nav-item {
+    animation: slideInFromLeft 0.3s ease-out;
+}
+
+.modal-content,
+.dropdown-menu {
+    animation: scaleIn 0.2s ease-out;
+}
+
+/* ===== UTILIDADES DE ELEVACIÓN ===== */
+
+.elevation-0 { box-shadow: none; }
+.elevation-1 { box-shadow: var(--shadow-xs); }
+.elevation-2 { box-shadow: var(--shadow-sm); }
+.elevation-3 { box-shadow: var(--shadow-md); }
+.elevation-4 { box-shadow: var(--shadow-lg); }
+.elevation-5 { box-shadow: var(--shadow-xl); }
+
+/* Hover elevations */
+.hover-elevation-1:hover { box-shadow: var(--shadow-sm); transform: translateY(calc(-1 * var(--elevation-1))); }
+.hover-elevation-2:hover { box-shadow: var(--shadow-md); transform: translateY(calc(-1 * var(--elevation-2))); }
+.hover-elevation-3:hover { box-shadow: var(--shadow-lg); transform: translateY(calc(-1 * var(--elevation-3))); }
+.hover-elevation-4:hover { box-shadow: var(--shadow-xl); transform: translateY(calc(-1 * var(--elevation-4))); }
+
+/* ===== CLASES DE UTILIDAD ===== */
+
+/* Borders mejorados */
+.border-enhanced { border: var(--border-width-normal) solid var(--border-primary); }
+.border-thick { border: var(--border-width-thick) solid var(--border-primary); }
+.border-primary { border-color: var(--mep-primary-500); }
+.border-success { border-color: var(--mep-success-500); }
+.border-warning { border-color: var(--mep-warning-500); }
+.border-error { border-color: var(--mep-error-500); }
+
+/* Backgrounds con gradiente sutil */
+.bg-gradient-subtle {
+    background: linear-gradient(135deg, 
+        var(--bg-primary) 0%, 
+        rgba(16, 185, 129, 0.02) 50%, 
+        var(--bg-primary) 100%);
+}
+
+/* Efectos de transición */
+.transition-smooth { transition: all var(--transition-smooth); }
+.transition-fast { transition: all var(--transition-fast); }
+.transition-slow { transition: all var(--transition-slow); }

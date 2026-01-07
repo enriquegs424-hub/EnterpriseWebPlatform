@@ -1,0 +1,694 @@
+/* ===== MEP DESIGN SYSTEM - DARK THEME ===== */
+
+[data-theme="dark"] {
+  /* ===== DARK THEME VARIABLES ===== */
+  
+  /* Primary Colors - Adjusted for dark theme */
+  --mep-primary-50: #064E3B;
+  --mep-primary-100: #065F46;
+  --mep-primary-200: #047857;
+  --mep-primary-300: #059669;
+  --mep-primary-400: #10B981;
+  --mep-primary-500: #34D399;
+  --mep-primary-600: #6EE7B7;
+  --mep-primary-700: #9DE9C7;
+  --mep-primary-800: #A7F3D0;
+  --mep-primary-900: #D1FAE5;
+
+  /* Semantic Colors - Dark theme variants */
+  --mep-success-50: #14532D;
+  --mep-success-100: #166534;
+  --mep-success-200: #15803D;
+  --mep-success-300: #16A34A;
+  --mep-success-400: #22C55E;
+  --mep-success-500: #4ADE80;
+  --mep-success-600: #86EFAC;
+  --mep-success-700: #BBF7D0;
+  --mep-success-800: #DCFCE7;
+  --mep-success-900: #F0FDF4;
+
+  --mep-warning-50: #78350F;
+  --mep-warning-100: #92400E;
+  --mep-warning-200: #B45309;
+  --mep-warning-300: #D97706;
+  --mep-warning-400: #F59E0B;
+  --mep-warning-500: #FBBF24;
+  --mep-warning-600: #FCD34D;
+  --mep-warning-700: #FDE68A;
+  --mep-warning-800: #FEF3C7;
+  --mep-warning-900: #FFFBEB;
+
+  --mep-error-50: #7F1D1D;
+  --mep-error-100: #991B1B;
+  --mep-error-200: #B91C1C;
+  --mep-error-300: #DC2626;
+  --mep-error-400: #EF4444;
+  --mep-error-500: #F87171;
+  --mep-error-600: #FCA5A5;
+  --mep-error-700: #FECACA;
+  --mep-error-800: #FEE2E2;
+  --mep-error-900: #FEF2F2;
+
+  --mep-info-50: #1E3A8A;
+  --mep-info-100: #1E40AF;
+  --mep-info-200: #1D4ED8;
+  --mep-info-300: #2563EB;
+  --mep-info-400: #3B82F6;
+  --mep-info-500: #60A5FA;
+  --mep-info-600: #93C5FD;
+  --mep-info-700: #BFDBFE;
+  --mep-info-800: #DBEAFE;
+  --mep-info-900: #EFF6FF;
+
+  /* Gray Scale - Dark theme */
+  --mep-gray-50: #0F172A;
+  --mep-gray-100: #1E293B;
+  --mep-gray-200: #334155;
+  --mep-gray-300: #475569;
+  --mep-gray-400: #64748B;
+  --mep-gray-500: #94A3B8;
+  --mep-gray-600: #CBD5E1;
+  --mep-gray-700: #E2E8F0;
+  --mep-gray-800: #F1F5F9;
+  --mep-gray-900: #F8FAFC;
+
+  /* ===== SEMANTIC TOKENS - DARK THEME ===== */
+  
+  /* Backgrounds */
+  --bg-primary: #0d0d0d;
+  --bg-secondary: #1a1a1a;
+  --bg-tertiary: #212121;
+  --bg-surface: #1a1a1a;
+  --bg-elevated: #242424;
+  --bg-overlay: rgba(0, 0, 0, 0.8);
+  --bg-sidebar: #111111;
+  --bg-sidebar-item: rgba(255, 255, 255, 0.08);
+  --bg-sidebar-active: linear-gradient(135deg, var(--mep-primary-500), var(--mep-primary-400));
+
+  /* Text Colors */
+  --text-primary: #e5e5e5;
+  --text-secondary: #a8a8a8;
+  --text-tertiary: #6e6e6e;
+  --text-inverse: #0F172A;
+  --text-on-primary: #FFFFFF;
+  --text-on-surface: #e5e5e5;
+  --text-sidebar: #ffffff;
+  --text-disabled: #525252;
+  --text-muted: #737373;
+
+  /* Border Colors */
+  --border-primary: #333333;
+  --border-secondary: #404040;
+  --border-tertiary: #2a2a2a;
+  --border-focus: var(--mep-primary-400);
+  --border-error: var(--mep-error-400);
+  --border-success: var(--mep-success-400);
+  --border-warning: var(--mep-warning-400);
+
+  /* Interactive States */
+  --state-hover-opacity: 0.9;
+  --state-active-opacity: 0.8;
+  --state-disabled-opacity: 0.5;
+  --state-focus-ring: 0 0 0 3px rgba(52, 211, 153, 0.2);
+
+  /* Surface States */
+  --surface-hover: #262626;
+  --surface-active: #2a2a2a;
+  --surface-selected: rgba(52, 211, 153, 0.15);
+  --surface-focus: rgba(52, 211, 153, 0.2);
+
+  /* Feedback Colors */
+  --feedback-success: var(--mep-success-400);
+  --feedback-warning: var(--mep-warning-400);
+  --feedback-error: var(--mep-error-400);
+  --feedback-info: var(--mep-info-400);
+
+  /* ===== MODULE SPECIFIC VARIABLES - DARK THEME ===== */
+  
+  /* Dashboard */
+  --dashboard-bg: var(--bg-primary);
+  --dashboard-card-bg: var(--bg-surface);
+  --dashboard-stat-positive: var(--mep-success-400);
+  --dashboard-stat-negative: var(--mep-error-400);
+  --dashboard-chart-primary: var(--mep-primary-400);
+  --dashboard-chart-secondary: var(--mep-primary-500);
+
+  /* Projects */
+  --projects-bg: var(--bg-primary);
+  --projects-card-bg: var(--bg-surface);
+  --projects-progress-bg: var(--mep-gray-200);
+  --projects-progress-fill: var(--mep-primary-400);
+  --projects-status-active: var(--mep-success-400);
+  --projects-status-pending: var(--mep-warning-400);
+  --projects-status-completed: var(--mep-primary-400);
+
+  /* Tasks */
+  --tasks-bg: var(--bg-primary);
+  --tasks-card-bg: var(--bg-surface);
+  --tasks-priority-low: var(--mep-success-400);
+  --tasks-priority-medium: var(--mep-warning-400);
+  --tasks-priority-high: var(--mep-error-400);
+  --tasks-completed: var(--mep-gray-400);
+
+  /* Chat */
+  --chat-bg: var(--bg-surface);
+  --chat-sidebar-bg: var(--bg-secondary);
+  --chat-message-own: var(--mep-primary-400);
+  --chat-message-other: var(--bg-tertiary);
+  --chat-online: var(--mep-success-400);
+  --chat-away: var(--mep-warning-400);
+  --chat-offline: var(--mep-gray-400);
+
+  /* CRM */
+  --crm-bg: var(--bg-primary);
+  --crm-card-bg: var(--bg-surface);
+  --crm-pipeline-bg: var(--bg-tertiary);
+  --crm-deal-bg: var(--bg-surface);
+  --crm-hot-lead: var(--mep-error-400);
+  --crm-warm-lead: var(--mep-warning-400);
+  --crm-cold-lead: var(--mep-info-400);
+
+  /* ERP */
+  --erp-bg: var(--bg-primary);
+  --erp-card-bg: var(--bg-surface);
+  --erp-revenue: var(--mep-success-400);
+  --erp-expense: var(--mep-error-400);
+  --erp-profit: var(--mep-primary-400);
+  --erp-chart-bg: var(--bg-surface);
+
+  /* RRHH */
+  --rrhh-bg: var(--bg-primary);
+  --rrhh-card-bg: var(--bg-surface);
+  --rrhh-active-employee: var(--mep-success-400);
+  --rrhh-inactive-employee: var(--mep-error-400);
+  --rrhh-department-bg: rgba(52, 211, 153, 0.1);
+
+  /* Inventory */
+  --inventory-bg: var(--bg-primary);
+  --inventory-card-bg: var(--bg-surface);
+  --inventory-in-stock: var(--mep-success-400);
+  --inventory-low-stock: var(--mep-warning-400);
+  --inventory-out-stock: var(--mep-error-400);
+  --inventory-category-bg: var(--bg-tertiary);
+
+  /* Users */
+  --users-bg: var(--bg-primary);
+  --users-card-bg: var(--bg-surface);
+  --users-active: var(--mep-success-400);
+  --users-inactive: var(--mep-error-400);
+  --users-pending: var(--mep-warning-400);
+  --users-role-admin: var(--mep-error-400);
+  --users-role-user: var(--mep-primary-400);
+
+  /* Settings */
+  --settings-bg: var(--bg-primary);
+  --settings-card-bg: var(--bg-surface);
+  --settings-nav-bg: var(--bg-tertiary);
+  --settings-nav-active: var(--mep-primary-400);
+  --settings-warning-bg: rgba(251, 191, 36, 0.1);
+  --settings-warning-border: rgba(251, 191, 36, 0.3);
+
+  /* Support */
+  --support-bg: var(--bg-primary);
+  --support-card-bg: var(--bg-surface);
+  --support-ticket-open: var(--mep-info-400);
+  --support-ticket-progress: var(--mep-warning-400);
+  --support-ticket-resolved: var(--mep-success-400);
+  --support-priority-urgent: var(--mep-error-400);
+
+  /* ===== COMPONENT SPECIFIC VARIABLES - DARK THEME ===== */
+  
+  /* Buttons */
+  --btn-primary-bg: var(--mep-primary-400);
+  --btn-primary-bg-hover: var(--mep-primary-300);
+  --btn-primary-text: var(--text-inverse);
+  --btn-secondary-bg: var(--bg-surface);
+  --btn-secondary-bg-hover: var(--surface-hover);
+  --btn-secondary-text: var(--text-primary);
+  --btn-secondary-border: var(--border-primary);
+
+  /* Forms */
+  --form-bg: var(--bg-surface);
+  --form-border: var(--border-primary);
+  --form-border-focus: var(--border-focus);
+  --form-text: var(--text-primary);
+  --form-placeholder: var(--text-tertiary);
+  --form-error: var(--mep-error-400);
+  --form-success: var(--mep-success-400);
+
+  /* Cards */
+  --card-bg: var(--bg-surface);
+  --card-border: var(--border-primary);
+  --card-shadow: var(--shadow-sm);
+  --card-shadow-hover: var(--shadow-md);
+
+  /* Navigation */
+  --nav-bg: var(--bg-surface);
+  --nav-border: var(--border-primary);
+  --nav-text: var(--text-secondary);
+  --nav-text-active: var(--mep-primary-400);
+  --nav-indicator: var(--mep-primary-400);
+
+  /* Modals */
+  --modal-bg: var(--bg-surface);
+  --modal-overlay: rgba(0, 0, 0, 0.8);
+  --modal-border: var(--border-primary);
+  --modal-shadow: var(--shadow-2xl);
+
+  /* ===== DARK THEME SHADOWS ===== */
+  --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.3);
+  --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.4), 0 1px 2px -1px rgb(0 0 0 / 0.4);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.5), 0 2px 4px -2px rgb(0 0 0 / 0.5);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.6), 0 4px 6px -4px rgb(0 0 0 / 0.6);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.7), 0 8px 10px -6px rgb(0 0 0 / 0.7);
+  --shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.8);
+  --shadow-inner: inset 0 2px 4px 0 rgb(0 0 0 / 0.2);
+
+  /* Focus Shadows */
+  --shadow-focus-primary: 0 0 0 3px rgb(52 211 153 / 0.3);
+  --shadow-focus-error: 0 0 0 3px rgb(248 113 113 / 0.3);
+  --shadow-focus-warning: 0 0 0 3px rgb(251 191 36 / 0.3);
+  --shadow-focus-success: 0 0 0 3px rgb(74 222 128 / 0.3);
+
+  /* ===== DARK THEME GRADIENTS ===== */
+  --gradient-primary: linear-gradient(135deg, var(--mep-primary-400), var(--mep-primary-500));
+  --gradient-secondary: linear-gradient(135deg, var(--mep-gray-200), var(--mep-gray-300));
+  --gradient-success: linear-gradient(135deg, var(--mep-success-400), var(--mep-success-500));
+  --gradient-warning: linear-gradient(135deg, var(--mep-warning-400), var(--mep-warning-500));
+  --gradient-error: linear-gradient(135deg, var(--mep-error-400), var(--mep-error-500));
+  --gradient-surface: linear-gradient(135deg, var(--bg-surface) 0%, rgba(52, 211, 153, 0.05) 100%);
+
+  /* ===== DARK THEME SPECIFIC STATES ===== */
+  
+  /* Hover States */
+  --hover-bg: var(--mep-gray-200);
+  --hover-border: var(--mep-gray-300);
+  --hover-text: var(--text-primary);
+  --hover-shadow: var(--shadow-md);
+
+  /* Active States */
+  --active-bg: var(--mep-gray-300);
+  --active-border: var(--mep-gray-400);
+  --active-text: var(--text-primary);
+
+  /* Selected States */
+  --selected-bg: rgba(52, 211, 153, 0.15);
+  --selected-border: var(--mep-primary-400);
+  --selected-text: var(--mep-primary-300);
+
+  /* Disabled States */
+  --disabled-bg: var(--mep-gray-100);
+  --disabled-border: var(--mep-gray-200);
+  --disabled-text: var(--mep-gray-400);
+
+  /* ===== DARK THEME CHART COLORS ===== */
+  --chart-color-1: var(--mep-primary-400);
+  --chart-color-2: var(--mep-info-400);
+  --chart-color-3: var(--mep-success-400);
+  --chart-color-4: var(--mep-warning-400);
+  --chart-color-5: var(--mep-error-400);
+  --chart-color-6: var(--mep-primary-500);
+  --chart-color-7: var(--mep-info-500);
+  --chart-color-8: var(--mep-success-500);
+
+  /* Chart Grid */
+  --chart-grid: var(--mep-gray-200);
+  --chart-axis: var(--mep-gray-400);
+  --chart-label: var(--text-secondary);
+
+  /* ===== DARK THEME STATUS COLORS ===== */
+  
+  /* General Status */
+  --status-active: var(--mep-success-400);
+  --status-inactive: var(--mep-gray-400);
+  --status-pending: var(--mep-warning-400);
+  --status-error: var(--mep-error-400);
+  --status-success: var(--mep-success-400);
+
+  /* Priority Levels */
+  --priority-low: var(--mep-success-400);
+  --priority-medium: var(--mep-warning-400);
+  --priority-high: var(--mep-error-400);
+  --priority-critical: var(--mep-error-300);
+
+  /* ===== DARK THEME ACCESSIBILITY ===== */
+  
+  /* High Contrast Support */
+  --high-contrast-border: #FFFFFF;
+  --high-contrast-text: #FFFFFF;
+  --high-contrast-bg: #000000;
+  --high-contrast-focus: #66B3FF;
+
+  /* Focus Indicators */
+  --focus-ring-width: 2px;
+  --focus-ring-offset: 2px;
+  --focus-ring-color: var(--border-focus);
+  --focus-ring-style: solid;
+
+  /* ===== DARK THEME PRINT COLORS ===== */
+  --print-bg: #FFFFFF;
+  --print-text: #000000;
+  --print-border: #666666;
+  --print-shadow: none;
+}
+
+/* ===== DARK THEME SPECIFIC OVERRIDES ===== */
+
+/* Ensure proper contrast in dark theme */
+[data-theme="dark"] {
+  color-scheme: dark;
+}
+
+/* Dark theme selection colors */
+[data-theme="dark"] ::selection {
+  background-color: var(--mep-primary-700);
+  color: var(--mep-primary-100);
+}
+
+[data-theme="dark"] ::-moz-selection {
+  background-color: var(--mep-primary-700);
+  color: var(--mep-primary-100);
+}
+
+/* Dark theme scrollbar */
+[data-theme="dark"] ::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-thumb {
+  background: var(--mep-primary-600);
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-thumb:hover {
+  background: var(--mep-primary-500);
+}
+
+[data-theme="dark"] * {
+  scrollbar-color: var(--mep-primary-600) var(--bg-secondary);
+}
+
+/* Dark theme form elements */
+[data-theme="dark"] input[type="checkbox"],
+[data-theme="dark"] input[type="radio"] {
+  border-color: var(--border-primary);
+  background: var(--bg-primary);
+}
+
+[data-theme="dark"] input[type="range"]::-webkit-slider-track {
+  background: var(--bg-secondary);
+}
+
+[data-theme="dark"] input[type="range"]::-moz-range-track {
+  background: var(--bg-secondary);
+}
+
+/* Dark theme component specific adjustments */
+[data-theme="dark"] .sidebar {
+  background: var(--bg-sidebar);
+  box-shadow: var(--shadow-lg);
+}
+
+[data-theme="dark"] .header {
+  background: var(--bg-surface);
+  border-bottom: 1px solid var(--border-primary);
+  box-shadow: var(--shadow-sm);
+}
+
+[data-theme="dark"] .card {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  box-shadow: var(--card-shadow);
+}
+
+[data-theme="dark"] .card:hover {
+  box-shadow: var(--card-shadow-hover);
+  border-color: var(--mep-primary-400);
+}
+
+[data-theme="dark"] .btn--primary {
+  background: var(--btn-primary-bg);
+  color: var(--btn-primary-text);
+}
+
+[data-theme="dark"] .btn--primary:hover {
+  background: var(--btn-primary-bg-hover);
+}
+
+[data-theme="dark"] .btn--secondary {
+  background: var(--btn-secondary-bg);
+  color: var(--btn-secondary-text);
+  border: 1px solid var(--btn-secondary-border);
+}
+
+[data-theme="dark"] .btn--secondary:hover {
+  background: var(--btn-secondary-bg-hover);
+}
+
+/* Dark theme status badges */
+[data-theme="dark"] .badge--success {
+  background: rgba(74, 222, 128, 0.15);
+  color: var(--mep-success-400);
+  border: 1px solid rgba(74, 222, 128, 0.3);
+}
+
+[data-theme="dark"] .badge--warning {
+  background: rgba(251, 191, 36, 0.15);
+  color: var(--mep-warning-400);
+  border: 1px solid rgba(251, 191, 36, 0.3);
+}
+
+[data-theme="dark"] .badge--error {
+  background: rgba(248, 113, 113, 0.15);
+  color: var(--mep-error-400);
+  border: 1px solid rgba(248, 113, 113, 0.3);
+}
+
+[data-theme="dark"] .badge--info {
+  background: rgba(96, 165, 250, 0.15);
+  color: var(--mep-info-400);
+  border: 1px solid rgba(96, 165, 250, 0.3);
+}
+
+/* Dark theme module backgrounds */
+[data-theme="dark"] .dashboard-module {
+  background: var(--dashboard-bg);
+}
+
+[data-theme="dark"] .projects-module {
+  background: var(--projects-bg);
+}
+
+[data-theme="dark"] .tasks-module {
+  background: var(--tasks-bg);
+}
+
+[data-theme="dark"] .chat-module {
+  background: var(--chat-bg);
+}
+
+[data-theme="dark"] .crm-module {
+  background: var(--crm-bg);
+}
+
+[data-theme="dark"] .erp-module {
+  background: var(--erp-bg);
+}
+
+[data-theme="dark"] .rrhh-module {
+  background: var(--rrhh-bg);
+}
+
+[data-theme="dark"] .inventory-module {
+  background: var(--inventory-bg);
+}
+
+[data-theme="dark"] .users-module {
+  background: var(--users-bg);
+}
+
+[data-theme="dark"] .settings-module {
+  background: var(--settings-bg);
+}
+
+[data-theme="dark"] .support-module {
+  background: var(--support-bg);
+}
+
+/* Dark theme form improvements */
+[data-theme="dark"] .form-input,
+[data-theme="dark"] .form-select,
+[data-theme="dark"] .form-textarea {
+  background: var(--form-bg);
+  border: 1px solid var(--form-border);
+  color: var(--form-text);
+}
+
+[data-theme="dark"] .form-input:focus,
+[data-theme="dark"] .form-select:focus,
+[data-theme="dark"] .form-textarea:focus {
+  border-color: var(--form-border-focus);
+  box-shadow: var(--shadow-focus-primary);
+}
+
+[data-theme="dark"] .form-input::placeholder,
+[data-theme="dark"] .form-textarea::placeholder {
+  color: var(--form-placeholder);
+}
+
+/* Dark theme navigation improvements */
+[data-theme="dark"] .sidebar-nav-item {
+  color: var(--text-sidebar);
+}
+
+[data-theme="dark"] .sidebar-nav-item:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-inverse);
+}
+
+[data-theme="dark"] .sidebar-nav-item--active {
+  background: var(--bg-sidebar-active);
+  color: var(--text-on-primary);
+}
+
+/* Dark theme dropdown improvements */
+[data-theme="dark"] .dropdown-menu {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-primary);
+  box-shadow: var(--shadow-xl);
+}
+
+[data-theme="dark"] .dropdown-item:hover {
+  background: var(--surface-hover);
+}
+
+/* Dark theme table improvements */
+[data-theme="dark"] .data-table {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-primary);
+}
+
+[data-theme="dark"] .data-table th {
+  background: var(--bg-tertiary);
+  border-bottom: 1px solid var(--border-primary);
+}
+
+[data-theme="dark"] .data-table td {
+  border-bottom: 1px solid var(--border-primary);
+}
+
+[data-theme="dark"] .data-table tbody tr:hover {
+  background: var(--surface-hover);
+}
+
+/* Dark theme modal improvements */
+[data-theme="dark"] .modal {
+  background: var(--modal-overlay);
+}
+
+[data-theme="dark"] .modal-content {
+  background: var(--modal-bg);
+  border: 1px solid var(--modal-border);
+  box-shadow: var(--modal-shadow);
+}
+
+/* Dark theme notification improvements */
+[data-theme="dark"] .notification-item:hover {
+  background: var(--surface-hover);
+}
+
+[data-theme="dark"] .toast {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-primary);
+  box-shadow: var(--shadow-xl);
+}
+
+/* Dark theme print adjustments */
+@media print {
+  [data-theme="dark"] * {
+    background: var(--print-bg) !important;
+    color: var(--print-text) !important;
+    border-color: var(--print-border) !important;
+    box-shadow: var(--print-shadow) !important;
+  }
+}
+
+/* Dark theme high contrast mode */
+@media (prefers-contrast: high) {
+  [data-theme="dark"] {
+    --border-primary: var(--high-contrast-border);
+    --text-primary: var(--high-contrast-text);
+    --bg-primary: var(--high-contrast-bg);
+    --border-focus: var(--high-contrast-focus);
+  }
+}
+
+/* Dark theme reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  [data-theme="dark"] *,
+  [data-theme="dark"] *::before,
+  [data-theme="dark"] *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Dark theme specific improvements for better UX */
+[data-theme="dark"] .search-input {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-primary);
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .search-input:focus {
+  border-color: var(--border-focus);
+  box-shadow: var(--shadow-focus-primary);
+}
+
+[data-theme="dark"] .tab-btn {
+  color: var(--text-secondary);
+}
+
+[data-theme="dark"] .tab-btn:hover {
+  background: var(--surface-hover);
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .tab-btn.active {
+  background: var(--surface-selected);
+  color: var(--mep-primary-400);
+}
+
+/* Dark theme loading states */
+[data-theme="dark"] .skeleton {
+  background: linear-gradient(90deg, 
+    var(--bg-tertiary) 25%, 
+    var(--bg-secondary) 50%, 
+    var(--bg-tertiary) 75%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s infinite;
+}
+
+/* Dark theme focus improvements */
+[data-theme="dark"] :focus-visible {
+  outline: 2px solid var(--mep-primary-400);
+  outline-offset: 2px;
+}
+
+/* Dark theme code blocks */
+[data-theme="dark"] .code {
+  background: var(--bg-tertiary);
+  color: var(--mep-primary-400);
+  border: 1px solid var(--border-primary);
+}
+
+[data-theme="dark"] .code-block {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-primary);
+}
+
+/* Dark theme blockquotes */
+[data-theme="dark"] .blockquote {
+  border-left-color: var(--mep-primary-400);
+}

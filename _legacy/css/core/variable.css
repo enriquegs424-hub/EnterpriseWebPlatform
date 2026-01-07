@@ -1,0 +1,354 @@
+/* ===== MEP DESIGN SYSTEM - VARIABLES CORE ===== */
+
+:root {
+  /* ===== COLORES PRINCIPALES ===== */
+  /* Paleta primaria MEP */
+  --mep-primary-50: #F0FDF9;
+  --mep-primary-100: #CCFBEF;
+  --mep-primary-200: #99F6E0;
+  --mep-primary-300: #5EEAD4;
+  --mep-primary-400: #2DD4BF;
+  --mep-primary-500: #10B981; /* Color principal */
+  --mep-primary-600: #059669;
+  --mep-primary-700: #047857;
+  --mep-primary-800: #065F46;
+  --mep-primary-900: #064E3B;
+
+  /* Colores semánticos */
+  --mep-success-50: #F0FDF4;
+  --mep-success-100: #DCFCE7;
+  --mep-success-200: #BBF7D0;
+  --mep-success-300: #86EFAC;
+  --mep-success-400: #4ADE80;
+  --mep-success-500: #22C55E;
+  --mep-success-600: #16A34A;
+  --mep-success-700: #15803D;
+  --mep-success-800: #166534;
+  --mep-success-900: #14532D;
+
+  --mep-warning-50: #FFFBEB;
+  --mep-warning-100: #FEF3C7;
+  --mep-warning-200: #FDE68A;
+  --mep-warning-300: #FCD34D;
+  --mep-warning-400: #FBBF24;
+  --mep-warning-500: #F59E0B;
+  --mep-warning-600: #D97706;
+  --mep-warning-700: #B45309;
+  --mep-warning-800: #92400E;
+  --mep-warning-900: #78350F;
+
+  --mep-error-50: #FEF2F2;
+  --mep-error-100: #FEE2E2;
+  --mep-error-200: #FECACA;
+  --mep-error-300: #FCA5A5;
+  --mep-error-400: #F87171;
+  --mep-error-500: #EF4444;
+  --mep-error-600: #DC2626;
+  --mep-error-700: #B91C1C;
+  --mep-error-800: #991B1B;
+  --mep-error-900: #7F1D1D;
+
+  --mep-info-50: #EFF6FF;
+  --mep-info-100: #DBEAFE;
+  --mep-info-200: #BFDBFE;
+  --mep-info-300: #93C5FD;
+  --mep-info-400: #60A5FA;
+  --mep-info-500: #3B82F6;
+  --mep-info-600: #2563EB;
+  --mep-info-700: #1D4ED8;
+  --mep-info-800: #1E40AF;
+  --mep-info-900: #1E3A8A;
+
+  /* Escala de grises */
+  --mep-gray-50: #F8FAFC;
+  --mep-gray-100: #F1F5F9;
+  --mep-gray-200: #E2E8F0;
+  --mep-gray-300: #CBD5E1;
+  --mep-gray-400: #94A3B8;
+  --mep-gray-500: #64748B;
+  --mep-gray-600: #475569;
+  --mep-gray-700: #334155;
+  --mep-gray-800: #1E293B;
+  --mep-gray-900: #0F172A;
+
+  /* ===== SISTEMA DE TOKENS SEMÁNTICOS ===== */
+  /* Fondos */
+  --bg-primary: var(--mep-gray-50);
+  --bg-secondary: var(--mep-gray-100);
+  --bg-tertiary: var(--mep-gray-200);
+  --bg-surface: #FFFFFF;
+  --bg-elevated: #FFFFFF;
+  --bg-overlay: rgba(0, 0, 0, 0.5);
+  --bg-sidebar: #021d04;
+  --bg-sidebar-item: rgba(255, 255, 255, 0.08);
+  --bg-sidebar-active: linear-gradient(135deg, var(--mep-primary-500), var(--mep-primary-600));
+
+  /* Textos */
+  --text-primary: var(--mep-gray-900);
+  --text-secondary: var(--mep-gray-600);
+  --text-tertiary: var(--mep-gray-400);
+  --text-inverse: #FFFFFF;
+  --text-on-primary: #FFFFFF;
+  --text-on-surface: var(--mep-gray-900);
+  --text-sidebar: #CBD5E1;
+  --text-disabled: var(--mep-gray-300);
+
+  /* Bordes */
+  --border-primary: var(--mep-gray-200);
+  --border-secondary: var(--mep-gray-300);
+  --border-tertiary: var(--mep-gray-100);
+  --border-focus: var(--mep-primary-500);
+  --border-error: var(--mep-error-500);
+  --border-success: var(--mep-success-500);
+  --border-warning: var(--mep-warning-500);
+
+  /* ===== ESPACIADO ===== */
+  --space-0: 0;
+  --space-px: 1px;
+  --space-0-5: 0.125rem;  /* 2px */
+  --space-1: 0.25rem;     /* 4px */
+  --space-1-5: 0.375rem;  /* 6px */
+  --space-2: 0.5rem;      /* 8px */
+  --space-2-5: 0.625rem;  /* 10px */
+  --space-3: 0.75rem;     /* 12px */
+  --space-3-5: 0.875rem;  /* 14px */
+  --space-4: 1rem;        /* 16px */
+  --space-5: 1.25rem;     /* 20px */
+  --space-6: 1.5rem;      /* 24px */
+  --space-7: 1.75rem;     /* 28px */
+  --space-8: 2rem;        /* 32px */
+  --space-9: 2.25rem;     /* 36px */
+  --space-10: 2.5rem;     /* 40px */
+  --space-11: 2.75rem;    /* 44px */
+  --space-12: 3rem;       /* 48px */
+  --space-14: 3.5rem;     /* 56px */
+  --space-16: 4rem;       /* 64px */
+  --space-20: 5rem;       /* 80px */
+  --space-24: 6rem;       /* 96px */
+  --space-28: 7rem;       /* 112px */
+  --space-32: 8rem;       /* 128px */
+
+  /* Aliases semánticos */
+  --space-xs: var(--space-1);     /* 4px */
+  --space-sm: var(--space-2);     /* 8px */
+  --space-md: var(--space-3);     /* 12px */
+  --space-lg: var(--space-4);     /* 16px */
+  --space-xl: var(--space-6);     /* 24px */
+  --space-2xl: var(--space-8);    /* 32px */
+  --space-3xl: var(--space-12);   /* 48px */
+
+  /* ===== TIPOGRAFÍA ===== */
+  /* Familias de fuentes */
+  --font-family-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  --font-family-mono: 'JetBrains Mono', 'Fira Code', 'Roboto Mono', monospace;
+
+  /* Tamaños de fuente */
+  --font-size-xs: 0.75rem;      /* 12px */
+  --font-size-sm: 0.875rem;     /* 14px */
+  --font-size-base: 1rem;       /* 16px */
+  --font-size-lg: 1.125rem;     /* 18px */
+  --font-size-xl: 1.25rem;      /* 20px */
+  --font-size-2xl: 1.5rem;      /* 24px */
+  --font-size-3xl: 1.875rem;    /* 30px */
+  --font-size-4xl: 2.25rem;     /* 36px */
+  --font-size-5xl: 3rem;        /* 48px */
+  --font-size-6xl: 3.75rem;     /* 60px */
+
+  /* Pesos de fuente */
+  --font-weight-thin: 100;
+  --font-weight-light: 300;
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  --font-weight-extrabold: 800;
+  --font-weight-black: 900;
+
+  /* Altura de línea */
+  --line-height-none: 1;
+  --line-height-tight: 1.25;
+  --line-height-snug: 1.375;
+  --line-height-normal: 1.5;
+  --line-height-relaxed: 1.625;
+  --line-height-loose: 2;
+
+  /* Espaciado de letras */
+  --letter-spacing-tighter: -0.05em;
+  --letter-spacing-tight: -0.025em;
+  --letter-spacing-normal: 0;
+  --letter-spacing-wide: 0.025em;
+  --letter-spacing-wider: 0.05em;
+  --letter-spacing-widest: 0.1em;
+
+  /* ===== RADIOS DE BORDE ===== */
+  --radius-none: 0;
+  --radius-xs: 0.125rem;      /* 2px */
+  --radius-sm: 0.25rem;       /* 4px */
+  --radius-md: 0.375rem;      /* 6px */
+  --radius-lg: 0.5rem;        /* 8px */
+  --radius-xl: 0.75rem;       /* 12px */
+  --radius-2xl: 1rem;         /* 16px */
+  --radius-3xl: 1.5rem;       /* 24px */
+  --radius-full: 9999px;
+
+  /* ===== SOMBRAS ===== */
+  --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+  --shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+  --shadow-inner: inset 0 2px 4px 0 rgb(0 0 0 / 0.05);
+
+  /* Sombras de foco */
+  --shadow-focus-primary: 0 0 0 3px rgb(16 185 129 / 0.1);
+  --shadow-focus-error: 0 0 0 3px rgb(239 68 68 / 0.1);
+  --shadow-focus-warning: 0 0 0 3px rgb(245 158 11 / 0.1);
+  --shadow-focus-success: 0 0 0 3px rgb(34 197 94 / 0.1);
+
+  /* ===== TRANSICIONES ===== */
+  --transition-none: none;
+  --transition-all: all 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-default: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-fast: 100ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 300ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slower: 500ms cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Transiciones específicas */
+  --transition-colors: color 150ms cubic-bezier(0.4, 0, 0.2, 1),
+                       background-color 150ms cubic-bezier(0.4, 0, 0.2, 1),
+                       border-color 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-opacity: opacity 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-shadow: box-shadow 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-transform: transform 150ms cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* ===== Z-INDEX ===== */
+  --z-0: 0;
+  --z-10: 10;
+  --z-20: 20;
+  --z-30: 30;
+  --z-40: 40;
+  --z-50: 50;
+  --z-auto: auto;
+
+  /* Z-index semántico */
+  --z-dropdown: 1000;
+  --z-sticky: 1020;
+  --z-fixed: 1030;
+  --z-modal-backdrop: 1040;
+  --z-modal: 1050;
+  --z-popover: 1060;
+  --z-tooltip: 1070;
+  --z-toast: 1080;
+
+  /* ===== BREAKPOINTS ===== */
+  --breakpoint-xs: 480px;
+  --breakpoint-sm: 640px;
+  --breakpoint-md: 768px;
+  --breakpoint-lg: 1024px;
+  --breakpoint-xl: 1280px;
+  --breakpoint-2xl: 1536px;
+
+  /* ===== DIMENSIONES COMUNES ===== */
+  /* Anchos */
+  --width-sidebar: 280px;
+  --width-sidebar-collapsed: 64px;
+  --width-content-max: 1200px;
+
+  /* Alturas */
+  --height-header: 64px;
+  --height-footer: 56px;
+  --height-input: 40px;
+  --height-button: 40px;
+
+  /* ===== DURACIONES DE ANIMACIÓN ===== */
+  --duration-75: 75ms;
+  --duration-100: 100ms;
+  --duration-150: 150ms;
+  --duration-200: 200ms;
+  --duration-300: 300ms;
+  --duration-500: 500ms;
+  --duration-700: 700ms;
+  --duration-1000: 1000ms;
+
+  /* ===== CURVAS DE ANIMACIÓN ===== */
+  --ease-linear: linear;
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --ease-out: cubic-bezier(0, 0, 0.2, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-in-back: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  --ease-out-back: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+
+  /* ===== OPACIDAD ===== */
+  --opacity-0: 0;
+  --opacity-5: 0.05;
+  --opacity-10: 0.1;
+  --opacity-20: 0.2;
+  --opacity-25: 0.25;
+  --opacity-30: 0.3;
+  --opacity-40: 0.4;
+  --opacity-50: 0.5;
+  --opacity-60: 0.6;
+  --opacity-70: 0.7;
+  --opacity-75: 0.75;
+  --opacity-80: 0.8;
+  --opacity-90: 0.9;
+  --opacity-95: 0.95;
+  --opacity-100: 1;
+
+  /* ===== BLUR ===== */
+  --blur-none: 0;
+  --blur-sm: 4px;
+  --blur-md: 8px;
+  --blur-lg: 16px;
+  --blur-xl: 24px;
+  --blur-2xl: 40px;
+  --blur-3xl: 64px;
+}
+
+/* ===== TOKENS ESPECÍFICOS POR CONTEXTO ===== */
+:root {
+  /* Estados de componentes */
+  --state-hover-opacity: var(--opacity-90);
+  --state-active-opacity: var(--opacity-80);
+  --state-disabled-opacity: var(--opacity-50);
+  --state-focus-ring: var(--shadow-focus-primary);
+
+  /* Feedback visual */
+  --feedback-success: var(--mep-success-500);
+  --feedback-warning: var(--mep-warning-500);
+  --feedback-error: var(--mep-error-500);
+  --feedback-info: var(--mep-info-500);
+
+  /* Superficies interactivas */
+  --surface-hover: var(--mep-gray-100);
+  --surface-active: var(--mep-gray-200);
+  --surface-selected: var(--mep-primary-50);
+  --surface-focus: var(--mep-primary-100);
+}
+
+/* ===== ALIASES LEGACY PARA COMPATIBILIDAD ===== */
+:root {
+  /* Mantenemos algunos aliases para compatibilidad con código existente */
+  --mep-primary: var(--mep-primary-500);
+  --mep-success: var(--mep-success-500);
+  --mep-warning: var(--mep-warning-500);
+  --mep-error: var(--mep-error-500);
+  --mep-info: var(--mep-info-500);
+  
+  /* Espaciado legacy */
+  --space-xs: var(--space-1);
+  --space-sm: var(--space-2);
+  --space-md: var(--space-3);
+  --space-lg: var(--space-4);
+  --space-xl: var(--space-6);
+  --space-2xl: var(--space-8);
+  --space-3xl: var(--space-12);
+  
+  /* Bordes legacy */
+  --radius-sm: var(--radius-md);
+  --radius-md: var(--radius-lg);
+  --radius-lg: var(--radius-xl);
+  --radius-xl: var(--radius-2xl);
+  --radius-2xl: var(--radius-3xl);
+}

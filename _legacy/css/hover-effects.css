@@ -1,0 +1,206 @@
+/* ===== SISTEMA UNIVERSAL DE HOVER INTELIGENTE ===== */
+
+/* Variables globales para todos los componentes */
+:root {
+  --universal-border: 2px solid var(--border-primary);
+  --universal-border-radius: var(--radius-lg);
+  --container-hover-border: var(--mep-primary-300);
+  --container-hover-glow: 0 0 0 3px rgba(16, 185, 129, 0.15), var(--shadow-lg);
+  --item-hover-border: var(--mep-primary-500);
+  --item-hover-glow: 0 0 0 4px rgba(16, 185, 129, 0.25), var(--shadow-xl);
+  --item-hover-bg: rgba(16, 185, 129, 0.05);
+}
+
+[data-theme="dark"] {
+  --container-hover-border: var(--mep-primary-600);
+  --container-hover-glow: 0 0 0 3px rgba(16, 185, 129, 0.2), 0 10px 25px -5px rgba(0, 0, 0, 0.6);
+  --item-hover-glow: 0 0 0 4px rgba(16, 185, 129, 0.3), 0 15px 30px -5px rgba(0, 0, 0, 0.7);
+  --item-hover-bg: rgba(16, 185, 129, 0.1);
+}
+
+/* ===== CONTENEDORES PRINCIPALES ===== */
+/* Todos los contenedores que pueden tener elementos internos */
+.card,
+.stat-card,
+.widget,
+.project-card,
+.task-card,
+.chat-list,
+.activities-container,
+.projects-container,
+.tasks-container,
+.messages-container,
+.erp-activities,
+.recent-activities {
+  border: var(--universal-border) !important;
+  border-radius: var(--universal-border-radius) !important;
+  transition: all var(--transition-normal) !important;
+  position: relative !important;
+}
+
+/* ===== ELEMENTOS INTERNOS UNIVERSALES ===== */
+/* Todos los elementos que están dentro de contenedores */
+.quick-action,
+.project-item,
+.task-item,
+.chat-item,
+.activity-item,
+.message-item,
+.erp-activity-item,
+.notification-item,
+.user-menu-item,
+.dropdown-item,
+.list-item,
+.card-item {
+  border: 2px solid transparent !important;
+  border-radius: var(--radius-lg) !important;
+  transition: all var(--transition-normal) !important;
+  margin: var(--space-xs) 0 !important;
+  position: relative !important;
+  cursor: pointer !important;
+}
+
+/* ===== LÓGICA DE HOVER INTELIGENTE ===== */
+
+/* CONTENEDORES: Solo se iluminan si NO hay elementos internos con hover */
+.card:hover:not(:has(.quick-action:hover, .project-item:hover, .task-item:hover, .chat-item:hover, .activity-item:hover, .message-item:hover, .erp-activity-item:hover, .notification-item:hover, .list-item:hover, .card-item:hover)),
+.stat-card:hover:not(:has(.quick-action:hover, .project-item:hover, .task-item:hover, .chat-item:hover, .activity-item:hover, .message-item:hover, .erp-activity-item:hover, .notification-item:hover, .list-item:hover, .card-item:hover)),
+.widget:hover:not(:has(.quick-action:hover, .project-item:hover, .task-item:hover, .chat-item:hover, .activity-item:hover, .message-item:hover, .erp-activity-item:hover, .notification-item:hover, .list-item:hover, .card-item:hover)),
+.project-card:hover:not(:has(.quick-action:hover, .project-item:hover, .task-item:hover, .chat-item:hover, .activity-item:hover, .message-item:hover, .erp-activity-item:hover, .notification-item:hover, .list-item:hover, .card-item:hover)),
+.task-card:hover:not(:has(.quick-action:hover, .project-item:hover, .task-item:hover, .chat-item:hover, .activity-item:hover, .message-item:hover, .erp-activity-item:hover, .notification-item:hover, .list-item:hover, .card-item:hover)),
+.chat-list:hover:not(:has(.quick-action:hover, .project-item:hover, .task-item:hover, .chat-item:hover, .activity-item:hover, .message-item:hover, .erp-activity-item:hover, .notification-item:hover, .list-item:hover, .card-item:hover)),
+.activities-container:hover:not(:has(.quick-action:hover, .project-item:hover, .task-item:hover, .chat-item:hover, .activity-item:hover, .message-item:hover, .erp-activity-item:hover, .notification-item:hover, .list-item:hover, .card-item:hover)),
+.projects-container:hover:not(:has(.quick-action:hover, .project-item:hover, .task-item:hover, .chat-item:hover, .activity-item:hover, .message-item:hover, .erp-activity-item:hover, .notification-item:hover, .list-item:hover, .card-item:hover)),
+.tasks-container:hover:not(:has(.quick-action:hover, .project-item:hover, .task-item:hover, .chat-item:hover, .activity-item:hover, .message-item:hover, .erp-activity-item:hover, .notification-item:hover, .list-item:hover, .card-item:hover)),
+.messages-container:hover:not(:has(.quick-action:hover, .project-item:hover, .task-item:hover, .chat-item:hover, .activity-item:hover, .message-item:hover, .erp-activity-item:hover, .notification-item:hover, .list-item:hover, .card-item:hover)),
+.erp-activities:hover:not(:has(.quick-action:hover, .project-item:hover, .task-item:hover, .chat-item:hover, .activity-item:hover, .message-item:hover, .erp-activity-item:hover, .notification-item:hover, .list-item:hover, .card-item:hover)),
+.recent-activities:hover:not(:has(.quick-action:hover, .project-item:hover, .task-item:hover, .chat-item:hover, .activity-item:hover, .message-item:hover, .erp-activity-item:hover, .notification-item:hover, .list-item:hover, .card-item:hover)) {
+  border-color: var(--container-hover-border) !important;
+  box-shadow: var(--container-hover-glow) !important;
+  transform: translateY(-3px) !important;
+}
+
+/* ELEMENTOS INTERNOS: Efectos cuando se hace hover sobre ellos */
+.quick-action:hover,
+.project-item:hover,
+.task-item:hover,
+.chat-item:hover,
+.activity-item:hover,
+.message-item:hover,
+.erp-activity-item:hover,
+.notification-item:hover,
+.user-menu-item:hover,
+.dropdown-item:hover,
+.list-item:hover,
+.card-item:hover {
+  border-color: var(--item-hover-border) !important;
+  box-shadow: var(--item-hover-glow) !important;
+  transform: translateY(-2px) !important;
+  background: var(--item-hover-bg) !important;
+}
+
+/* ===== EFECTOS ESPECIALES EN ICONOS ===== */
+.quick-action:hover .quick-action-icon,
+.project-item:hover .project-icon,
+.task-item:hover .task-icon,
+.chat-item:hover .chat-avatar,
+.activity-item:hover .activity-icon,
+.message-item:hover .message-avatar,
+.erp-activity-item:hover .erp-icon,
+.notification-item:hover .notification-icon,
+.list-item:hover .item-icon,
+.card-item:hover .card-icon {
+  transform: scale(1.1) rotate(3deg) !important;
+  transition: transform var(--transition-fast) !important;
+}
+
+/* ===== SELECTORES ESPECÍFICOS PARA TUS CLASES EXISTENTES ===== */
+
+/* Proyectos Activos */
+.project-card .project-info,
+.project-card .project-header,
+.project-card .project-content {
+  /* Estos actúan como elementos internos */
+  border: 2px solid transparent !important;
+  border-radius: var(--radius-lg) !important;
+  transition: all var(--transition-normal) !important;
+  padding: var(--space-md) !important;
+  margin: var(--space-xs) 0 !important;
+}
+
+.project-card .project-info:hover,
+.project-card .project-header:hover,
+.project-card .project-content:hover {
+  border-color: var(--item-hover-border) !important;
+  box-shadow: var(--item-hover-glow) !important;
+  background: var(--item-hover-bg) !important;
+}
+
+/* Tareas */
+.task-list .task-item,
+.kanban-task,
+.task-card .task-content {
+  border: 2px solid transparent !important;
+  border-radius: var(--radius-lg) !important;
+  transition: all var(--transition-normal) !important;
+  margin: var(--space-xs) 0 !important;
+}
+
+/* Chat */
+.chat-list .chat-item,
+.messages-list .message-item {
+  border: 2px solid transparent !important;
+  border-radius: var(--radius-lg) !important;
+  transition: all var(--transition-normal) !important;
+  margin: var(--space-xs) 0 !important;
+}
+
+/* ERP Activities */
+.erp-activities .activity-item,
+.recent-activities .activity-item {
+  border: 2px solid transparent !important;
+  border-radius: var(--radius-lg) !important;
+  transition: all var(--transition-normal) !important;
+  margin: var(--space-xs) 0 !important;
+}
+
+/* ===== FALLBACK PARA NAVEGADORES SIN :has() ===== */
+@supports not (selector(:has(*))) {
+  /* Si el navegador no soporta :has(), aplicar efectos directos */
+  .quick-action:hover,
+  .project-item:hover,
+  .task-item:hover,
+  .chat-item:hover,
+  .activity-item:hover,
+  .message-item:hover,
+  .erp-activity-item:hover,
+  .notification-item:hover,
+  .list-item:hover,
+  .card-item:hover,
+  .project-info:hover,
+  .project-header:hover,
+  .project-content:hover,
+  .task-content:hover {
+    border-color: var(--item-hover-border) !important;
+    box-shadow: var(--item-hover-glow) !important;
+    transform: translateY(-2px) !important;
+    background: var(--item-hover-bg) !important;
+  }
+}
+
+/* ===== TEMA OSCURO ESPECÍFICO ===== */
+[data-theme="dark"] .quick-action:hover,
+[data-theme="dark"] .project-item:hover,
+[data-theme="dark"] .task-item:hover,
+
+
+
+[data-theme="dark"] .chat-item:hover,
+[data-theme="dark"] .activity-item:hover,
+[data-theme="dark"] .message-item:hover,
+[data-theme="dark"] .erp-activity-item:hover,
+[data-theme="dark"] .notification-item:hover,
+[data-theme="dark"] .list-item:hover,
+[data-theme="dark"] .card-item:hover {
+  background: var(--item-hover-bg) !important;
+}

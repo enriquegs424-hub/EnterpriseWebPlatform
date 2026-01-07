@@ -1,0 +1,132 @@
+/* ===== MEP-PROJECTS VARIABLES ===== */
+
+:root {
+    /* Colores Principales MEP */
+    --mep-primary: #10B981;
+    --mep-primary-50: #F0FDF9;
+    --mep-primary-100: #CCFBEF;
+    --mep-primary-200: #99F6E0;
+    --mep-primary-300: #5EEAD4;
+    --mep-primary-400: #2DD4BF;
+    --mep-primary-500: #10B981;
+    --mep-primary-600: #059669;
+    --mep-primary-700: #047857;
+    --mep-primary-800: #065F46;
+    --mep-primary-900: #064E3B;
+    
+    /* Escala de Grises */
+    --mep-gray-50: #F8FAFC;
+    --mep-gray-100: #F1F5F9;
+    --mep-gray-200: #E2E8F0;
+    --mep-gray-300: #CBD5E1;
+    --mep-gray-400: #94A3B8;
+    --mep-gray-500: #64748B;
+    --mep-gray-600: #475569;
+    --mep-gray-700: #334155;
+    --mep-gray-800: #1E293B;
+    --mep-gray-900: #0F172A;
+    
+    /* Sistema de Colores */
+    --mep-success: #10B981;
+    --mep-warning: #F59E0B;
+    --mep-error: #EF4444;
+    --mep-info: #3B82F6;
+    
+    /* Modo Claro */
+    --bg-primary: #FFFFFF;
+    --bg-secondary: #F8FAFC;
+    --bg-tertiary: #F1F5F9;
+    --bg-surface: #FFFFFF;
+    --bg-elevated: #FFFFFF;
+    --bg-sidebar: #021d04;
+    --bg-sidebar-item: rgba(255, 255, 255, 0.08);
+    --bg-sidebar-active: linear-gradient(135deg, var(--mep-primary-500), var(--mep-primary-600));
+    
+    --text-primary: #0f2a10;
+    --text-secondary: #64748B;
+    --text-tertiary: #94A3B8;
+    --text-inverse: #FFFFFF;
+    --text-on-primary: #FFFFFF;
+    --text-sidebar: #CBD5E1;
+    
+    --border-primary: #E2E8F0;
+    --border-secondary: #CBD5E1;
+    --border-focus: var(--mep-primary-500);
+    
+    /* Sombras */
+    --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+    --shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+    
+    /* Transiciones */
+    --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-normal: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-slow: 350ms cubic-bezier(0.4, 0, 0.2, 1);
+    
+    /* Radios */
+    --radius-sm: 0.375rem;
+    --radius-md: 0.5rem;
+    --radius-lg: 0.75rem;
+    --radius-xl: 1rem;
+    --radius-2xl: 1.5rem;
+    --radius-full: 9999px;
+    
+    /* Espaciado */
+    --space-xs: 0.25rem;
+    --space-sm: 0.5rem;
+    --space-md: 0.75rem;
+    --space-lg: 1rem;
+    --space-xl: 1.5rem;
+    --space-2xl: 2rem;
+    --space-3xl: 3rem;
+    
+    /* Tipografía */
+    --font-size-xs: 0.75rem;
+    --font-size-sm: 0.875rem;
+    --font-size-base: 1rem;
+    --font-size-lg: 1.125rem;
+    --font-size-xl: 1.25rem;
+    --font-size-2xl: 1.5rem;
+    --font-size-3xl: 1.875rem;
+    --font-size-4xl: 2.25rem;
+    
+    --line-height-tight: 1.25;
+    --line-height-normal: 1.5;
+    --line-height-relaxed: 1.75;
+}
+
+/* Modo Oscuro */
+[data-theme="dark"] {
+  /* Sidebar */
+  --bg-sidebar:      #111111;
+
+  /* Fondos generales */
+  --bg-primary:      #0d0d0d; /* fondo principal */
+  --bg-secondary:    #1a1a1a; /* paneles, cards */
+  --bg-tertiary:     #212121; /* hover, resaltados suaves */
+  --bg-surface:      #1a1a1a; /* superficies elevadas */
+  --bg-elevated:     #242424; /* modales, dropdowns */
+
+  /* Textos */
+  --text-primary:    #e5e5e5; /* alto contraste */
+  --text-secondary:  #a8a8a8; /* textos secundarios */
+  --text-tertiary:   #6e6e6e; /* hints, labels */
+  --text-sidebar:    #ffffff; /* en sidebar */
+
+  /* Bordes y separadores */
+  --border-primary:  #333333;
+  --border-secondary:#2b2b2b;
+
+  /* Colores de acento (botones, highlights) */
+  --accent-500:      #10a37f; /* verde suave */
+  --accent-600:      #0e8f6c;
+  
+    --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.3);
+    --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.4), 0 1px 2px -1px rgb(0 0 0 / 0.4);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.4), 0 2px 4px -2px rgb(0 0 0 / 0.4);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.4), 0 4px 6px -4px rgb(0 0 0 / 0.4);
+    --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.4), 0 8px 10px -6px rgb(0 0 0 / 0.4);
+}

@@ -1,0 +1,645 @@
+/* ===== MEP DESIGN SYSTEM - RESET/NORMALIZE ===== */
+
+/* ===== MODERN CSS RESET ===== */
+/* Box sizing rules */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/* Remove default margin and padding */
+* {
+  margin: 0;
+  padding: 0;
+}
+
+/* Remove list styles on ul, ol elements with a list role */
+ul[role='list'],
+ol[role='list'] {
+  list-style: none;
+}
+
+/* Set core root defaults */
+html {
+  scroll-behavior: smooth;
+  line-height: 1.5;
+  -webkit-text-size-adjust: 100%;
+  -moz-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+html:focus-within {
+  scroll-behavior: smooth;
+}
+
+/* Set core body defaults */
+body {
+  min-height: 100vh;
+  text-rendering: optimizeLegibility;
+  line-height: 1.5;
+  font-family: var(--font-family-sans);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-normal);
+  color: var(--text-primary);
+  background-color: var(--bg-primary);
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Remove default styles for headings */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-size: inherit;
+  font-weight: inherit;
+  line-height: inherit;
+  margin: 0;
+}
+
+/* Remove default paragraph margins */
+p {
+  margin: 0;
+}
+
+/* A elements that don't have a class get default styles */
+a:not([class]) {
+  text-decoration-skip-ink: auto;
+  color: var(--mep-primary-600);
+  text-decoration: underline;
+  text-underline-offset: 0.125em;
+}
+
+/* Remove default link styles */
+a {
+  color: inherit;
+  text-decoration: inherit;
+}
+
+/* Make images easier to work with */
+img,
+picture,
+video,
+canvas,
+svg {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+/* Remove default button styles */
+button {
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
+  color: inherit;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+/* Remove default input styles */
+input,
+button,
+textarea,
+select {
+  font: inherit;
+  color: inherit;
+}
+
+input,
+textarea,
+select {
+  background-color: transparent;
+  border: none;
+  outline: none;
+}
+
+/* Remove default fieldset styles */
+fieldset {
+  border: none;
+  padding: 0;
+  margin: 0;
+}
+
+/* Remove default legend styles */
+legend {
+  padding: 0;
+}
+
+/* Remove default table styles */
+table {
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+
+/* Remove default list styles */
+ul,
+ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* Remove default blockquote styles */
+blockquote {
+  margin: 0;
+  padding: 0;
+}
+
+/* Remove default hr styles */
+hr {
+  border: none;
+  height: 1px;
+  background: var(--border-primary);
+  margin: 0;
+}
+
+/* Remove default form styles */
+form {
+  margin: 0;
+}
+
+/* Remove default pre styles */
+pre {
+  margin: 0;
+  font-family: inherit;
+  font-size: inherit;
+}
+
+/* Remove default code styles */
+code,
+kbd,
+samp {
+  font-family: var(--font-family-mono);
+  font-size: inherit;
+}
+
+/* Remove default abbr styles */
+abbr[title] {
+  text-decoration: underline dotted;
+}
+
+/* Remove default b and strong styles */
+b,
+strong {
+  font-weight: inherit;
+}
+
+/* Remove default small styles */
+small {
+  font-size: inherit;
+}
+
+/* Remove default sub and sup styles */
+sub,
+sup {
+  font-size: 75%;
+  line-height: 0;
+  position: relative;
+  vertical-align: baseline;
+}
+
+sub {
+  bottom: -0.25em;
+}
+
+sup {
+  top: -0.5em;
+}
+
+/* Remove default iframe styles */
+iframe {
+  border: none;
+}
+
+/* Remove default embed styles */
+embed,
+object {
+  border: none;
+}
+
+/* Remove default audio styles */
+audio {
+  width: 100%;
+}
+
+/* Remove default video styles */
+video {
+  width: 100%;
+  height: auto;
+}
+
+/* ===== IMPROVED FOCUS STYLES ===== */
+:focus-visible {
+  outline: 2px solid var(--mep-primary-500);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* Remove outline for non-keyboard focus */
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* ===== SELECTION STYLES ===== */
+::selection {
+  background-color: var(--mep-primary-200);
+  color: var(--mep-primary-900);
+}
+
+::-moz-selection {
+  background-color: var(--mep-primary-200);
+  color: var(--mep-primary-900);
+}
+
+/* ===== SCROLLBAR STYLES ===== */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-tertiary);
+  border-radius: var(--radius-sm);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--mep-primary-300);
+  border-radius: var(--radius-sm);
+  transition: background var(--transition-fast);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--mep-primary-500);
+}
+
+::-webkit-scrollbar-corner {
+  background: var(--bg-tertiary);
+}
+
+/* Firefox scrollbar */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--mep-primary-300) var(--bg-tertiary);
+}
+
+/* ===== PLACEHOLDER STYLES ===== */
+::placeholder {
+  color: var(--text-tertiary);
+  opacity: 1;
+}
+
+::-webkit-input-placeholder {
+  color: var(--text-tertiary);
+}
+
+::-moz-placeholder {
+  color: var(--text-tertiary);
+  opacity: 1;
+}
+
+:-ms-input-placeholder {
+  color: var(--text-tertiary);
+}
+
+:-moz-placeholder {
+  color: var(--text-tertiary);
+  opacity: 1;
+}
+
+/* ===== FORM ELEMENT NORMALIZATION ===== */
+/* Remove default appearance from form elements */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+input[type="search"],
+input[type="url"],
+input[type="tel"],
+input[type="date"],
+input[type="time"],
+input[type="datetime-local"],
+input[type="month"],
+input[type="week"],
+textarea,
+select {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  border-radius: 0;
+}
+
+/* Remove default number input spinners */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+/* Remove default search input styles */
+input[type="search"]::-webkit-search-decoration,
+input[type="search"]::-webkit-search-cancel-button,
+input[type="search"]::-webkit-search-results-button,
+input[type="search"]::-webkit-search-results-decoration {
+  -webkit-appearance: none;
+}
+
+/* Remove default checkbox and radio styles */
+input[type="checkbox"],
+input[type="radio"] {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  width: 1rem;
+  height: 1rem;
+  border: 2px solid var(--border-primary);
+  border-radius: var(--radius-sm);
+  background: var(--bg-primary);
+  cursor: pointer;
+  position: relative;
+  transition: var(--transition-all);
+}
+
+input[type="radio"] {
+  border-radius: 50%;
+}
+
+input[type="checkbox"]:checked,
+input[type="radio"]:checked {
+  background-color: var(--mep-primary-500);
+  border-color: var(--mep-primary-500);
+}
+
+input[type="checkbox"]:checked::before {
+  content: '✓';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: white;
+  font-size: 0.75rem;
+  font-weight: bold;
+}
+
+input[type="radio"]:checked::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: white;
+}
+
+/* Remove default range input styles */
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+input[type="range"]::-webkit-slider-track {
+  background: var(--bg-tertiary);
+  height: 4px;
+  border-radius: var(--radius-full);
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  height: 20px;
+  width: 20px;
+  border-radius: 50%;
+  background: var(--mep-primary-500);
+  cursor: pointer;
+  border: 2px solid white;
+  box-shadow: var(--shadow-md);
+}
+
+input[type="range"]::-moz-range-track {
+  background: var(--bg-tertiary);
+  height: 4px;
+  border-radius: var(--radius-full);
+  border: none;
+}
+
+input[type="range"]::-moz-range-thumb {
+  height: 20px;
+  width: 20px;
+  border-radius: 50%;
+  background: var(--mep-primary-500);
+  cursor: pointer;
+  border: 2px solid white;
+  box-shadow: var(--shadow-md);
+  border: none;
+}
+
+/* ===== BUTTON NORMALIZATION ===== */
+button,
+[role="button"] {
+  cursor: pointer;
+  border: none;
+  background: none;
+  font: inherit;
+  color: inherit;
+  text-align: inherit;
+  padding: 0;
+  margin: 0;
+  outline: none;
+}
+
+button:disabled,
+[role="button"][aria-disabled="true"] {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* ===== ACCESSIBILITY IMPROVEMENTS ===== */
+/* Improve focus visibility for keyboard users */
+.js-focus-visible :focus:not(.focus-visible) {
+  outline: none;
+}
+
+/* Screen reader only content */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Skip to main content link */
+.skip-link {
+  position: absolute;
+  top: -40px;
+  left: 6px;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  padding: 8px;
+  text-decoration: none;
+  border-radius: var(--radius-sm);
+  border: 2px solid var(--border-primary);
+  z-index: 9999;
+}
+
+.skip-link:focus {
+  top: 6px;
+}
+
+/* ===== REDUCED MOTION ===== */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  
+  html {
+    scroll-behavior: auto;
+  }
+  
+  html:focus-within {
+    scroll-behavior: auto;
+  }
+}
+
+/* ===== HIGH CONTRAST MODE ===== */
+@media (prefers-contrast: high) {
+  ::-webkit-scrollbar-thumb {
+    background: var(--text-primary);
+  }
+  
+  input[type="checkbox"],
+  input[type="radio"] {
+    border-width: 3px;
+  }
+  
+  :focus-visible {
+    outline-width: 3px;
+  }
+}
+
+/* ===== PRINT STYLES ===== */
+@media print {
+  *,
+  *::before,
+  *::after {
+    background: transparent !important;
+    color: black !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+  
+  a,
+  a:visited {
+    text-decoration: underline;
+    color: black !important;
+  }
+  
+  a[href^="http"]:after {
+    content: " (" attr(href) ")";
+    font-size: 12px;
+  }
+  
+  abbr[title]:after {
+    content: " (" attr(title) ")";
+  }
+  
+  pre,
+  blockquote {
+    border: 1px solid #999;
+    page-break-inside: avoid;
+  }
+  
+  thead {
+    display: table-header-group;
+  }
+  
+  tr,
+  img {
+    page-break-inside: avoid;
+  }
+  
+  img {
+    max-width: 100% !important;
+  }
+  
+  p,
+  h2,
+  h3 {
+    orphans: 3;
+    widows: 3;
+  }
+  
+  h2,
+  h3 {
+    page-break-after: avoid;
+  }
+  
+  .no-print {
+    display: none !important;
+  }
+}
+
+/* ===== DARK THEME ADJUSTMENTS ===== */
+[data-theme="dark"] ::selection {
+  background-color: var(--mep-primary-700);
+  color: var(--mep-primary-100);
+}
+
+[data-theme="dark"] ::-moz-selection {
+  background-color: var(--mep-primary-700);
+  color: var(--mep-primary-100);
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-thumb {
+  background: var(--mep-primary-600);
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-thumb:hover {
+  background: var(--mep-primary-500);
+}
+
+[data-theme="dark"] * {
+  scrollbar-color: var(--mep-primary-600) var(--bg-secondary);
+}
+
+[data-theme="dark"] input[type="checkbox"],
+[data-theme="dark"] input[type="radio"] {
+  border-color: var(--border-primary);
+  background: var(--bg-primary);
+}
+
+[data-theme="dark"] input[type="range"]::-webkit-slider-track {
+  background: var(--bg-secondary);
+}
+
+[data-theme="dark"] input[type="range"]::-moz-range-track {
+  background: var(--bg-secondary);
+}

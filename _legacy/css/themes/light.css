@@ -1,0 +1,534 @@
+/* ===== MEP DESIGN SYSTEM - LIGHT THEME ===== */
+
+:root {
+  /* ===== LIGHT THEME VARIABLES ===== */
+  
+  /* Primary Colors */
+  --mep-primary-50: #F0FDF9;
+  --mep-primary-100: #CCFBEF;
+  --mep-primary-200: #99F6E0;
+  --mep-primary-300: #5EEAD4;
+  --mep-primary-400: #2DD4BF;
+  --mep-primary-500: #10B981;
+  --mep-primary-600: #059669;
+  --mep-primary-700: #047857;
+  --mep-primary-800: #065F46;
+  --mep-primary-900: #064E3B;
+
+  /* Semantic Colors */
+  --mep-success-50: #F0FDF4;
+  --mep-success-100: #DCFCE7;
+  --mep-success-200: #BBF7D0;
+  --mep-success-300: #86EFAC;
+  --mep-success-400: #4ADE80;
+  --mep-success-500: #22C55E;
+  --mep-success-600: #16A34A;
+  --mep-success-700: #15803D;
+  --mep-success-800: #166534;
+  --mep-success-900: #14532D;
+
+  --mep-warning-50: #FFFBEB;
+  --mep-warning-100: #FEF3C7;
+  --mep-warning-200: #FDE68A;
+  --mep-warning-300: #FCD34D;
+  --mep-warning-400: #FBBF24;
+  --mep-warning-500: #F59E0B;
+  --mep-warning-600: #D97706;
+  --mep-warning-700: #B45309;
+  --mep-warning-800: #92400E;
+  --mep-warning-900: #78350F;
+
+  --mep-error-50: #FEF2F2;
+  --mep-error-100: #FEE2E2;
+  --mep-error-200: #FECACA;
+  --mep-error-300: #FCA5A5;
+  --mep-error-400: #F87171;
+  --mep-error-500: #EF4444;
+  --mep-error-600: #DC2626;
+  --mep-error-700: #B91C1C;
+  --mep-error-800: #991B1B;
+  --mep-error-900: #7F1D1D;
+
+  --mep-info-50: #EFF6FF;
+  --mep-info-100: #DBEAFE;
+  --mep-info-200: #BFDBFE;
+  --mep-info-300: #93C5FD;
+  --mep-info-400: #60A5FA;
+  --mep-info-500: #3B82F6;
+  --mep-info-600: #2563EB;
+  --mep-info-700: #1D4ED8;
+  --mep-info-800: #1E40AF;
+  --mep-info-900: #1E3A8A;
+
+  /* Gray Scale */
+  --mep-gray-50: #F8FAFC;
+  --mep-gray-100: #F1F5F9;
+  --mep-gray-200: #E2E8F0;
+  --mep-gray-300: #CBD5E1;
+  --mep-gray-400: #94A3B8;
+  --mep-gray-500: #64748B;
+  --mep-gray-600: #475569;
+  --mep-gray-700: #334155;
+  --mep-gray-800: #1E293B;
+  --mep-gray-900: #0F172A;
+
+  /* ===== SEMANTIC TOKENS - LIGHT THEME ===== */
+  
+  /* Backgrounds */
+  --bg-primary: #FFFFFF;
+  --bg-secondary: var(--mep-gray-50);
+  --bg-tertiary: var(--mep-gray-100);
+  --bg-surface: #FFFFFF;
+  --bg-elevated: #FFFFFF;
+  --bg-overlay: rgba(0, 0, 0, 0.5);
+  --bg-sidebar: #021d04;
+  --bg-sidebar-item: rgba(255, 255, 255, 0.08);
+  --bg-sidebar-active: linear-gradient(135deg, var(--mep-primary-500), var(--mep-primary-600));
+
+  /* Text Colors */
+  --text-primary: var(--mep-gray-900);
+  --text-secondary: var(--mep-gray-600);
+  --text-tertiary: var(--mep-gray-400);
+  --text-inverse: #FFFFFF;
+  --text-on-primary: #FFFFFF;
+  --text-on-surface: var(--mep-gray-900);
+  --text-sidebar: #CBD5E1;
+  --text-disabled: var(--mep-gray-300);
+  --text-muted: var(--mep-gray-500);
+
+  /* Border Colors */
+  --border-primary: var(--mep-gray-200);
+  --border-secondary: var(--mep-gray-300);
+  --border-tertiary: var(--mep-gray-100);
+  --border-focus: var(--mep-primary-500);
+  --border-error: var(--mep-error-500);
+  --border-success: var(--mep-success-500);
+  --border-warning: var(--mep-warning-500);
+
+  /* Interactive States */
+  --state-hover-opacity: 0.9;
+  --state-active-opacity: 0.8;
+  --state-disabled-opacity: 0.5;
+  --state-focus-ring: 0 0 0 3px rgba(16, 185, 129, 0.1);
+
+  /* Surface States */
+  --surface-hover: var(--mep-gray-100);
+  --surface-active: var(--mep-gray-200);
+  --surface-selected: var(--mep-primary-50);
+  --surface-focus: var(--mep-primary-100);
+
+  /* Feedback Colors */
+  --feedback-success: var(--mep-success-500);
+  --feedback-warning: var(--mep-warning-500);
+  --feedback-error: var(--mep-error-500);
+  --feedback-info: var(--mep-info-500);
+
+  /* ===== MODULE SPECIFIC VARIABLES - LIGHT THEME ===== */
+  
+  /* Dashboard */
+  --dashboard-bg: var(--bg-secondary);
+  --dashboard-card-bg: var(--bg-primary);
+  --dashboard-stat-positive: var(--mep-success-500);
+  --dashboard-stat-negative: var(--mep-error-500);
+  --dashboard-chart-primary: var(--mep-primary-500);
+  --dashboard-chart-secondary: var(--mep-primary-300);
+
+  /* Projects */
+  --projects-bg: var(--bg-secondary);
+  --projects-card-bg: var(--bg-primary);
+  --projects-progress-bg: var(--mep-gray-200);
+  --projects-progress-fill: var(--mep-primary-500);
+  --projects-status-active: var(--mep-success-500);
+  --projects-status-pending: var(--mep-warning-500);
+  --projects-status-completed: var(--mep-primary-500);
+
+  /* Tasks */
+  --tasks-bg: var(--bg-secondary);
+  --tasks-card-bg: var(--bg-primary);
+  --tasks-priority-low: var(--mep-success-500);
+  --tasks-priority-medium: var(--mep-warning-500);
+  --tasks-priority-high: var(--mep-error-500);
+  --tasks-completed: var(--mep-gray-400);
+
+  /* Chat */
+  --chat-bg: var(--bg-primary);
+  --chat-sidebar-bg: var(--bg-secondary);
+  --chat-message-own: var(--mep-primary-500);
+  --chat-message-other: var(--bg-tertiary);
+  --chat-online: var(--mep-success-500);
+  --chat-away: var(--mep-warning-500);
+  --chat-offline: var(--mep-gray-400);
+
+  /* CRM */
+  --crm-bg: var(--bg-secondary);
+  --crm-card-bg: var(--bg-primary);
+  --crm-pipeline-bg: var(--bg-tertiary);
+  --crm-deal-bg: var(--bg-primary);
+  --crm-hot-lead: var(--mep-error-500);
+  --crm-warm-lead: var(--mep-warning-500);
+  --crm-cold-lead: var(--mep-info-500);
+
+  /* ERP */
+  --erp-bg: var(--bg-secondary);
+  --erp-card-bg: var(--bg-primary);
+  --erp-revenue: var(--mep-success-500);
+  --erp-expense: var(--mep-error-500);
+  --erp-profit: var(--mep-primary-500);
+  --erp-chart-bg: var(--bg-primary);
+
+  /* RRHH */
+  --rrhh-bg: var(--bg-secondary);
+  --rrhh-card-bg: var(--bg-primary);
+  --rrhh-active-employee: var(--mep-success-500);
+  --rrhh-inactive-employee: var(--mep-error-500);
+  --rrhh-department-bg: var(--mep-primary-50);
+
+  /* Inventory */
+  --inventory-bg: var(--bg-secondary);
+  --inventory-card-bg: var(--bg-primary);
+  --inventory-in-stock: var(--mep-success-500);
+  --inventory-low-stock: var(--mep-warning-500);
+  --inventory-out-stock: var(--mep-error-500);
+  --inventory-category-bg: var(--bg-tertiary);
+
+  /* Users */
+  --users-bg: var(--bg-secondary);
+  --users-card-bg: var(--bg-primary);
+  --users-active: var(--mep-success-500);
+  --users-inactive: var(--mep-error-500);
+  --users-pending: var(--mep-warning-500);
+  --users-role-admin: var(--mep-error-500);
+  --users-role-user: var(--mep-primary-500);
+
+  /* Settings */
+  --settings-bg: var(--bg-secondary);
+  --settings-card-bg: var(--bg-primary);
+  --settings-nav-bg: var(--bg-tertiary);
+  --settings-nav-active: var(--mep-primary-500);
+  --settings-warning-bg: var(--mep-warning-50);
+  --settings-warning-border: var(--mep-warning-200);
+
+  /* Support */
+  --support-bg: var(--bg-secondary);
+  --support-card-bg: var(--bg-primary);
+  --support-ticket-open: var(--mep-info-500);
+  --support-ticket-progress: var(--mep-warning-500);
+  --support-ticket-resolved: var(--mep-success-500);
+  --support-priority-urgent: var(--mep-error-500);
+
+  /* ===== COMPONENT SPECIFIC VARIABLES - LIGHT THEME ===== */
+  
+  /* Buttons */
+  --btn-primary-bg: var(--mep-primary-500);
+  --btn-primary-bg-hover: var(--mep-primary-400);
+  --btn-primary-text: var(--text-on-primary);
+  --btn-secondary-bg: var(--bg-surface);
+  --btn-secondary-bg-hover: var(--surface-hover);
+  --btn-secondary-text: var(--text-primary);
+  --btn-secondary-border: var(--border-primary);
+
+  /* Forms */
+  --form-bg: var(--bg-primary);
+  --form-border: var(--border-primary);
+  --form-border-focus: var(--border-focus);
+  --form-text: var(--text-primary);
+  --form-placeholder: var(--text-tertiary);
+  --form-error: var(--mep-error-500);
+  --form-success: var(--mep-success-500);
+
+  /* Cards */
+  --card-bg: var(--bg-surface);
+  --card-border: var(--border-primary);
+  --card-shadow: var(--shadow-sm);
+  --card-shadow-hover: var(--shadow-md);
+
+  /* Navigation */
+  --nav-bg: var(--bg-surface);
+  --nav-border: var(--border-primary);
+  --nav-text: var(--text-secondary);
+  --nav-text-active: var(--mep-primary-600);
+  --nav-indicator: var(--mep-primary-500);
+
+  /* Modals */
+  --modal-bg: var(--bg-surface);
+  --modal-overlay: rgba(0, 0, 0, 0.5);
+  --modal-border: var(--border-primary);
+  --modal-shadow: var(--shadow-2xl);
+
+  /* ===== LIGHT THEME SHADOWS ===== */
+  --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+  --shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+  --shadow-inner: inset 0 2px 4px 0 rgb(0 0 0 / 0.05);
+
+  /* Focus Shadows */
+  --shadow-focus-primary: 0 0 0 3px rgb(16 185 129 / 0.1);
+  --shadow-focus-error: 0 0 0 3px rgb(239 68 68 / 0.1);
+  --shadow-focus-warning: 0 0 0 3px rgb(245 158 11 / 0.1);
+  --shadow-focus-success: 0 0 0 3px rgb(34 197 94 / 0.1);
+
+  /* ===== LIGHT THEME GRADIENTS ===== */
+  --gradient-primary: linear-gradient(135deg, var(--mep-primary-500), var(--mep-primary-600));
+  --gradient-secondary: linear-gradient(135deg, var(--mep-gray-100), var(--mep-gray-200));
+  --gradient-success: linear-gradient(135deg, var(--mep-success-500), var(--mep-success-600));
+  --gradient-warning: linear-gradient(135deg, var(--mep-warning-500), var(--mep-warning-600));
+  --gradient-error: linear-gradient(135deg, var(--mep-error-500), var(--mep-error-600));
+  --gradient-surface: linear-gradient(135deg, var(--bg-primary) 0%, rgba(16, 185, 129, 0.02) 100%);
+
+  /* ===== LIGHT THEME SPECIFIC STATES ===== */
+  
+  /* Hover States */
+  --hover-bg: var(--mep-gray-50);
+  --hover-border: var(--mep-gray-300);
+  --hover-text: var(--text-primary);
+  --hover-shadow: var(--shadow-md);
+
+  /* Active States */
+  --active-bg: var(--mep-gray-100);
+  --active-border: var(--mep-gray-400);
+  --active-text: var(--text-primary);
+
+  /* Selected States */
+  --selected-bg: var(--mep-primary-50);
+  --selected-border: var(--mep-primary-300);
+  --selected-text: var(--mep-primary-700);
+
+  /* Disabled States */
+  --disabled-bg: var(--mep-gray-100);
+  --disabled-border: var(--mep-gray-200);
+  --disabled-text: var(--mep-gray-400);
+
+  /* ===== LIGHT THEME CHART COLORS ===== */
+  --chart-color-1: var(--mep-primary-500);
+  --chart-color-2: var(--mep-info-500);
+  --chart-color-3: var(--mep-success-500);
+  --chart-color-4: var(--mep-warning-500);
+  --chart-color-5: var(--mep-error-500);
+  --chart-color-6: var(--mep-primary-300);
+  --chart-color-7: var(--mep-info-300);
+  --chart-color-8: var(--mep-success-300);
+
+  /* Chart Grid */
+  --chart-grid: var(--mep-gray-200);
+  --chart-axis: var(--mep-gray-400);
+  --chart-label: var(--text-secondary);
+
+  /* ===== LIGHT THEME STATUS COLORS ===== */
+  
+  /* General Status */
+  --status-active: var(--mep-success-500);
+  --status-inactive: var(--mep-gray-400);
+  --status-pending: var(--mep-warning-500);
+  --status-error: var(--mep-error-500);
+  --status-success: var(--mep-success-500);
+
+  /* Priority Levels */
+  --priority-low: var(--mep-success-500);
+  --priority-medium: var(--mep-warning-500);
+  --priority-high: var(--mep-error-500);
+  --priority-critical: var(--mep-error-700);
+
+  /* ===== LIGHT THEME ACCESSIBILITY ===== */
+  
+  /* High Contrast Support */
+  --high-contrast-border: #000000;
+  --high-contrast-text: #000000;
+  --high-contrast-bg: #FFFFFF;
+  --high-contrast-focus: #005FCC;
+
+  /* Focus Indicators */
+  --focus-ring-width: 2px;
+  --focus-ring-offset: 2px;
+  --focus-ring-color: var(--border-focus);
+  --focus-ring-style: solid;
+
+  /* ===== LIGHT THEME PRINT COLORS ===== */
+  --print-bg: #FFFFFF;
+  --print-text: #000000;
+  --print-border: #CCCCCC;
+  --print-shadow: none;
+}
+
+/* ===== LIGHT THEME SPECIFIC OVERRIDES ===== */
+
+/* Ensure proper contrast in light theme */
+[data-theme="light"] {
+  color-scheme: light;
+}
+
+/* Light theme selection colors */
+[data-theme="light"] ::selection {
+  background-color: var(--mep-primary-200);
+  color: var(--mep-primary-900);
+}
+
+[data-theme="light"] ::-moz-selection {
+  background-color: var(--mep-primary-200);
+  color: var(--mep-primary-900);
+}
+
+/* Light theme scrollbar */
+[data-theme="light"] ::-webkit-scrollbar-track {
+  background: var(--bg-tertiary);
+}
+
+[data-theme="light"] ::-webkit-scrollbar-thumb {
+  background: var(--mep-primary-300);
+}
+
+[data-theme="light"] ::-webkit-scrollbar-thumb:hover {
+  background: var(--mep-primary-500);
+}
+
+[data-theme="light"] * {
+  scrollbar-color: var(--mep-primary-300) var(--bg-tertiary);
+}
+
+/* Light theme form elements */
+[data-theme="light"] input[type="checkbox"],
+[data-theme="light"] input[type="radio"] {
+  border-color: var(--border-primary);
+  background: var(--bg-primary);
+}
+
+[data-theme="light"] input[type="range"]::-webkit-slider-track {
+  background: var(--bg-tertiary);
+}
+
+[data-theme="light"] input[type="range"]::-moz-range-track {
+  background: var(--bg-tertiary);
+}
+
+/* Light theme component specific adjustments */
+[data-theme="light"] .sidebar {
+  background: var(--bg-sidebar);
+  box-shadow: var(--shadow-lg);
+}
+
+[data-theme="light"] .header {
+  background: var(--bg-primary);
+  border-bottom: 1px solid var(--border-primary);
+  box-shadow: var(--shadow-sm);
+}
+
+[data-theme="light"] .card {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  box-shadow: var(--card-shadow);
+}
+
+[data-theme="light"] .card:hover {
+  box-shadow: var(--card-shadow-hover);
+}
+
+[data-theme="light"] .btn--primary {
+  background: var(--btn-primary-bg);
+  color: var(--btn-primary-text);
+}
+
+[data-theme="light"] .btn--primary:hover {
+  background: var(--btn-primary-bg-hover);
+}
+
+[data-theme="light"] .btn--secondary {
+  background: var(--btn-secondary-bg);
+  color: var(--btn-secondary-text);
+  border: 1px solid var(--btn-secondary-border);
+}
+
+[data-theme="light"] .btn--secondary:hover {
+  background: var(--btn-secondary-bg-hover);
+}
+
+/* Light theme status badges */
+[data-theme="light"] .badge--success {
+  background: var(--mep-success-100);
+  color: var(--mep-success-700);
+  border: 1px solid var(--mep-success-200);
+}
+
+[data-theme="light"] .badge--warning {
+  background: var(--mep-warning-100);
+  color: var(--mep-warning-700);
+  border: 1px solid var(--mep-warning-200);
+}
+
+[data-theme="light"] .badge--error {
+  background: var(--mep-error-100);
+  color: var(--mep-error-700);
+  border: 1px solid var(--mep-error-200);
+}
+
+[data-theme="light"] .badge--info {
+  background: var(--mep-info-100);
+  color: var(--mep-info-700);
+  border: 1px solid var(--mep-info-200);
+}
+
+/* Light theme module backgrounds */
+[data-theme="light"] .dashboard-module {
+  background: var(--dashboard-bg);
+}
+
+[data-theme="light"] .projects-module {
+  background: var(--projects-bg);
+}
+
+[data-theme="light"] .tasks-module {
+  background: var(--tasks-bg);
+}
+
+[data-theme="light"] .chat-module {
+  background: var(--chat-bg);
+}
+
+[data-theme="light"] .crm-module {
+  background: var(--crm-bg);
+}
+
+[data-theme="light"] .erp-module {
+  background: var(--erp-bg);
+}
+
+[data-theme="light"] .rrhh-module {
+  background: var(--rrhh-bg);
+}
+
+[data-theme="light"] .inventory-module {
+  background: var(--inventory-bg);
+}
+
+[data-theme="light"] .users-module {
+  background: var(--users-bg);
+}
+
+[data-theme="light"] .settings-module {
+  background: var(--settings-bg);
+}
+
+[data-theme="light"] .support-module {
+  background: var(--support-bg);
+}
+
+/* Light theme print adjustments */
+@media print {
+  [data-theme="light"] * {
+    background: var(--print-bg) !important;
+    color: var(--print-text) !important;
+    border-color: var(--print-border) !important;
+    box-shadow: var(--print-shadow) !important;
+  }
+}
+
+/* Light theme high contrast mode */
+@media (prefers-contrast: high) {
+  [data-theme="light"] {
+    --border-primary: var(--high-contrast-border);
+    --text-primary: var(--high-contrast-text);
+    --bg-primary: var(--high-contrast-bg);
+    --border-focus: var(--high-contrast-focus);
+  }
+}

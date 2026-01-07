@@ -1,0 +1,79 @@
+@import "tailwindcss";
+
+@theme {
+  /* Olive - Color Corporativo Principal */
+  --color-olive-50: #f8f9f4;
+  --color-olive-100: #f0f2e6;
+  --color-olive-200: #dde1c7;
+  --color-olive-300: #c4cba0;
+  --color-olive-400: #a3ad71;
+  --color-olive-500: #7c8f3b;
+  --color-olive-600: #6b7d32;
+  --color-olive-700: #596a2a;
+  --color-olive-800: #4a5724;
+  --color-olive-900: #3d4a1e;
+
+  /* Neutral - Grises */
+  --color-neutral-50: #ffffff;
+  --color-neutral-100: #f9fafb;
+  --color-neutral-200: #f3f4f6;
+  --color-neutral-300: #e5e7eb;
+  --color-neutral-400: #9ca3af;
+  --color-neutral-500: #6b7280;
+  --color-neutral-600: #4b5563;
+  --color-neutral-700: #374151;
+  --color-neutral-800: #1f2937;
+  --color-neutral-900: #111827;
+
+  /* Estados */
+  --color-success-50: #f0f9f0;
+  --color-success-100: #d1f4d6;
+  --color-success-500: #10b981;
+  --color-success-600: #059669;
+  --color-success-700: #047857;
+
+  --color-error-50: #fef2f2;
+  --color-error-100: #fee2e2;
+  --color-error-500: #ef4444;
+  --color-error-600: #dc2626;
+  --color-error-700: #b91c1c;
+
+  --color-warning-50: #fefce8;
+  --color-warning-100: #fef9c3;
+  --color-warning-500: #f59e0b;
+  --color-warning-600: #d97706;
+  --color-warning-700: #b45309;
+
+  --color-info-50: #eff6ff;
+  --color-info-100: #dbeafe;
+  --color-info-500: #3b82f6;
+  --color-info-600: #2563eb;
+  --color-info-700: #1d4ed8;
+
+  /* Fonts */
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background: #f9fafb;
+  color: #111827;
+  font-family: var(--font-geist-sans), system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Override default button and input reset */
+button,
+input,
+select,
+textarea {
+  font-family: inherit;
+}
+
+/* Smooth transitions globally */
+* {
+  transition-property: color, background-color, border-color, fill, stroke;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}

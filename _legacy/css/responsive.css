@@ -1,0 +1,508 @@
+/* ===== MEP-PROJECTS RESPONSIVE DESIGN ===== */
+
+/* DESKTOP LARGE (1280px+) */
+@media (max-width: 1280px) {
+    .grid-cols-4 {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+    
+    .search-input {
+        width: 280px;
+    }
+    
+    .search-input:focus {
+        width: 320px;
+    }
+}
+
+/* DESKTOP (1024px) */
+@media (max-width: 1024px) {
+    .main-content {
+        margin-left: 0;
+    }
+
+    .sidebar {
+        transform: translateX(-100%);
+        transition: transform var(--transition-normal);
+    }
+
+    .sidebar.show {
+        transform: translateX(0);
+    }
+
+    .grid-cols-4,
+    .grid-cols-3 {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .search-input {
+        width: 240px;
+    }
+
+    .search-input:focus {
+        width: 280px;
+    }
+
+    .header {
+        padding: var(--space-lg);
+    }
+    
+    .page-content {
+        padding: var(--space-xl);
+    }
+    
+    /* Chat adjustments */
+    .chat-container {
+        height: calc(100vh - 160px);
+    }
+    
+    /* CRM tabs scroll */
+    .crm-tabs {
+        overflow-x: auto;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+    }
+    
+    .crm-tabs::-webkit-scrollbar {
+        display: none;
+    }
+    
+    /* Table responsive */
+    .table-container {
+        overflow-x: auto;
+    }
+}
+
+/* TABLET (768px) */
+@media (max-width: 768px) {
+    .header-title {
+        font-size: var(--font-size-2xl);
+    }
+    
+    .header-subtitle {
+        display: none;
+    }
+
+    .grid-cols-4,
+    .grid-cols-3,
+    .grid-cols-2 {
+        grid-template-columns: repeat(1, minmax(0, 1fr));
+    }
+
+    .project-card {
+        flex-direction: column;
+        text-align: center;
+        padding: var(--space-lg);
+    }
+
+    .project-avatar {
+        margin-right: 0;
+        margin-bottom: var(--space-lg);
+    }
+
+    .project-progress-section {
+        flex-direction: column;
+        gap: var(--space-lg);
+        width: 100%;
+    }
+
+    .project-status {
+        text-align: center;
+    }
+
+    .search-input {
+        width: 200px;
+    }
+
+    .search-input:focus {
+        width: 240px;
+    }
+    
+    /* Stats cards stack */
+    .stat-card {
+        padding: var(--space-lg);
+    }
+    
+    .stat-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--space-md);
+    }
+    
+    .stat-icon {
+        width: 48px;
+        height: 48px;
+    }
+    
+    /* Quick actions stack */
+    .quick-action {
+        flex-direction: column;
+        text-align: center;
+        padding: var(--space-lg);
+    }
+    
+    .quick-action-icon {
+        margin-right: 0;
+        margin-bottom: var(--space-md);
+    }
+    
+    /* Chat mobile layout */
+    .chat-container {
+        flex-direction: column;
+        height: auto;
+    }
+    
+    .chat-list {
+        width: 100%;
+        max-height: 300px;
+        order: 2;
+    }
+    
+    .chat-panel {
+        order: 1;
+        min-height: 400px;
+    }
+    
+    /* CRM mobile adjustments */
+    .pipeline-stage {
+        margin-bottom: var(--space-md);
+    }
+    
+    .deal-card,
+    .company-card {
+        margin-bottom: var(--space-md);
+    }
+    
+    /* Modal mobile */
+    .modal-content {
+        width: 95%;
+        margin: var(--space-lg);
+        padding: var(--space-lg);
+    }
+    
+    .modal-header {
+        flex-direction: column;
+        gap: var(--space-md);
+        text-align: center;
+    }
+}
+
+/* MOBILE (640px) */
+@media (max-width: 640px) {
+    .card,
+    .stat-card {
+        padding: var(--space-lg);
+    }
+
+    .project-card {
+        padding: var(--space-md);
+    }
+
+    .header {
+        padding: var(--space-md);
+        flex-direction: column;
+        gap: var(--space-lg);
+    }
+
+    .header-right {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .search-container {
+        flex: 1;
+    }
+
+    .search-input {
+        width: 100%;
+    }
+
+    .search-input:focus {
+        width: 100%;
+    }
+    
+    .page-content {
+        padding: var(--space-lg);
+    }
+    
+    /* Sidebar full width on mobile */
+    .sidebar {
+        width: 100%;
+    }
+    
+    /* Header mobile stack */
+    .header-left {
+        width: 100%;
+        justify-content: space-between;
+    }
+    
+    .header-title {
+        font-size: var(--font-size-xl);
+    }
+    
+    /* Button groups stack */
+    .header-right {
+        flex-wrap: wrap;
+        gap: var(--space-sm);
+    }
+    
+    /* Notification menu */
+    .dropdown-menu {
+        right: 0;
+        left: 0;
+        margin: 0 var(--space-md);
+        min-width: auto;
+    }
+    
+    /* Stats mobile */
+    .stat-content p {
+        font-size: var(--font-size-2xl);
+    }
+    
+    /* Progress bars */
+    .project-progress-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--space-xs);
+    }
+    
+    /* Chat mobile optimizations */
+    .chat-panel-header {
+        flex-wrap: wrap;
+        gap: var(--space-sm);
+    }
+    
+    .message {
+        margin: var(--space-xs) 0;
+    }
+    
+    /* CRM tabs mobile */
+    .crm-tab {
+        padding: var(--space-sm) var(--space-md);
+        font-size: var(--font-size-xs);
+    }
+    
+    /* Table mobile */
+    .table {
+        font-size: var(--font-size-xs);
+    }
+    
+    .table th,
+    .table td {
+        padding: var(--space-sm);
+    }
+    
+    /* Form mobile */
+    .form-input,
+    .form-select,
+    .form-textarea {
+        font-size: var(--font-size-base);
+    }
+    
+    /* Button mobile */
+    .btn {
+        padding: var(--space-sm) var(--space-md);
+        font-size: var(--font-size-xs);
+    }
+    
+    /* Modal mobile */
+    .modal-content {
+        width: 100%;
+        height: 100%;
+        border-radius: 0;
+        max-height: 100vh;
+    }
+}
+
+/* MOBILE SMALL (480px) */
+@media (max-width: 480px) {
+    :root {
+        --space-xs: 0.125rem;
+        --space-sm: 0.375rem;
+        --space-md: 0.5rem;
+        --space-lg: 0.75rem;
+        --space-xl: 1rem;
+        --space-2xl: 1.25rem;
+        --space-3xl: 1.5rem;
+    }
+    
+    .header-title {
+        font-size: var(--font-size-lg);
+    }
+    
+    .stat-content p {
+        font-size: var(--font-size-xl);
+    }
+    
+    .project-avatar,
+    .quick-action-icon {
+        width: 40px;
+        height: 40px;
+    }
+    
+    .user-avatar {
+        width: 36px;
+        height: 36px;
+    }
+    
+    .notification-icon,
+    .stat-icon {
+        width: 40px;
+        height: 40px;
+    }
+    
+    /* Ultra compact chat */
+    .chat-item {
+        padding: var(--space-sm);
+    }
+    
+    .message {
+        font-size: var(--font-size-sm);
+    }
+    
+    /* Minimal padding */
+    .card {
+        padding: var(--space-md);
+    }
+    
+    .page-content {
+        padding: var(--space-md);
+    }
+}
+
+/* LANDSCAPE ORIENTATION */
+@media (max-height: 500px) and (orientation: landscape) {
+    .sidebar {
+        height: 100vh;
+        overflow-y: auto;
+    }
+    
+    .main-content {
+        height: 100vh;
+        overflow-y: auto;
+    }
+    
+    .chat-container {
+        height: calc(100vh - 120px);
+    }
+    
+    .modal-content {
+        max-height: 90vh;
+        overflow-y: auto;
+    }
+}
+
+/* HIGH DPI DISPLAYS */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+    .sidebar-logo-icon,
+    .user-avatar,
+    .project-avatar {
+        image-rendering: -webkit-optimize-contrast;
+        image-rendering: crisp-edges;
+    }
+}
+
+/* PRINT STYLES */
+@media print {
+    .sidebar,
+    .header,
+    .dropdown-menu,
+    .btn,
+    .notification-badge {
+        display: none !important;
+    }
+
+    .main-content {
+        margin-left: 0 !important;
+    }
+
+    .page-content {
+        padding: 0 !important;
+    }
+
+    .card,
+    .stat-card {
+        break-inside: avoid;
+        box-shadow: none !important;
+        border: 1px solid #000 !important;
+        margin-bottom: 1rem;
+    }
+    
+    .project-card {
+        border: 1px solid #ccc;
+        padding: 1rem;
+    }
+    
+    .progress-bar {
+        border: 1px solid #ccc;
+    }
+    
+    .progress-fill {
+        background: #333 !important;
+    }
+}
+
+/* REDUCED MOTION */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+    
+    .animate-fade-in,
+    .animate-slide-in,
+    .animate-scale-in {
+        animation: none;
+    }
+    
+    .progress-fill::after {
+        animation: none;
+    }
+    
+    .sidebar-nav-badge {
+        animation: none;
+    }
+}
+
+/* HIGH CONTRAST MODE */
+@media (prefers-contrast: high) {
+    :root {
+        --border-primary: #000000;
+        --border-secondary: #333333;
+        --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.5);
+        --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.5);
+        --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.5);
+    }
+    
+    .card,
+    .stat-card,
+    .project-card {
+        border-width: 2px;
+    }
+    
+    .btn {
+        border-width: 2px;
+    }
+}
+/* DARK MODE MEDIA QUERY AJUSTADO */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --bg-primary:    #0d0d0d;  /* fondo principal oscuro */
+        --bg-secondary:  #1a1a1a;  /* fondos de tarjetas y paneles */
+        --bg-tertiary:   #212121;  /* acentos intermedios */
+        --bg-surface:    #1a1a1a;  /* superficies elevadas */
+        --bg-elevated:   #212121;  /* elevación intermedia */
+        --bg-sidebar:    #0a0a0a;  /* barra lateral un poco más oscuro */
+        
+        --text-primary:   #e5e5e5; /* texto principal claro */
+        --text-secondary: #a8a8a8; /* texto secundario suave */
+        --text-tertiary:  #7a7a7a; /* texto terciario tenue */
+        --text-sidebar:   #d0d0d0; /* texto de la barra lateral */
+        
+        --border-primary:   #333333; /* bordes principales */
+        --border-secondary: #2b2b2b; /* bordes secundarios */
+    }
+}
