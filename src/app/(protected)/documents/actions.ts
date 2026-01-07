@@ -106,6 +106,52 @@ export async function createDocument(data: {
     return { success: true, document };
 }
 
+export async function uploadDocument(formData: FormData) {
+    const session = await auth();
+    if (!session?.user?.email) return { error: 'No autenticado' };
+
+    const file = formData.get('file') as File;
+    const projectId = formData.get('projectId') as string | null;
+    const folderId = formData.get('folderId') as string | null;
+
+    if (!file) {
+        return { error: 'No se ha seleccionado ningún archivo' };
+    }
+
+    try {
+        const user = await prisma.user.findUnique({
+            where: { email: session.user.email },
+        });
+
+        if (!user) return { error: 'Usuario no encontrado' };
+
+        // SIMULATED UPLOAD: In a real app, you would upload to S3/Blob Storage here.
+        // For now, we simulate a path and store the metadata in the DB.
+        const fakePath = `/uploads/${crypto.randomUUID()}-${file.name}`;
+
+        const document = await prisma.document.create({
+            data: {
+                name: file.name,
+                fileName: file.name,
+                fileSize: file.size,
+                fileType: file.type,
+                filePath: fakePath,
+                uploadedById: user.id,
+                projectId: projectId || undefined,
+                folderId: folderId || undefined,
+            },
+        });
+
+        revalidatePath('/documents');
+        if (projectId) revalidatePath(`/projects/${projectId}`);
+
+        return { success: true, document };
+    } catch (error) {
+        console.error('Upload error:', error);
+        return { error: 'Error al subir el archivo' };
+    }
+}
+
 export async function updateDocument(id: string, data: {
     name?: string;
     description?: string;

@@ -19,6 +19,7 @@ export async function getCurrentUser() {
             department: true,
             dailyWorkHours: true,
             isActive: true,
+            preferences: true,
         }
     });
 }
@@ -36,7 +37,7 @@ export async function updateUserProfile(data: {
             where: { id: session.user.id },
             data: {
                 name: data.name,
-                department: data.department,
+                department: data.department as any,
                 dailyWorkHours: parseFloat(data.dailyWorkHours.toString()),
             }
         });
@@ -44,6 +45,33 @@ export async function updateUserProfile(data: {
         return { success: true, message: 'Perfil actualizado correctamente' };
     } catch (error) {
         return { error: 'Error al actualizar el perfil' };
+    }
+}
+
+export async function updateUserPreferences(preferences: any) {
+    const session = await auth();
+    if (!session?.user?.id) return { error: 'No autorizado' };
+
+    try {
+        // First get current preferences to merge
+        const user = await prisma.user.findUnique({
+            where: { id: session.user.id },
+            select: { preferences: true }
+        });
+
+        const currentPrefs = (user?.preferences as any) || {};
+        const newPrefs = { ...currentPrefs, ...preferences };
+
+        await prisma.user.update({
+            where: { id: session.user.id },
+            data: {
+                preferences: newPrefs
+            }
+        });
+        revalidatePath('/settings');
+        return { success: true };
+    } catch (error) {
+        return { error: 'Error al guardar preferencias' };
     }
 }
 

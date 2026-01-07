@@ -1,9 +1,9 @@
 'use client';
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Clock, MapPin, Users, Plus } from 'lucide-react';
-import { format, addMonths, subMonths, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, isToday, startOfWeek, endOfWeek } from 'date-fns';
+import { format, addMonths, subMonths, addWeeks, subWeeks, addDays, subDays, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, isToday, startOfWeek, endOfWeek } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { getEvents } from '@/app/(protected)/calendar/actions';
 import CreateEventModal from '@/components/calendar/CreateEventModal';
@@ -24,8 +24,18 @@ export default function EventsView({ projectId }: EventsViewProps) {
     const [selectedEvent, setSelectedEvent] = useState<any | null>(null);
 
     // Calendar Navigation
-    const nextMonth = () => setCurrentDate(addMonths(currentDate, 1));
-    const previousMonth = () => setCurrentDate(subMonths(currentDate, 1));
+    const handlePrevious = () => {
+        if (view === 'month') setCurrentDate(subMonths(currentDate, 1));
+        else if (view === 'week') setCurrentDate(subWeeks(currentDate, 1));
+        else if (view === 'day') setCurrentDate(subDays(currentDate, 1));
+    };
+
+    const handleNext = () => {
+        if (view === 'month') setCurrentDate(addMonths(currentDate, 1));
+        else if (view === 'week') setCurrentDate(addWeeks(currentDate, 1));
+        else if (view === 'day') setCurrentDate(addDays(currentDate, 1));
+    };
+
     const goToToday = () => setCurrentDate(new Date());
 
     // Generate days for grid using useMemo to prevent infinite loops
@@ -58,6 +68,27 @@ export default function EventsView({ projectId }: EventsViewProps) {
             setLoading(false);
         }
     }, [startDate, endDate, projectId]);
+
+    const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+    // Auto-scroll to current time or 8:00 AM
+    useEffect(() => {
+        if (view === 'week' || view === 'day') {
+            // Wait for render
+            setTimeout(() => {
+                const container = scrollContainerRef.current;
+                if (container) {
+                    const currentHour = new Date().getHours();
+                    // Scroll to current hour or 8:00 AM, whichever is earlier, but prioritize work hours
+                    // If before 8am, scroll to 8am. If after 8am, scroll to current hour - 1 (for context)
+                    const targetHour = Math.max(8, currentHour - 1);
+                    // In week view, each hour is 3rem (48px). In day view 5rem (80px).
+                    const hourHeight = view === 'week' ? 48 : 80;
+                    container.scrollTop = targetHour * hourHeight;
+                }
+            }, 100);
+        }
+    }, [view]);
 
     useEffect(() => {
         fetchEvents();
@@ -171,13 +202,13 @@ export default function EventsView({ projectId }: EventsViewProps) {
                         {loading && <div className="ml-3 w-4 h-4 border-2 border-olive-600 border-t-transparent rounded-full animate-spin"></div>}
                     </h2>
                     <div className="flex items-center space-x-1">
-                        <button onClick={previousMonth} className="p-2 hover:bg-neutral-100 rounded-lg transition-all text-neutral-600">
+                        <button onClick={handlePrevious} className="p-2 hover:bg-neutral-100 rounded-lg transition-all text-neutral-600">
                             <ChevronLeft size={20} />
                         </button>
                         <button onClick={goToToday} className="px-3 py-1 hover:bg-neutral-100 rounded-lg transition-all text-sm font-bold text-neutral-600">
                             Hoy
                         </button>
-                        <button onClick={nextMonth} className="p-2 hover:bg-neutral-100 rounded-lg transition-all text-neutral-600">
+                        <button onClick={handleNext} className="p-2 hover:bg-neutral-100 rounded-lg transition-all text-neutral-600">
                             <ChevronRight size={20} />
                         </button>
                     </div>
@@ -268,7 +299,7 @@ export default function EventsView({ projectId }: EventsViewProps) {
                                 </div>
                             ))}
                         </div>
-                        <div className="flex-1 overflow-y-auto custom-scrollbar relative">
+                        <div className="flex-1 overflow-y-auto custom-scrollbar relative" ref={scrollContainerRef}>
                             <div className="grid grid-cols-7 min-h-[600px]">
                                 {eachDayOfInterval({
                                     start: startOfWeek(currentDate, { weekStartsOn: 1 }),
@@ -322,7 +353,7 @@ export default function EventsView({ projectId }: EventsViewProps) {
                                 {format(currentDate, 'd')}
                             </div>
                         </div>
-                        <div className="flex-1 overflow-y-auto custom-scrollbar relative bg-white">
+                        <div className="flex-1 overflow-y-auto custom-scrollbar relative bg-white" ref={scrollContainerRef}>
                             <div className="min-h-[1000px] relative">
                                 {Array.from({ length: 24 }).map((_, hour) => (
                                     <div key={hour} className="h-20 border-b border-neutral-100 flex group hover:bg-neutral-50/50 transition-colors" onClick={() => {

@@ -62,12 +62,16 @@ export default function KanbanCard({ task, onDragStart, onEdit, onDelete }: Kanb
             exit={{ opacity: 0, y: -20 }}
             draggable
             onDragStart={(e) => onDragStart(e as any, task.id)}
-            className={`bg-white rounded-xl p-4 shadow-sm hover:shadow-md transition-all cursor-move ${getPriorityColor(task.priority)} relative group`}
+            onClick={() => onEdit && onEdit(task)}
+            className={`bg-white rounded-xl p-4 shadow-sm hover:shadow-md transition-all cursor-pointer ${getPriorityColor(task.priority)} relative group`}
         >
             {/* Menu Button */}
             <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
                 <button
-                    onClick={() => setShowMenu(!showMenu)}
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        setShowMenu(!showMenu);
+                    }}
                     className="p-1 hover:bg-neutral-100 rounded-lg transition-all"
                 >
                     <MoreVertical size={16} className="text-neutral-400" />

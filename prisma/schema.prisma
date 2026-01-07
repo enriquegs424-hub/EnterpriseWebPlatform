@@ -29,6 +29,7 @@ model User {
   documentShares    DocumentShare[]
   createdEvents     Event[]
   eventInvitations  EventAttendee[]
+  preferences       Json?
 }
 
 model Project {

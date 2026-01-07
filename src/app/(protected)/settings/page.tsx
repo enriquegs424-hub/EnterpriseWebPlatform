@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { getCurrentUser, updateUserProfile, changePassword } from './actions';
+import { getCurrentUser, updateUserProfile, changePassword, updateUserPreferences } from './actions';
 import { useSession } from 'next-auth/react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { User, Lock, Bell, Palette, Save, AlertCircle, CheckCircle2, Eye, EyeOff } from 'lucide-react';
@@ -19,6 +19,8 @@ export default function SettingsPage() {
         name: '',
         department: '',
         dailyWorkHours: 8,
+        language: 'es',
+        timezone: 'Europe/Madrid'
     });
 
     // Password form
@@ -26,6 +28,20 @@ export default function SettingsPage() {
         currentPassword: '',
         newPassword: '',
         confirmPassword: '',
+    });
+
+    // Preferences
+    const [preferences, setPreferences] = useState({
+        notifications: {
+            weeklyReport: true,
+            newProjects: true,
+            dailyReminder: true
+        },
+        appearance: {
+            theme: 'mep',
+            compactSidebar: false,
+            smoothAnimations: true
+        }
     });
 
     useEffect(() => {
@@ -40,7 +56,13 @@ export default function SettingsPage() {
                 name: userData.name,
                 department: userData.department,
                 dailyWorkHours: userData.dailyWorkHours,
+                language: (userData.preferences as any)?.language || 'es',
+                timezone: (userData.preferences as any)?.timezone || 'Europe/Madrid'
             });
+            if (userData.preferences) {
+                // Merge with defaults
+                setPreferences(prev => ({ ...prev, ...(userData.preferences as any) }));
+            }
         }
         setLoading(false);
     };
@@ -48,6 +70,12 @@ export default function SettingsPage() {
     const handleProfileSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         const result = await updateUserProfile(profileData);
+
+        // Also save preferences (language/timezone)
+        await updateUserPreferences({
+            language: (profileData as any).language,
+            timezone: (profileData as any).timezone
+        });
 
         if (result.success) {
             setMessage({ type: 'success', text: result.message || 'Perfil actualizado' });
@@ -87,6 +115,39 @@ export default function SettingsPage() {
             setMessage({ type: 'error', text: result.error || 'Error al cambiar contraseña' });
             setTimeout(() => setMessage(null), 3000);
         }
+    };
+
+    const savePreferences = async (newPreferences: any) => {
+        setPreferences(newPreferences);
+        const result = await updateUserPreferences(newPreferences);
+        if (result.success) {
+            setMessage({ type: 'success', text: 'Preferencias guardadas' });
+            setTimeout(() => setMessage(null), 2000);
+        } else {
+            setMessage({ type: 'error', text: 'Error al guardar preferencias' });
+        }
+    };
+
+    const toggleNotification = (key: string) => {
+        const newPrefs = {
+            ...preferences,
+            notifications: {
+                ...preferences.notifications,
+                [key]: !(preferences.notifications as any)[key]
+            }
+        };
+        savePreferences(newPrefs);
+    };
+
+    const toggleAppearance = (key: string) => {
+        const newPrefs = {
+            ...preferences,
+            appearance: {
+                ...preferences.appearance,
+                [key]: !(preferences.appearance as any)[key]
+            }
+        };
+        savePreferences(newPrefs);
     };
 
     if (loading) return <div className="p-8 text-center text-neutral-500">Cargando configuración...</div>;
@@ -210,6 +271,35 @@ export default function SettingsPage() {
                                             </div>
                                         </div>
 
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div>
+                                                <label className="block text-sm font-semibold text-neutral-700 mb-2">Idioma</label>
+                                                <select
+                                                    value={(profileData as any).language || 'es'}
+                                                    onChange={(e) => setProfileData({ ...profileData, language: e.target.value } as any)}
+                                                    className="w-full px-4 py-2.5 bg-neutral-50 border border-neutral-200 rounded-xl focus:ring-4 focus:ring-olive-500/10 focus:border-olive-500 outline-none transition-all"
+                                                >
+                                                    <option value="es">Español</option>
+                                                    <option value="en">English</option>
+                                                    <option value="fr">Français</option>
+                                                </select>
+                                            </div>
+
+                                            <div>
+                                                <label className="block text-sm font-semibold text-neutral-700 mb-2">Zona Horaria</label>
+                                                <select
+                                                    value={(profileData as any).timezone || 'Europe/Madrid'}
+                                                    onChange={(e) => setProfileData({ ...profileData, timezone: e.target.value } as any)}
+                                                    className="w-full px-4 py-2.5 bg-neutral-50 border border-neutral-200 rounded-xl focus:ring-4 focus:ring-olive-500/10 focus:border-olive-500 outline-none transition-all"
+                                                >
+                                                    <option value="Europe/Madrid">Madrid (CET/CEST)</option>
+                                                    <option value="Europe/London">London (GMT/BST)</option>
+                                                    <option value="America/New_York">New York (EST/EDT)</option>
+                                                    <option value="UTC">UTC</option>
+                                                </select>
+                                            </div>
+                                        </div>
+
                                         <div className="pt-4">
                                             <button
                                                 type="submit"
@@ -311,9 +401,9 @@ export default function SettingsPage() {
 
                                     <div className="space-y-4">
                                         {[
-                                            { id: 'n1', label: 'Resumen semanal de horas', desc: 'Recibe un correo todos los lunes con tu actividad.' },
-                                            { id: 'n2', label: 'Nuevos proyectos asignados', desc: 'Aviso inmediato cuando se te asigne un nuevo código.' },
-                                            { id: 'n3', label: 'Recordatorio de registro diario', desc: 'Si olvidas registrar tus horas antes de las 18:00.' },
+                                            { id: 'weeklyReport', label: 'Resumen semanal de horas', desc: 'Recibe un correo todos los lunes con tu actividad.' },
+                                            { id: 'newProjects', label: 'Nuevos proyectos asignados', desc: 'Aviso inmediato cuando se te asigne un nuevo código.' },
+                                            { id: 'dailyReminder', label: 'Recordatorio de registro diario', desc: 'Si olvidas registrar tus horas antes de las 18:00.' },
                                         ].map((n) => (
                                             <div key={n.id} className="flex items-start justify-between p-4 bg-neutral-50 rounded-2xl border border-neutral-100 hover:border-olive-200 transition-colors">
                                                 <div>
@@ -321,22 +411,16 @@ export default function SettingsPage() {
                                                     <p className="text-xs text-neutral-500 mt-0.5">{n.desc}</p>
                                                 </div>
                                                 <div className="relative inline-flex items-center cursor-pointer">
-                                                    <input type="checkbox" defaultChecked className="sr-only peer" />
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={(preferences.notifications as any)[n.id]}
+                                                        onChange={() => toggleNotification(n.id)}
+                                                        className="sr-only peer"
+                                                    />
                                                     <div className="w-11 h-6 bg-neutral-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-olive-600"></div>
                                                 </div>
                                             </div>
                                         ))}
-                                    </div>
-
-                                    <div className="pt-4">
-                                        <button
-                                            type="button"
-                                            onClick={() => setMessage({ type: 'success', text: 'Preferencias guardadas (Simulación)' })}
-                                            className="flex items-center space-x-2 bg-neutral-900 hover:bg-black text-white px-6 py-3 rounded-xl font-bold transition-all"
-                                        >
-                                            <Save size={18} />
-                                            <span>Guardar Preferencias</span>
-                                        </button>
                                     </div>
                                 </motion.div>
                             )}
@@ -379,7 +463,12 @@ export default function SettingsPage() {
                                                 <p className="text-xs text-neutral-500">Maximiza el espacio de trabajo ocultando textos.</p>
                                             </div>
                                             <div className="relative inline-flex items-center cursor-pointer">
-                                                <input type="checkbox" className="sr-only peer" />
+                                                <input
+                                                    type="checkbox"
+                                                    checked={preferences.appearance.compactSidebar}
+                                                    onChange={() => toggleAppearance('compactSidebar')}
+                                                    className="sr-only peer"
+                                                />
                                                 <div className="w-11 h-6 bg-neutral-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-olive-600"></div>
                                             </div>
                                         </div>
@@ -389,7 +478,12 @@ export default function SettingsPage() {
                                                 <p className="text-xs text-neutral-500">Habilitar transiciones suaves entre páginas.</p>
                                             </div>
                                             <div className="relative inline-flex items-center cursor-pointer">
-                                                <input type="checkbox" defaultChecked className="sr-only peer" />
+                                                <input
+                                                    type="checkbox"
+                                                    checked={preferences.appearance.smoothAnimations}
+                                                    onChange={() => toggleAppearance('smoothAnimations')}
+                                                    className="sr-only peer"
+                                                />
                                                 <div className="w-11 h-6 bg-neutral-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-olive-600"></div>
                                             </div>
                                         </div>

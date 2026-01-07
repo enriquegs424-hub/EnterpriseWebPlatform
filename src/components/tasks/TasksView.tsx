@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
+import TaskDetailsModal from '@/components/tasks/TaskDetailsModal';
 import KanbanBoard from '@/app/(protected)/tasks/kanban/KanbanBoard';
 import CalendarView from '@/app/(protected)/tasks/calendar/CalendarView';
 
@@ -28,6 +29,7 @@ export default function TasksView({ projectId }: TasksViewProps) {
     const [stats, setStats] = useState<any>(null);
     const [loading, setLoading] = useState(true);
     const [showCreateModal, setShowCreateModal] = useState(false);
+    const [selectedTask, setSelectedTask] = useState<any | null>(null);
     const [filters, setFilters] = useState({
         status: '',
         priority: '',
@@ -119,6 +121,16 @@ export default function TasksView({ projectId }: TasksViewProps) {
 
     return (
         <div className="space-y-6">
+            <TaskDetailsModal
+                task={selectedTask}
+                isOpen={!!selectedTask}
+                onClose={() => setSelectedTask(null)}
+                onUpdate={() => {
+                    setSelectedTask(null);
+                    fetchData();
+                }}
+            />
+
             {/* Header */}
             <div className="flex justify-between items-center">
                 <div>
@@ -318,13 +330,13 @@ export default function TasksView({ projectId }: TasksViewProps) {
                                                         <CheckSquare size={20} />
                                                     </button>
                                                 )}
-                                                <Link
-                                                    href={`/tasks/${task.id}`}
+                                                <button
+                                                    onClick={() => setSelectedTask(task)}
                                                     className="p-2 text-neutral-600 hover:bg-neutral-50 rounded-lg transition-all"
                                                     title="Ver detalles"
                                                 >
                                                     <Edit2 size={20} />
-                                                </Link>
+                                                </button>
                                                 <button
                                                     onClick={() => handleDeleteTask(task.id)}
                                                     className="p-2 text-error-600 hover:bg-error-50 rounded-lg transition-all"
@@ -352,6 +364,7 @@ export default function TasksView({ projectId }: TasksViewProps) {
                                 initialTasks={tasks}
                                 onUpdateStatus={handleUpdateStatus}
                                 onDelete={handleDeleteTask}
+                                onEdit={(task) => setSelectedTask(task)}
                             />
                         </motion.div>
                     )}
@@ -364,7 +377,10 @@ export default function TasksView({ projectId }: TasksViewProps) {
                             exit={{ opacity: 0, y: -20 }}
                             transition={{ duration: 0.2 }}
                         >
-                            <CalendarView tasks={tasks} />
+                            <CalendarView
+                                tasks={tasks}
+                                onTaskClick={(task) => setSelectedTask(task)}
+                            />
                         </motion.div>
                     )}
                 </AnimatePresence>

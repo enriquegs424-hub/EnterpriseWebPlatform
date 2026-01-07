@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { getAllDocuments, getAllFolders, deleteDocument, getDocumentStats } from '@/app/(protected)/documents/actions';
+import { getAllDocuments, getAllFolders, deleteDocument, getDocumentStats, uploadDocument } from '@/app/(protected)/documents/actions';
 import {
     FileText, Upload, Folder, Grid, List, Search, Filter,
     Download, Share2, Trash2, Eye, MoreVertical, Plus,
@@ -23,9 +23,28 @@ export default function DocumentsView({ projectId }: DocumentsViewProps) {
     const [folders, setFolders] = useState<any[]>([]);
     const [stats, setStats] = useState<any>(null);
     const [loading, setLoading] = useState(true);
+    const [uploading, setUploading] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedFolder, setSelectedFolder] = useState<string | null>(null);
     const [showUploadModal, setShowUploadModal] = useState(false);
+
+    const handleFileUpload = async (file: File) => {
+        setUploading(true);
+        const formData = new FormData();
+        formData.append('file', file);
+        if (projectId) formData.append('projectId', projectId);
+        if (selectedFolder) formData.append('folderId', selectedFolder);
+
+        const result = await uploadDocument(formData);
+
+        if (result.success) {
+            await fetchData();
+            setShowUploadModal(false);
+        } else {
+            alert(result.error || 'Error al subir archivo');
+        }
+        setUploading(false);
+    };
 
     useEffect(() => {
         fetchData();
@@ -51,6 +70,21 @@ export default function DocumentsView({ projectId }: DocumentsViewProps) {
             await deleteDocument(id);
             fetchData();
         }
+    };
+
+    const handleDownload = (doc: any) => {
+        // En un entorno real, esto usaría doc.fileUrl
+        alert(`Descargando ${doc.name}... (Simulación)\nURL: ${doc.fileUrl}`);
+    };
+
+    const handleView = (doc: any) => {
+        alert(`Visualizando ${doc.name}... (Simulación)\nAbriría un visor para el tipo: ${doc.fileType}`);
+    };
+
+    const handleShare = (doc: any) => {
+        // Simular copiado al portapapeles
+        navigator.clipboard.writeText(`${window.location.origin}/documents/${doc.id}`);
+        alert(`Enlace copiado al portapapeles: ${window.location.origin}/documents/${doc.id}`);
     };
 
     const getFileIcon = (fileType: string) => {
@@ -244,18 +278,31 @@ export default function DocumentsView({ projectId }: DocumentsViewProps) {
                                     <h4 className="font-bold text-sm mb-1 truncate">{doc.name}</h4>
                                     <p className="text-xs opacity-70 mb-3">{formatFileSize(doc.fileSize)}</p>
                                     <div className="flex items-center space-x-2">
-                                        <button className="flex-1 p-2 bg-white/50 hover:bg-white rounded-lg transition-all">
+                                        <button
+                                            onClick={() => handleView(doc)}
+                                            className="flex-1 p-2 bg-white/50 hover:bg-white rounded-lg transition-all"
+                                            title="Ver"
+                                        >
                                             <Eye size={16} className="mx-auto" />
                                         </button>
-                                        <button className="flex-1 p-2 bg-white/50 hover:bg-white rounded-lg transition-all">
+                                        <button
+                                            onClick={() => handleDownload(doc)}
+                                            className="flex-1 p-2 bg-white/50 hover:bg-white rounded-lg transition-all"
+                                            title="Descargar"
+                                        >
                                             <Download size={16} className="mx-auto" />
                                         </button>
-                                        <button className="flex-1 p-2 bg-white/50 hover:bg-white rounded-lg transition-all">
+                                        <button
+                                            onClick={() => handleShare(doc)}
+                                            className="flex-1 p-2 bg-white/50 hover:bg-white rounded-lg transition-all"
+                                            title="Compartir"
+                                        >
                                             <Share2 size={16} className="mx-auto" />
                                         </button>
                                         <button
                                             onClick={() => handleDelete(doc.id)}
                                             className="flex-1 p-2 bg-white/50 hover:bg-white rounded-lg transition-all"
+                                            title="Eliminar"
                                         >
                                             <Trash2 size={16} className="mx-auto" />
                                         </button>
@@ -282,18 +329,31 @@ export default function DocumentsView({ projectId }: DocumentsViewProps) {
                                         </div>
                                     </div>
                                     <div className="flex items-center space-x-2">
-                                        <button className="p-2 hover:bg-neutral-50 rounded-lg transition-all">
+                                        <button
+                                            onClick={() => handleView(doc)}
+                                            className="p-2 hover:bg-neutral-50 rounded-lg transition-all"
+                                            title="Ver"
+                                        >
                                             <Eye size={20} />
                                         </button>
-                                        <button className="p-2 hover:bg-neutral-50 rounded-lg transition-all">
+                                        <button
+                                            onClick={() => handleDownload(doc)}
+                                            className="p-2 hover:bg-neutral-50 rounded-lg transition-all"
+                                            title="Descargar"
+                                        >
                                             <Download size={20} />
                                         </button>
-                                        <button className="p-2 hover:bg-neutral-50 rounded-lg transition-all">
+                                        <button
+                                            onClick={() => handleShare(doc)}
+                                            className="p-2 hover:bg-neutral-50 rounded-lg transition-all"
+                                            title="Compartir"
+                                        >
                                             <Share2 size={20} />
                                         </button>
                                         <button
                                             onClick={() => handleDelete(doc.id)}
                                             className="p-2 hover:bg-error-50 text-error-600 rounded-lg transition-all"
+                                            title="Eliminar"
                                         >
                                             <Trash2 size={20} />
                                         </button>
@@ -310,20 +370,45 @@ export default function DocumentsView({ projectId }: DocumentsViewProps) {
                 <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
                     <div className="bg-white rounded-3xl shadow-2xl max-w-2xl w-full p-8">
                         <h3 className="text-2xl font-black text-neutral-900 mb-4">Subir Archivo {projectId ? 'al Proyecto' : ''}</h3>
-                        <div className="border-2 border-dashed border-neutral-300 rounded-2xl p-12 text-center">
-                            <Upload size={48} className="mx-auto text-neutral-400 mb-4" />
-                            <p className="text-neutral-600 font-medium">Arrastra archivos aquí o haz click para seleccionar</p>
-                            <p className="text-sm text-neutral-400 mt-2">Máximo 50MB por archivo</p>
-                        </div>
+
+                        {!uploading ? (
+                            <div
+                                className="border-2 border-dashed border-neutral-300 rounded-2xl p-12 text-center cursor-pointer hover:bg-neutral-50 transition-colors"
+                                onDragOver={(e) => e.preventDefault()}
+                                onDrop={(e) => {
+                                    e.preventDefault();
+                                    const file = e.dataTransfer.files[0];
+                                    if (file) handleFileUpload(file);
+                                }}
+                                onClick={() => document.getElementById('file-upload')?.click()}
+                            >
+                                <input
+                                    type="file"
+                                    id="file-upload"
+                                    className="hidden"
+                                    onChange={(e) => {
+                                        const file = e.target.files?.[0];
+                                        if (file) handleFileUpload(file);
+                                    }}
+                                />
+                                <Upload size={48} className="mx-auto text-neutral-400 mb-4" />
+                                <p className="text-neutral-600 font-medium">Arrastra archivos aquí o haz click para seleccionar</p>
+                                <p className="text-sm text-neutral-400 mt-2">Máximo 50MB por archivo</p>
+                            </div>
+                        ) : (
+                            <div className="text-center py-12">
+                                <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-olive-600 border-t-transparent mb-4"></div>
+                                <p className="text-lg font-bold text-olive-600">Subiendo archivo...</p>
+                            </div>
+                        )}
+
                         <div className="flex space-x-3 mt-6">
                             <button
                                 onClick={() => setShowUploadModal(false)}
-                                className="flex-1 px-6 py-3 border border-neutral-200 rounded-xl hover:bg-neutral-50 font-bold"
+                                disabled={uploading}
+                                className="flex-1 px-6 py-3 border border-neutral-200 rounded-xl hover:bg-neutral-50 font-bold disabled:opacity-50"
                             >
                                 Cancelar
-                            </button>
-                            <button className="flex-1 px-6 py-3 bg-olive-600 text-white rounded-xl hover:bg-olive-700 font-bold">
-                                Subir
                             </button>
                         </div>
                     </div>
