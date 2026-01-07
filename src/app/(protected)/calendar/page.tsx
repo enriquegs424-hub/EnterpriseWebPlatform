@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Clock, MapPin, Users, Plus } from 'lucide-react';
 import { format, addMonths, subMonths, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, isToday, startOfWeek, endOfWeek } from 'date-fns';
@@ -14,6 +14,7 @@ export default function Calendar() {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [events, setEvents] = useState<any[]>([]);
     const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
     const [selectedDateForModal, setSelectedDateForModal] = useState<Date | undefined>(undefined);
 
     // Calendar Navigation
@@ -21,26 +22,32 @@ export default function Calendar() {
     const previousMonth = () => setCurrentDate(subMonths(currentDate, 1));
     const goToToday = () => setCurrentDate(new Date());
 
-    // Generate days for grid
-    const monthStart = startOfMonth(currentDate);
-    const monthEnd = endOfMonth(currentDate);
-    const startDate = startOfWeek(monthStart, { weekStartsOn: 1 }); // Start on Monday
-    const endDate = endOfWeek(monthEnd, { weekStartsOn: 1 });
+    // Generate days for grid using useMemo to prevent infinite loops
+    const { startDate, endDate, calendarDays } = useMemo(() => {
+        const monthStart = startOfMonth(currentDate);
+        const monthEnd = endOfMonth(currentDate);
+        const start = startOfWeek(monthStart, { weekStartsOn: 1 }); // Start on Monday
+        const end = endOfWeek(monthEnd, { weekStartsOn: 1 });
 
-    const calendarDays = eachDayOfInterval({
-        start: startDate,
-        end: endDate,
-    });
+        const days = eachDayOfInterval({
+            start: start,
+            end: end,
+        });
+
+        return { startDate: start, endDate: end, calendarDays: days };
+    }, [currentDate]);
 
     const weekDays = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
 
     const fetchEvents = useCallback(async () => {
         setLoading(true);
+        setError(null);
         try {
             const data = await getEvents(startDate, endDate);
             setEvents(data);
         } catch (error) {
             console.error('Error fetching events:', error);
+            setError('No se pudieron cargar los eventos. Verifica tu conexión.');
         } finally {
             setLoading(false);
         }
@@ -117,6 +124,14 @@ export default function Calendar() {
                     <span>Nuevo Evento</span>
                 </button>
             </div>
+
+            {/* Error Message */}
+            {error && (
+                <div className="bg-red-50 text-red-600 p-4 rounded-xl border border-red-200 flex justify-between items-center">
+                    <span className="font-medium">{error}</span>
+                    <button onClick={fetchEvents} className="text-sm underline hover:text-red-800">Reintentar</button>
+                </div>
+            )}
 
             {/* Calendar Controls */}
             <div className="flex items-center justify-between bg-white p-4 rounded-2xl shadow-sm border border-neutral-200">
