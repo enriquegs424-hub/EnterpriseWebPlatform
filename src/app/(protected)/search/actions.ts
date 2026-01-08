@@ -41,7 +41,7 @@ export async function globalSearch(query: string) {
     return {
         results: [
             ...projects.map((p: any) => ({ id: p.id, type: 'PROYECTO', title: p.name, subtitle: p.code, link: `/projects/${p.id}` })),
-            ...tasks.map((t: any) => ({ id: t.id, type: 'TAREA', title: t.title, subtitle: t.project.name, link: `/projects/${t.projectId}/tasks` })),
+            ...tasks.map((t: any) => ({ id: t.id, type: 'TAREA', title: t.title, subtitle: t.project?.name || 'Sin proyecto', link: `/projects/${t.projectId}/tasks` })),
             ...documents.map((d: any) => ({ id: d.id, type: 'DOCUMENTO', title: d.name, subtitle: d.project?.name || 'General', link: d.project ? `/projects/${d.projectId}/documents` : '/documents' })),
         ]
     };

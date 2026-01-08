@@ -16,7 +16,7 @@ const TimerWrapper = dynamic(() => import('@/components/hours/TimerWrapper'), {
 });
 
 
-import CommandPalette from './CommandPalette';
+import GlobalSearch from '../GlobalSearch';
 
 export default function Header() {
     const [isCommandOpen, setIsCommandOpen] = useState(false);
@@ -88,7 +88,7 @@ export default function Header() {
 
     return (
         <header className="h-16 bg-white border-b border-neutral-200 flex items-center justify-between px-6 sticky top-0 z-20 shadow-sm">
-            <CommandPalette isOpen={isCommandOpen} onClose={() => setIsCommandOpen(false)} />
+            <GlobalSearch isOpen={isCommandOpen} onClose={() => setIsCommandOpen(false)} />
 
             <div className="flex-1 max-w-md">
                 <div onClick={handleSearchClick} className="relative group cursor-pointer">
