@@ -134,38 +134,38 @@ export default function TasksView({ projectId }: TasksViewProps) {
             {/* Header */}
             <div className="flex justify-between items-center">
                 <div>
-                    <h1 className="text-3xl font-black text-neutral-900 flex items-center">
-                        <CheckSquare className="w-8 h-8 mr-3 text-olive-600" />
+                    <h1 className="text-3xl font-black text-neutral-900 dark:text-neutral-100 flex items-center">
+                        <CheckSquare className="w-8 h-8 mr-3 text-olive-600 dark:text-olive-500" />
                         Tareas {projectId ? ' del Proyecto' : ''}
                     </h1>
-                    <p className="text-neutral-500 mt-1 font-medium">Organiza y asigna tareas al equipo</p>
+                    <p className="text-neutral-500 dark:text-neutral-400 mt-1 font-medium">Organiza y asigna tareas al equipo</p>
                 </div>
                 <div className="flex items-center space-x-3">
                     {/* View Switcher */}
-                    <div className="flex items-center space-x-2 bg-neutral-100 p-1 rounded-xl">
+                    <div className="flex items-center space-x-2 bg-neutral-100 dark:bg-neutral-800 p-1 rounded-xl">
                         <button
                             onClick={() => setViewMode('list')}
-                            className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-all ${viewMode === 'list' ? 'bg-white shadow-sm' : 'hover:bg-white/50'
+                            className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-all ${viewMode === 'list' ? 'bg-white dark:bg-neutral-700 shadow-sm' : 'hover:bg-white/50 dark:hover:bg-neutral-700/50'
                                 }`}
                             title="Vista Lista"
                         >
-                            <LayoutList size={20} className={viewMode === 'list' ? 'text-olive-600' : 'text-neutral-600'} />
+                            <LayoutList size={20} className={viewMode === 'list' ? 'text-olive-600 dark:text-olive-400' : 'text-neutral-600 dark:text-neutral-400'} />
                         </button>
                         <button
                             onClick={() => setViewMode('kanban')}
-                            className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-all ${viewMode === 'kanban' ? 'bg-white shadow-sm' : 'hover:bg-white/50'
+                            className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-all ${viewMode === 'kanban' ? 'bg-white dark:bg-neutral-700 shadow-sm' : 'hover:bg-white/50 dark:hover:bg-neutral-700/50'
                                 }`}
                             title="Vista Kanban"
                         >
-                            <LayoutGrid size={20} className={viewMode === 'kanban' ? 'text-olive-600' : 'text-neutral-600'} />
+                            <LayoutGrid size={20} className={viewMode === 'kanban' ? 'text-olive-600 dark:text-olive-400' : 'text-neutral-600 dark:text-neutral-400'} />
                         </button>
                         <button
                             onClick={() => setViewMode('calendar')}
-                            className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-all ${viewMode === 'calendar' ? 'bg-white shadow-sm' : 'hover:bg-white/50'
+                            className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-all ${viewMode === 'calendar' ? 'bg-white dark:bg-neutral-700 shadow-sm' : 'hover:bg-white/50 dark:hover:bg-neutral-700/50'
                                 }`}
                             title="Vista Calendario"
                         >
-                            <Calendar size={20} className={viewMode === 'calendar' ? 'text-olive-600' : 'text-neutral-600'} />
+                            <Calendar size={20} className={viewMode === 'calendar' ? 'text-olive-600 dark:text-olive-400' : 'text-neutral-600 dark:text-neutral-400'} />
                         </button>
                     </div>
 
@@ -183,41 +183,41 @@ export default function TasksView({ projectId }: TasksViewProps) {
             {/* Stats */}
             {stats && (
                 <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-                    <div className="bg-white rounded-2xl p-5 border border-neutral-200 shadow-sm">
-                        <p className="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-1">Total</p>
-                        <p className="text-3xl font-black text-neutral-900">{stats.total}</p>
+                    <div className="bg-white dark:bg-neutral-900 rounded-2xl p-5 border border-neutral-200 dark:border-neutral-800 shadow-sm">
+                        <p className="text-xs font-bold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider mb-1">Total</p>
+                        <p className="text-3xl font-black text-neutral-900 dark:text-neutral-100">{stats.total}</p>
                     </div>
-                    <div className="bg-neutral-50 rounded-2xl p-5 border border-neutral-200">
-                        <p className="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-1">Pendientes</p>
-                        <p className="text-3xl font-black text-neutral-700">{stats.pending}</p>
+                    <div className="bg-neutral-50 dark:bg-neutral-800 rounded-2xl p-5 border border-neutral-200 dark:border-neutral-700">
+                        <p className="text-xs font-bold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider mb-1">Pendientes</p>
+                        <p className="text-3xl font-black text-neutral-700 dark:text-neutral-200">{stats.pending}</p>
                     </div>
-                    <div className="bg-info-50 rounded-2xl p-5 border border-info-200">
-                        <p className="text-xs font-bold text-info-600 uppercase tracking-wider mb-1">En Progreso</p>
-                        <p className="text-3xl font-black text-info-700">{stats.inProgress}</p>
+                    <div className="bg-info-50 dark:bg-info-900/20 rounded-2xl p-5 border border-info-200 dark:border-info-800">
+                        <p className="text-xs font-bold text-info-600 dark:text-info-400 uppercase tracking-wider mb-1">En Progreso</p>
+                        <p className="text-3xl font-black text-info-700 dark:text-info-300">{stats.inProgress}</p>
                     </div>
-                    <div className="bg-success-50 rounded-2xl p-5 border border-success-200">
-                        <p className="text-xs font-bold text-success-600 uppercase tracking-wider mb-1">Completadas</p>
-                        <p className="text-3xl font-black text-success-700">{stats.completed}</p>
+                    <div className="bg-success-50 dark:bg-success-900/20 rounded-2xl p-5 border border-success-200 dark:border-success-800">
+                        <p className="text-xs font-bold text-success-600 dark:text-success-400 uppercase tracking-wider mb-1">Completadas</p>
+                        <p className="text-3xl font-black text-success-700 dark:text-success-300">{stats.completed}</p>
                     </div>
-                    <div className="bg-error-50 rounded-2xl p-5 border border-error-200">
-                        <p className="text-xs font-bold text-error-600 uppercase tracking-wider mb-1">Vencidas</p>
-                        <p className="text-3xl font-black text-error-700">{stats.overdue}</p>
+                    <div className="bg-error-50 dark:bg-error-900/20 rounded-2xl p-5 border border-error-200 dark:border-error-800">
+                        <p className="text-xs font-bold text-error-600 dark:text-error-400 uppercase tracking-wider mb-1">Vencidas</p>
+                        <p className="text-3xl font-black text-error-700 dark:text-error-300">{stats.overdue}</p>
                     </div>
                 </div>
             )}
 
             {/* Filters - Only show in list view */}
             {viewMode === 'list' && (
-                <div className="bg-white rounded-2xl p-6 border border-neutral-200 shadow-sm">
+                <div className="bg-white dark:bg-neutral-900 rounded-2xl p-6 border border-neutral-200 dark:border-neutral-800 shadow-sm">
                     <div className="flex items-center space-x-2 mb-4">
                         <Filter className="w-5 h-5 text-neutral-400" />
-                        <h3 className="font-bold text-neutral-900">Filtros</h3>
+                        <h3 className="font-bold text-neutral-900 dark:text-neutral-100">Filtros</h3>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <select
                             value={filters.status}
                             onChange={(e) => setFilters({ ...filters, status: e.target.value })}
-                            className="px-4 py-2.5 bg-neutral-50 border border-neutral-200 rounded-xl focus:ring-4 focus:ring-olive-500/10 focus:border-olive-500 outline-none"
+                            className="px-4 py-2.5 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl focus:ring-4 focus:ring-olive-500/10 focus:border-olive-500 outline-none text-neutral-900 dark:text-neutral-100"
                         >
                             <option value="">Todos los estados</option>
                             <option value="PENDING">Pendiente</option>
@@ -228,7 +228,7 @@ export default function TasksView({ projectId }: TasksViewProps) {
                         <select
                             value={filters.priority}
                             onChange={(e) => setFilters({ ...filters, priority: e.target.value })}
-                            className="px-4 py-2.5 bg-neutral-50 border border-neutral-200 rounded-xl focus:ring-4 focus:ring-olive-500/10 focus:border-olive-500 outline-none"
+                            className="px-4 py-2.5 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl focus:ring-4 focus:ring-olive-500/10 focus:border-olive-500 outline-none text-neutral-900 dark:text-neutral-100"
                         >
                             <option value="">Todas las prioridades</option>
                             <option value="URGENT">Urgente</option>
@@ -239,7 +239,7 @@ export default function TasksView({ projectId }: TasksViewProps) {
                         <select
                             value={filters.assignedToId}
                             onChange={(e) => setFilters({ ...filters, assignedToId: e.target.value })}
-                            className="px-4 py-2.5 bg-neutral-50 border border-neutral-200 rounded-xl focus:ring-4 focus:ring-olive-500/10 focus:border-olive-500 outline-none"
+                            className="px-4 py-2.5 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl focus:ring-4 focus:ring-olive-500/10 focus:border-olive-500 outline-none text-neutral-900 dark:text-neutral-100"
                         >
                             <option value="">Todos los usuarios</option>
                             {users.map(u => (
@@ -253,8 +253,8 @@ export default function TasksView({ projectId }: TasksViewProps) {
             {/* Content - Switch between views */}
             {loading ? (
                 <div className="text-center py-20">
-                    <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-olive-600 border-t-transparent"></div>
-                    <p className="mt-4 text-neutral-500 font-medium">Cargando tareas...</p>
+                    <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-olive-600 dark:border-olive-500 border-t-transparent"></div>
+                    <p className="mt-4 text-neutral-500 dark:text-neutral-400 font-medium">Cargando tareas...</p>
                 </div>
             ) : (
                 <AnimatePresence mode="wait">
@@ -268,10 +268,10 @@ export default function TasksView({ projectId }: TasksViewProps) {
                             className="space-y-4"
                         >
                             {tasks.length === 0 ? (
-                                <div className="bg-neutral-50 rounded-3xl p-20 text-center border-2 border-dashed border-neutral-200">
-                                    <CheckSquare size={64} className="mx-auto text-neutral-200 mb-4" />
-                                    <h3 className="text-xl font-bold text-neutral-400 mb-2">Sin tareas</h3>
-                                    <p className="text-neutral-400">Crea la primera tarea para empezar</p>
+                                <div className="bg-neutral-50 dark:bg-neutral-800 rounded-3xl p-20 text-center border-2 border-dashed border-neutral-200 dark:border-neutral-700">
+                                    <CheckSquare size={64} className="mx-auto text-neutral-200 dark:text-neutral-600 mb-4" />
+                                    <h3 className="text-xl font-bold text-neutral-400 dark:text-neutral-500 mb-2">Sin tareas</h3>
+                                    <p className="text-neutral-400 dark:text-neutral-500">Crea la primera tarea para empezar</p>
                                 </div>
                             ) : (
                                 tasks.map((task) => (
@@ -279,12 +279,12 @@ export default function TasksView({ projectId }: TasksViewProps) {
                                         key={task.id}
                                         initial={{ opacity: 0, y: 10 }}
                                         animate={{ opacity: 1, y: 0 }}
-                                        className="bg-white rounded-2xl p-6 border border-neutral-200 shadow-sm hover:shadow-md transition-all"
+                                        className="bg-white dark:bg-neutral-900 rounded-2xl p-6 border border-neutral-200 dark:border-neutral-800 shadow-sm hover:shadow-md transition-all"
                                     >
                                         <div className="flex items-start justify-between">
                                             <div className="flex-1">
                                                 <div className="flex items-center space-x-3 mb-3">
-                                                    <h3 className="text-lg font-bold text-neutral-900">{task.title}</h3>
+                                                    <h3 className="text-lg font-bold text-neutral-900 dark:text-neutral-100">{task.title}</h3>
                                                     <span className={`px-3 py-1 rounded-full text-xs font-bold border ${getPriorityColor(task.priority)}`}>
                                                         {task.priority}
                                                     </span>
@@ -293,9 +293,9 @@ export default function TasksView({ projectId }: TasksViewProps) {
                                                     </span>
                                                 </div>
                                                 {task.description && (
-                                                    <p className="text-neutral-600 mb-4">{task.description}</p>
+                                                    <p className="text-neutral-600 dark:text-neutral-400 mb-4">{task.description}</p>
                                                 )}
-                                                <div className="flex flex-wrap items-center gap-4 text-sm text-neutral-500">
+                                                <div className="flex flex-wrap items-center gap-4 text-sm text-neutral-500 dark:text-neutral-400">
                                                     <div className="flex items-center space-x-2">
                                                         <User size={16} className="text-neutral-400" />
                                                         <span>{task.assignedTo.name}</span>
@@ -324,7 +324,7 @@ export default function TasksView({ projectId }: TasksViewProps) {
                                                 {task.status !== 'COMPLETED' && (
                                                     <button
                                                         onClick={() => handleUpdateStatus(task.id, task.status === 'PENDING' ? 'IN_PROGRESS' : 'COMPLETED')}
-                                                        className="p-2 text-success-600 hover:bg-success-50 rounded-lg transition-all"
+                                                        className="p-2 text-success-600 hover:bg-success-50 dark:hover:bg-success-900/20 rounded-lg transition-all"
                                                         title={task.status === 'PENDING' ? 'Iniciar' : 'Completar'}
                                                     >
                                                         <CheckSquare size={20} />
@@ -332,14 +332,14 @@ export default function TasksView({ projectId }: TasksViewProps) {
                                                 )}
                                                 <button
                                                     onClick={() => setSelectedTask(task)}
-                                                    className="p-2 text-neutral-600 hover:bg-neutral-50 rounded-lg transition-all"
+                                                    className="p-2 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-800 rounded-lg transition-all"
                                                     title="Ver detalles"
                                                 >
                                                     <Edit2 size={20} />
                                                 </button>
                                                 <button
                                                     onClick={() => handleDeleteTask(task.id)}
-                                                    className="p-2 text-error-600 hover:bg-error-50 rounded-lg transition-all"
+                                                    className="p-2 text-error-600 hover:bg-error-50 dark:hover:bg-error-900/20 rounded-lg transition-all"
                                                     title="Eliminar"
                                                 >
                                                     <Trash2 size={20} />
@@ -394,13 +394,13 @@ export default function TasksView({ projectId }: TasksViewProps) {
                             initial={{ scale: 0.9, opacity: 0 }}
                             animate={{ scale: 1, opacity: 1 }}
                             exit={{ scale: 0.9, opacity: 0 }}
-                            className="bg-white rounded-3xl shadow-2xl max-w-2xl w-full p-8 border border-neutral-200 max-h-[90vh] overflow-y-auto"
+                            className="bg-white dark:bg-neutral-900 rounded-3xl shadow-2xl max-w-2xl w-full p-8 border border-neutral-200 dark:border-neutral-800 max-h-[90vh] overflow-y-auto"
                         >
                             <div className="flex justify-between items-center mb-6">
-                                <h3 className="text-2xl font-black text-neutral-900">Nueva Tarea {projectId ? ' del Proyecto' : ''}</h3>
+                                <h3 className="text-2xl font-black text-neutral-900 dark:text-neutral-100">Nueva Tarea {projectId ? ' del Proyecto' : ''}</h3>
                                 <button
                                     onClick={() => setShowCreateModal(false)}
-                                    className="text-neutral-400 hover:text-neutral-600 p-2 hover:bg-neutral-100 rounded-lg transition-all"
+                                    className="text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 p-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-all"
                                 >
                                     <X size={24} />
                                 </button>
@@ -408,35 +408,35 @@ export default function TasksView({ projectId }: TasksViewProps) {
 
                             <form onSubmit={handleCreateTask} className="space-y-5">
                                 <div>
-                                    <label className="block text-sm font-bold text-neutral-700 mb-2">Título *</label>
+                                    <label className="block text-sm font-bold text-neutral-700 dark:text-neutral-300 mb-2">Título *</label>
                                     <input
                                         type="text"
                                         value={newTask.title}
                                         onChange={(e) => setNewTask({ ...newTask, title: e.target.value })}
-                                        className="w-full px-4 py-2.5 bg-neutral-50 border border-neutral-200 rounded-xl focus:ring-4 focus:ring-olive-500/10 focus:border-olive-500 outline-none"
+                                        className="w-full px-4 py-2.5 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl focus:ring-4 focus:ring-olive-500/10 focus:border-olive-500 outline-none text-neutral-900 dark:text-neutral-100 placeholder-neutral-400"
                                         required
                                         placeholder="Ej: Revisar planos estructurales"
                                     />
                                 </div>
 
                                 <div>
-                                    <label className="block text-sm font-bold text-neutral-700 mb-2">Descripción</label>
+                                    <label className="block text-sm font-bold text-neutral-700 dark:text-neutral-300 mb-2">Descripción</label>
                                     <textarea
                                         value={newTask.description}
                                         onChange={(e) => setNewTask({ ...newTask, description: e.target.value })}
                                         rows={3}
-                                        className="w-full px-4 py-3 bg-neutral-50 border border-neutral-200 rounded-xl focus:ring-4 focus:ring-olive-500/10 focus:border-olive-500 outline-none resize-none"
+                                        className="w-full px-4 py-3 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl focus:ring-4 focus:ring-olive-500/10 focus:border-olive-500 outline-none resize-none text-neutral-900 dark:text-neutral-100 placeholder-neutral-400"
                                         placeholder="Describe los detalles de la tarea..."
                                     />
                                 </div>
 
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
-                                        <label className="block text-sm font-bold text-neutral-700 mb-2">Prioridad *</label>
+                                        <label className="block text-sm font-bold text-neutral-700 dark:text-neutral-300 mb-2">Prioridad *</label>
                                         <select
                                             value={newTask.priority}
                                             onChange={(e) => setNewTask({ ...newTask, priority: e.target.value })}
-                                            className="w-full px-4 py-2.5 bg-neutral-50 border border-neutral-200 rounded-xl focus:ring-4 focus:ring-olive-500/10 focus:border-olive-500 outline-none"
+                                            className="w-full px-4 py-2.5 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl focus:ring-4 focus:ring-olive-500/10 focus:border-olive-500 outline-none text-neutral-900 dark:text-neutral-100"
                                             required
                                         >
                                             <option value="LOW">Baja</option>
@@ -447,11 +447,11 @@ export default function TasksView({ projectId }: TasksViewProps) {
                                     </div>
 
                                     <div>
-                                        <label className="block text-sm font-bold text-neutral-700 mb-2">Tipo *</label>
+                                        <label className="block text-sm font-bold text-neutral-700 dark:text-neutral-300 mb-2">Tipo *</label>
                                         <select
                                             value={newTask.type}
                                             onChange={(e) => setNewTask({ ...newTask, type: e.target.value })}
-                                            className="w-full px-4 py-2.5 bg-neutral-50 border border-neutral-200 rounded-xl focus:ring-4 focus:ring-olive-500/10 focus:border-olive-500 outline-none"
+                                            className="w-full px-4 py-2.5 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl focus:ring-4 focus:ring-olive-500/10 focus:border-olive-500 outline-none text-neutral-900 dark:text-neutral-100"
                                             required
                                         >
                                             <option value="GENERAL">General</option>
@@ -465,11 +465,11 @@ export default function TasksView({ projectId }: TasksViewProps) {
 
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
-                                        <label className="block text-sm font-bold text-neutral-700 mb-2">Asignar a *</label>
+                                        <label className="block text-sm font-bold text-neutral-700 dark:text-neutral-300 mb-2">Asignar a *</label>
                                         <select
                                             value={newTask.assignedToId}
                                             onChange={(e) => setNewTask({ ...newTask, assignedToId: e.target.value })}
-                                            className="w-full px-4 py-2.5 bg-neutral-50 border border-neutral-200 rounded-xl focus:ring-4 focus:ring-olive-500/10 focus:border-olive-500 outline-none"
+                                            className="w-full px-4 py-2.5 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl focus:ring-4 focus:ring-olive-500/10 focus:border-olive-500 outline-none text-neutral-900 dark:text-neutral-100"
                                             required
                                         >
                                             <option value="">Seleccionar usuario...</option>
@@ -480,23 +480,23 @@ export default function TasksView({ projectId }: TasksViewProps) {
                                     </div>
 
                                     <div>
-                                        <label className="block text-sm font-bold text-neutral-700 mb-2">Fecha límite</label>
+                                        <label className="block text-sm font-bold text-neutral-700 dark:text-neutral-300 mb-2">Fecha límite</label>
                                         <input
                                             type="date"
                                             value={newTask.dueDate}
                                             onChange={(e) => setNewTask({ ...newTask, dueDate: e.target.value })}
-                                            className="w-full px-4 py-2.5 bg-neutral-50 border border-neutral-200 rounded-xl focus:ring-4 focus:ring-olive-500/10 focus:border-olive-500 outline-none"
+                                            className="w-full px-4 py-2.5 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl focus:ring-4 focus:ring-olive-500/10 focus:border-olive-500 outline-none text-neutral-900 dark:text-neutral-100"
                                         />
                                     </div>
                                 </div>
 
                                 {!projectId && (
                                     <div>
-                                        <label className="block text-sm font-bold text-neutral-700 mb-2">Proyecto (opcional)</label>
+                                        <label className="block text-sm font-bold text-neutral-700 dark:text-neutral-300 mb-2">Proyecto (opcional)</label>
                                         <select
                                             value={newTask.projectId}
                                             onChange={(e) => setNewTask({ ...newTask, projectId: e.target.value })}
-                                            className="w-full px-4 py-2.5 bg-neutral-50 border border-neutral-200 rounded-xl focus:ring-4 focus:ring-olive-500/10 focus:border-olive-500 outline-none"
+                                            className="w-full px-4 py-2.5 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl focus:ring-4 focus:ring-olive-500/10 focus:border-olive-500 outline-none text-neutral-900 dark:text-neutral-100"
                                         >
                                             <option value="">Sin proyecto asociado</option>
                                             {projects.filter(p => p.isActive).map(p => (
@@ -510,7 +510,7 @@ export default function TasksView({ projectId }: TasksViewProps) {
                                     <button
                                         type="button"
                                         onClick={() => setShowCreateModal(false)}
-                                        className="flex-1 px-6 py-3 border border-neutral-200 text-neutral-600 rounded-xl hover:bg-neutral-50 font-bold transition-all"
+                                        className="flex-1 px-6 py-3 border border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-300 rounded-xl hover:bg-neutral-50 dark:hover:bg-neutral-800 font-bold transition-all"
                                     >
                                         Cancelar
                                     </button>

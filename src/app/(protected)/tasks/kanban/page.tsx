@@ -92,30 +92,30 @@ export default function KanbanPage() {
             {/* Header */}
             <div className="flex justify-between items-center">
                 <div>
-                    <h1 className="text-3xl font-black text-neutral-900">Vista Kanban</h1>
-                    <p className="text-neutral-500 font-medium mt-1">
+                    <h1 className="text-3xl font-black text-neutral-900 dark:text-neutral-100">Vista Kanban</h1>
+                    <p className="text-neutral-500 dark:text-neutral-400 font-medium mt-1">
                         Gestiona tus tareas visualmente
                     </p>
                 </div>
                 <div className="flex items-center space-x-3">
                     {/* View Switcher */}
-                    <div className="flex items-center space-x-2 bg-neutral-100 p-1 rounded-xl">
+                    <div className="flex items-center space-x-2 bg-neutral-100 dark:bg-neutral-800 p-1 rounded-xl">
                         <Link
                             href="/tasks"
-                            className="flex items-center space-x-2 px-4 py-2 rounded-lg hover:bg-white transition-all"
+                            className="flex items-center space-x-2 px-4 py-2 rounded-lg hover:bg-white dark:hover:bg-neutral-700 transition-all"
                             title="Vista Lista"
                         >
-                            <LayoutList size={20} className="text-neutral-600" />
+                            <LayoutList size={20} className="text-neutral-600 dark:text-neutral-400" />
                         </Link>
-                        <div className="flex items-center space-x-2 px-4 py-2 bg-white rounded-lg shadow-sm">
-                            <LayoutGrid size={20} className="text-olive-600" />
+                        <div className="flex items-center space-x-2 px-4 py-2 bg-white dark:bg-neutral-900 rounded-lg shadow-sm">
+                            <LayoutGrid size={20} className="text-olive-600 dark:text-olive-500" />
                         </div>
                         <Link
                             href="/tasks/calendar"
-                            className="flex items-center space-x-2 px-4 py-2 rounded-lg hover:bg-white transition-all"
+                            className="flex items-center space-x-2 px-4 py-2 rounded-lg hover:bg-white dark:hover:bg-neutral-700 transition-all"
                             title="Vista Calendario"
                         >
-                            <Calendar size={20} className="text-neutral-600" />
+                            <Calendar size={20} className="text-neutral-600 dark:text-neutral-400" />
                         </Link>
                     </div>
 
@@ -131,11 +131,11 @@ export default function KanbanPage() {
             </div>
 
             {/* Filters */}
-            <div className="bg-white rounded-2xl p-6 border border-neutral-200 shadow-sm">
+            <div className="bg-white dark:bg-neutral-900 rounded-2xl p-6 border border-neutral-200 dark:border-neutral-800 shadow-sm">
                 <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center space-x-2">
                         <Filter className="w-5 h-5 text-neutral-400" />
-                        <h3 className="font-bold text-neutral-900">Filtros y Búsqueda</h3>
+                        <h3 className="font-bold text-neutral-900 dark:text-neutral-100">Filtros y Búsqueda</h3>
                     </div>
                     {hasActiveFilters && (
                         <button
@@ -157,7 +157,7 @@ export default function KanbanPage() {
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             placeholder="Buscar tareas..."
-                            className="w-full pl-10 pr-4 py-2.5 bg-neutral-50 border border-neutral-200 rounded-xl focus:ring-4 focus:ring-olive-500/10 focus:border-olive-500 outline-none text-sm"
+                            className="w-full pl-10 pr-4 py-2.5 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl focus:ring-4 focus:ring-olive-500/10 focus:border-olive-500 outline-none text-sm text-neutral-900 dark:text-neutral-100 placeholder-neutral-400"
                         />
                     </div>
 
@@ -165,7 +165,7 @@ export default function KanbanPage() {
                     <select
                         value={filters.priority}
                         onChange={(e) => setFilters({ ...filters, priority: e.target.value })}
-                        className="px-4 py-2.5 bg-neutral-50 border border-neutral-200 rounded-xl focus:ring-4 focus:ring-olive-500/10 focus:border-olive-500 outline-none text-sm"
+                        className="px-4 py-2.5 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl focus:ring-4 focus:ring-olive-500/10 focus:border-olive-500 outline-none text-sm text-neutral-900 dark:text-neutral-100"
                     >
                         <option value="">Todas las prioridades</option>
                         <option value="URGENT">Urgente</option>
@@ -178,7 +178,7 @@ export default function KanbanPage() {
                     <select
                         value={filters.assignedToId}
                         onChange={(e) => setFilters({ ...filters, assignedToId: e.target.value })}
-                        className="px-4 py-2.5 bg-neutral-50 border border-neutral-200 rounded-xl focus:ring-4 focus:ring-olive-500/10 focus:border-olive-500 outline-none text-sm"
+                        className="px-4 py-2.5 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl focus:ring-4 focus:ring-olive-500/10 focus:border-olive-500 outline-none text-sm text-neutral-900 dark:text-neutral-100"
                     >
                         <option value="">Todos los usuarios</option>
                     </select>
@@ -186,16 +186,16 @@ export default function KanbanPage() {
                     <select
                         value={filters.projectId}
                         onChange={(e) => setFilters({ ...filters, projectId: e.target.value })}
-                        className="px-4 py-2.5 bg-neutral-50 border border-neutral-200 rounded-xl focus:ring-4 focus:ring-olive-500/10 focus:border-olive-500 outline-none text-sm"
+                        className="px-4 py-2.5 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl focus:ring-4 focus:ring-olive-500/10 focus:border-olive-500 outline-none text-sm text-neutral-900 dark:text-neutral-100"
                     >
                         <option value="">Todos los proyectos</option>
                     </select>
                 </div>
 
                 {/* Results count */}
-                <div className="mt-4 text-sm text-neutral-500">
-                    Mostrando <span className="font-bold text-neutral-900">{filteredTasks.length}</span> de{' '}
-                    <span className="font-bold text-neutral-900">{tasks.length}</span> tareas
+                <div className="mt-4 text-sm text-neutral-500 dark:text-neutral-400">
+                    Mostrando <span className="font-bold text-neutral-900 dark:text-neutral-100">{filteredTasks.length}</span> de{' '}
+                    <span className="font-bold text-neutral-900 dark:text-neutral-100">{tasks.length}</span> tareas
                 </div>
             </div>
 

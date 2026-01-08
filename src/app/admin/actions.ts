@@ -30,6 +30,7 @@ export async function toggleProjectStatus(id: string) {
 import { hash } from 'bcryptjs';
 
 import { auth } from "@/auth";
+import { logActivity } from "@/lib/logger";
 
 export async function getUsers(params?: {
     search?: string;
@@ -143,6 +144,10 @@ export async function updateUser(id: string, data: any) {
                 : data.dailyWorkHours || 8.0,
         }
     });
+
+    // @ts-ignore
+    logActivity(session.user.id, 'USER_UPDATE', id, { ...data });
+
     revalidatePath('/admin/users');
 }
 
@@ -171,7 +176,7 @@ export async function inviteUser(data: {
 
     const hashedPassword = await hash('Mep1234!', 10); // Default password
 
-    await prisma.user.create({
+    const newUser = await prisma.user.create({
         data: {
             name: data.name,
             email: data.email,
@@ -182,7 +187,27 @@ export async function inviteUser(data: {
             dailyWorkHours: 8.0
         }
     });
+
+    // @ts-ignore
+    logActivity(session.user.id, 'USER_INVITE', newUser.id, { email: data.email, role: data.role });
+
     revalidatePath('/admin/users');
+}
+
+export async function getActivityLogs(limit = 50) {
+    const session = await auth();
+    // @ts-ignore
+    if (!session || !['ADMIN', 'MANAGER'].includes(session.user?.role)) return [];
+
+    return await prisma.activityLog.findMany({
+        take: limit,
+        orderBy: { createdAt: 'desc' },
+        include: {
+            user: {
+                select: { name: true, email: true, role: true }
+            }
+        }
+    });
 }
 
 export async function createProject(data: any) {

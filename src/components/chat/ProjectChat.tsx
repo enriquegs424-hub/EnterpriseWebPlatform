@@ -66,11 +66,11 @@ export default function ProjectChat({ projectId, projectName }: ProjectChatProps
         return () => clearInterval(pollInterval);
     }, [chatId, messages.length, session]);
 
-    const handleSendMessage = async (content: string, replyToId?: string) => {
+    const handleSendMessage = async (content: string, replyToId?: string, attachments?: any[]) => {
         if (!chatId) return;
 
         try {
-            const newMessage = await sendMessage(chatId, content, [], replyToId);
+            const newMessage = await sendMessage(chatId, content, attachments, replyToId);
             setMessages(prev => [...prev, newMessage]);
         } catch (error: any) {
             toast.error('Error', error.message || 'No se pudo enviar el mensaje');

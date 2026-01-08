@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
     LayoutDashboard, Briefcase, Users, Settings,
-    Clock, FileText, BarChart, CheckSquare, FolderOpen, Calendar, Bell, MessageSquare
+    Clock, FileText, BarChart, CheckSquare, FolderOpen, Calendar, Bell, MessageSquare, Activity
 } from 'lucide-react';
 import Image from 'next/image';
 
@@ -31,6 +31,7 @@ const navItems = [
             { label: 'Analytics', href: '/analytics', icon: BarChart, desc: 'Métricas y reportes' },
             { label: 'Monitor de Horas', href: '/admin/hours', icon: BarChart, desc: 'Supervisión en tiempo real' },
             { label: 'Usuarios', href: '/admin/users', icon: Users, desc: 'Gestión de equipo' },
+            { label: 'Auditoría', href: '/admin/logs', icon: Activity, desc: 'Logs del sistema' },
             { label: 'Configuración', href: '/settings', icon: Settings, desc: 'Preferencias personales' },
         ]
     }
@@ -69,28 +70,32 @@ export default function Sidebar() {
     }, [session, pathname]); // Re-fetch on navigation too
 
     return (
-        <aside className="w-64 bg-white border-r border-neutral-200 flex flex-col h-screen fixed left-0 top-0 overflow-y-auto z-20">
+        <aside className="w-64 bg-white dark:bg-neutral-900 border-r border-neutral-200 dark:border-neutral-800 flex flex-col h-screen fixed left-0 top-0 overflow-y-auto z-20 transition-colors">
             {/* ... header ... */}
-            <div className="h-16 flex items-center px-6 border-b border-neutral-200 bg-gradient-to-r from-white to-olive-50/20">
+            <div className="h-16 flex items-center px-6 border-b border-neutral-200 dark:border-neutral-800 bg-gradient-to-r from-white to-olive-50/20 dark:from-neutral-900 dark:to-neutral-900">
                 <div className="w-8 h-8 relative mr-3">
                     <Image src="/M_max.png" alt="Logo" fill className="object-contain" />
                 </div>
-                <span className="font-black text-lg text-olive-900">MEP Projects</span>
+                <span className="font-black text-lg text-olive-900 dark:text-olive-500">MEP Projects</span>
             </div>
 
             <nav className="flex-1 py-6 px-3 space-y-8">
                 {navItems.map((section) => {
                     // Role-based visibility
                     // @ts-ignore
-                    const isUserAdmin = session?.user?.role === 'ADMIN';
-                    if (section.section === 'Administración' && !isUserAdmin) return null;
-                    if (section.section === 'Gestión' && !isUserAdmin) return null;
+                    const userRole = session?.user?.role;
+                    const isUserAdmin = userRole === 'ADMIN';
+                    const isManager = userRole === 'MANAGER';
+                    const canManage = isUserAdmin || isManager;
+
+                    if (section.section === 'Administración' && !canManage) return null;
+                    if (section.section === 'Gestión' && !canManage) return null;
 
                     return (
                         <div key={section.section}>
                             <div className="px-3 mb-3 text-[10px] font-black text-neutral-400 uppercase tracking-widest flex items-center">
                                 <span className="flex-1">{section.section}</span>
-                                <div className="h-px bg-neutral-200 flex-1 ml-2"></div>
+                                <div className="h-px bg-neutral-200 dark:bg-neutral-800 flex-1 ml-2"></div>
                             </div>
                             <div className="space-y-1">
                                 {section.items.map((item) => {
@@ -98,33 +103,36 @@ export default function Sidebar() {
                                     const isNotificationItem = item.href === '/notifications';
                                     const isChatItem = item.href === '/chat';
 
+                                    // Hide Logs for non-admins
+                                    if (item.label === 'Auditoría' && !isUserAdmin) return null; // Only Admins can see Audit Logs
+
                                     return (
                                         <Link
                                             key={item.href}
                                             href={item.href}
                                             className={`group flex items-center px-3 py-2.5 text-sm font-semibold rounded-xl transition-all relative ${isActive
                                                 ? 'bg-olive-600 text-white shadow-lg shadow-olive-600/20'
-                                                : 'text-neutral-600 hover:bg-neutral-50 hover:text-neutral-900'
+                                                : 'text-neutral-600 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-800 hover:text-neutral-900 dark:hover:text-neutral-200'
                                                 }`}
                                             title={item.desc}
                                         >
                                             <div className="relative">
                                                 <item.icon className={`w-5 h-5 mr-3 transition-transform group-hover:scale-110 ${isActive ? 'text-white' : 'text-neutral-400'}`} />
                                                 {isNotificationItem && unreadCount > 0 && (
-                                                    <span className={`absolute -top-1 right-2 w-2.5 h-2.5 rounded-full border-2 ${isActive ? 'bg-red-400 border-olive-600' : 'bg-red-500 border-white'}`}></span>
+                                                    <span className={`absolute -top-1 right-2 w-2.5 h-2.5 rounded-full border-2 ${isActive ? 'bg-red-400 border-olive-600' : 'bg-red-500 border-white dark:border-neutral-900'}`}></span>
                                                 )}
                                                 {isChatItem && chatUnreadCount > 0 && (
-                                                    <span className={`absolute -top-1 right-2 w-2.5 h-2.5 rounded-full border-2 ${isActive ? 'bg-blue-400 border-olive-600' : 'bg-blue-500 border-white'}`}></span>
+                                                    <span className={`absolute -top-1 right-2 w-2.5 h-2.5 rounded-full border-2 ${isActive ? 'bg-blue-400 border-olive-600' : 'bg-blue-500 border-white dark:border-neutral-900'}`}></span>
                                                 )}
                                             </div>
                                             <span className="flex-1">{item.label}</span>
                                             {isNotificationItem && unreadCount > 0 && (
-                                                <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-md ml-auto ${isActive ? 'bg-white/20 text-white' : 'bg-red-100 text-red-600'}`}>
+                                                <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-md ml-auto ${isActive ? 'bg-white/20 text-white' : 'bg-red-100 text-red-600 dark:bg-red-900/30'}`}>
                                                     {unreadCount}
                                                 </span>
                                             )}
                                             {isChatItem && chatUnreadCount > 0 && (
-                                                <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-md ml-auto ${isActive ? 'bg-white/20 text-white' : 'bg-blue-100 text-blue-600'}`}>
+                                                <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-md ml-auto ${isActive ? 'bg-white/20 text-white' : 'bg-blue-100 text-blue-600 dark:bg-blue-900/30'}`}>
                                                     {chatUnreadCount}
                                                 </span>
                                             )}
@@ -141,14 +149,18 @@ export default function Sidebar() {
             </nav>
 
             {/* ... user ... */}
-            <div className="p-4 border-t border-neutral-200 bg-neutral-50/50">
+            <div className="p-4 border-t border-neutral-200 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-900/50">
                 <div className="flex items-center">
-                    <div className="w-9 h-9 rounded-full bg-olive-100 flex items-center justify-center text-olive-700 text-xs font-bold mr-3 border border-olive-200">
-                        {session?.user?.name?.[0]?.toUpperCase() || 'U'}
-                    </div>
+                    {session?.user?.image ? (
+                        <img src={session.user.image} alt="Avatar" className="w-9 h-9 rounded-full object-cover mr-3 border border-olive-200 dark:border-olive-900" />
+                    ) : (
+                        <div className="w-9 h-9 rounded-full bg-olive-100 dark:bg-olive-900/50 flex items-center justify-center text-olive-700 dark:text-olive-300 text-xs font-bold mr-3 border border-olive-200 dark:border-olive-800">
+                            {session?.user?.name?.[0]?.toUpperCase() || 'U'}
+                        </div>
+                    )}
                     <div className="overflow-hidden">
-                        <p className="text-sm font-semibold text-neutral-900 truncate">{session?.user?.name || 'Usuario'}</p>
-                        <p className="text-xs text-olive-600 font-medium truncate">
+                        <p className="text-sm font-semibold text-neutral-900 dark:text-neutral-100 truncate">{session?.user?.name || 'Usuario'}</p>
+                        <p className="text-xs text-olive-600 dark:text-olive-400 font-medium truncate">
                             {/* @ts-ignore */}
                             {session?.user?.role || 'Trabajador'}
                         </p>

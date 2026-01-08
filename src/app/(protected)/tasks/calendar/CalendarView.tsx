@@ -89,33 +89,33 @@ export default function CalendarView({ tasks, onTaskClick }: CalendarViewProps) 
     };
 
     return (
-        <div className="bg-white rounded-2xl p-6 border border-neutral-200 shadow-sm">
+        <div className="bg-white dark:bg-neutral-900 rounded-2xl p-6 border border-neutral-200 dark:border-neutral-800 shadow-sm">
             {/* Calendar Header */}
             <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center space-x-3">
-                    <CalendarIcon className="w-6 h-6 text-olive-600" />
-                    <h2 className="text-2xl font-black text-neutral-900">
+                    <CalendarIcon className="w-6 h-6 text-olive-600 dark:text-olive-500" />
+                    <h2 className="text-2xl font-black text-neutral-900 dark:text-neutral-100">
                         {monthNames[month]} {year}
                     </h2>
                 </div>
                 <div className="flex items-center space-x-2">
                     <button
                         onClick={previousMonth}
-                        className="p-2 hover:bg-neutral-100 rounded-lg transition-all"
+                        className="p-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-all"
                     >
-                        <ChevronLeft size={20} className="text-neutral-600" />
+                        <ChevronLeft size={20} className="text-neutral-600 dark:text-neutral-400" />
                     </button>
                     <button
                         onClick={() => setCurrentDate(new Date())}
-                        className="px-4 py-2 text-sm font-bold text-olive-600 hover:bg-olive-50 rounded-lg transition-all"
+                        className="px-4 py-2 text-sm font-bold text-olive-600 hover:bg-olive-50 dark:text-olive-500 dark:hover:bg-olive-900/30 rounded-lg transition-all"
                     >
                         Hoy
                     </button>
                     <button
                         onClick={nextMonth}
-                        className="p-2 hover:bg-neutral-100 rounded-lg transition-all"
+                        className="p-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-all"
                     >
-                        <ChevronRight size={20} className="text-neutral-600" />
+                        <ChevronRight size={20} className="text-neutral-600 dark:text-neutral-400" />
                     </button>
                 </div>
             </div>
@@ -123,7 +123,7 @@ export default function CalendarView({ tasks, onTaskClick }: CalendarViewProps) 
             {/* Day Names */}
             <div className="grid grid-cols-7 gap-2 mb-2">
                 {dayNames.map(day => (
-                    <div key={day} className="text-center text-xs font-bold text-neutral-500 uppercase py-2">
+                    <div key={day} className="text-center text-xs font-bold text-neutral-500 dark:text-neutral-400 uppercase py-2">
                         {day}
                     </div>
                 ))}
@@ -149,15 +149,15 @@ export default function CalendarView({ tasks, onTaskClick }: CalendarViewProps) 
                             animate={{ opacity: 1, scale: 1 }}
                             transition={{ delay: index * 0.01 }}
                             className={`aspect-square border-2 rounded-xl p-2 transition-all hover:shadow-md ${today
-                                    ? 'border-olive-600 bg-olive-50'
-                                    : dayTasks.length > 0
-                                        ? 'border-neutral-200 bg-white hover:border-olive-300'
-                                        : 'border-neutral-100 bg-neutral-50'
+                                ? 'border-olive-600 bg-olive-50 dark:bg-olive-900/20 dark:border-olive-500'
+                                : dayTasks.length > 0
+                                    ? 'border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 hover:border-olive-300 dark:hover:border-olive-600'
+                                    : 'border-neutral-100 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900/50'
                                 }`}
                         >
                             <div className="flex flex-col h-full">
                                 {/* Day number */}
-                                <div className={`text-sm font-bold mb-1 ${today ? 'text-olive-700' : 'text-neutral-900'
+                                <div className={`text-sm font-bold mb-1 ${today ? 'text-olive-700 dark:text-olive-400' : 'text-neutral-900 dark:text-neutral-300'
                                     }`}>
                                     {day}
                                 </div>
@@ -175,7 +175,7 @@ export default function CalendarView({ tasks, onTaskClick }: CalendarViewProps) 
                                         </button>
                                     ))}
                                     {dayTasks.length > 3 && (
-                                        <div className="text-xs text-neutral-500 font-bold px-2">
+                                        <div className="text-xs text-neutral-500 dark:text-neutral-400 font-bold px-2">
                                             +{dayTasks.length - 3} más
                                         </div>
                                     )}
@@ -187,24 +187,24 @@ export default function CalendarView({ tasks, onTaskClick }: CalendarViewProps) 
             </div>
 
             {/* Legend */}
-            <div className="mt-6 pt-6 border-t border-neutral-200">
-                <p className="text-xs font-bold text-neutral-500 uppercase mb-3">Leyenda de Prioridades</p>
+            <div className="mt-6 pt-6 border-t border-neutral-200 dark:border-neutral-800">
+                <p className="text-xs font-bold text-neutral-500 dark:text-neutral-400 uppercase mb-3">Leyenda de Prioridades</p>
                 <div className="flex flex-wrap gap-4">
                     <div className="flex items-center space-x-2">
                         <div className="w-3 h-3 rounded bg-error-600"></div>
-                        <span className="text-sm text-neutral-600">Urgente</span>
+                        <span className="text-sm text-neutral-600 dark:text-neutral-400">Urgente</span>
                     </div>
                     <div className="flex items-center space-x-2">
                         <div className="w-3 h-3 rounded bg-orange-600"></div>
-                        <span className="text-sm text-neutral-600">Alta</span>
+                        <span className="text-sm text-neutral-600 dark:text-neutral-400">Alta</span>
                     </div>
                     <div className="flex items-center space-x-2">
                         <div className="w-3 h-3 rounded bg-info-600"></div>
-                        <span className="text-sm text-neutral-600">Media</span>
+                        <span className="text-sm text-neutral-600 dark:text-neutral-400">Media</span>
                     </div>
                     <div className="flex items-center space-x-2">
                         <div className="w-3 h-3 rounded bg-neutral-400"></div>
-                        <span className="text-sm text-neutral-600">Baja</span>
+                        <span className="text-sm text-neutral-600 dark:text-neutral-400">Baja</span>
                     </div>
                 </div>
             </div>

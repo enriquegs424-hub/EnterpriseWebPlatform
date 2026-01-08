@@ -14,6 +14,8 @@ export const metadata: Metadata = {
 
 import { auth } from "@/auth";
 import { LocaleProvider } from "@/providers/LocaleContext";
+import { ThemeProvider } from "@/providers/ThemeProvider";
+import { ToastProvider } from "@/components/ui/Toast";
 
 export default async function RootLayout({
   children,
@@ -29,10 +31,14 @@ export default async function RootLayout({
     <html lang={language} suppressHydrationWarning>
       <body
         suppressHydrationWarning
-        className={`${inter.variable} font-sans antialiased bg-neutral-50 text-neutral-900`}
+        className={`${inter.variable} font-sans antialiased bg-neutral-50 text-neutral-900 dark:bg-neutral-950 dark:text-neutral-50`}
       >
         <LocaleProvider initialLocale={language} initialTimeZone={timezone}>
-          {children}
+          <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+            <ToastProvider>
+              {children}
+            </ToastProvider>
+          </ThemeProvider>
         </LocaleProvider>
       </body>
     </html>

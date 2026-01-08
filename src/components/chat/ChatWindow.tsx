@@ -17,6 +17,7 @@ interface ChatMessage {
         name: string;
         email: string;
     };
+    attachments?: any;
     createdAt: Date;
     isEdited?: boolean;
     deletedAt?: Date | null;
@@ -34,7 +35,7 @@ interface ChatWindowProps {
     chatName?: string;
     messages: ChatMessage[];
     currentUserId: string;
-    onSendMessage: (content: string, replyToId?: string) => Promise<void>;
+    onSendMessage: (content: string, replyToId?: string, attachments?: any[]) => Promise<void>;
     onEditMessage: (messageId: string, content: string) => Promise<void>;
     onDeleteMessage: (messageId: string) => Promise<void>;
     isLoading?: boolean;
@@ -120,8 +121,8 @@ export default function ChatWindow({
         }
     };
 
-    const handleSendMessage = async (content: string, replyToId?: string) => {
-        await onSendMessage(content, replyToId);
+    const handleSendMessage = async (content: string, replyToId?: string, attachments?: any[]) => {
+        await onSendMessage(content, replyToId, attachments);
         setReplyingTo(null);
         setShouldAutoScroll(true); // Auto-scroll when sending
     };
@@ -138,21 +139,21 @@ export default function ChatWindow({
 
     if (isLoading) {
         return (
-            <div className="flex-1 flex items-center justify-center bg-neutral-50/50">
+            <div className="flex-1 flex items-center justify-center bg-neutral-50/50 dark:bg-neutral-900">
                 <div className="text-center">
                     <Loader2 className="w-8 h-8 text-olive-600 animate-spin mx-auto mb-3" />
-                    <p className="text-neutral-500 text-sm font-medium">Cargando mensajes...</p>
+                    <p className="text-neutral-500 dark:text-neutral-400 text-sm font-medium">Cargando mensajes...</p>
                 </div>
             </div>
         );
     }
 
     return (
-        <div className="flex-1 flex flex-col h-full bg-neutral-50/30">
+        <div className="flex-1 flex flex-col h-full bg-neutral-50/30 dark:bg-neutral-950/50">
             {/* Header */}
             {chatName && (
-                <div className="px-6 py-4 border-b border-neutral-200 bg-white shadow-sm">
-                    <h2 className="font-bold text-base text-neutral-900">{chatName}</h2>
+                <div className="px-6 py-4 border-b border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-sm transition-colors">
+                    <h2 className="font-bold text-base text-neutral-900 dark:text-neutral-100">{chatName}</h2>
                 </div>
             )}
 
@@ -176,11 +177,11 @@ export default function ChatWindow({
                             <div key={dateKey}>
                                 {/* Date Separator */}
                                 <div className="flex items-center gap-3 px-6 py-4 my-2">
-                                    <div className="flex-1 h-px bg-neutral-200"></div>
-                                    <span className="text-xs font-bold text-neutral-500 uppercase tracking-wider px-3 py-1 bg-white rounded-full border border-neutral-200">
+                                    <div className="flex-1 h-px bg-neutral-200 dark:bg-neutral-800"></div>
+                                    <span className="text-xs font-bold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider px-3 py-1 bg-white dark:bg-neutral-800 rounded-full border border-neutral-200 dark:border-neutral-700">
                                         {getDateSeparator(new Date(dateKey))}
                                     </span>
-                                    <div className="flex-1 h-px bg-neutral-200"></div>
+                                    <div className="flex-1 h-px bg-neutral-200 dark:bg-neutral-800"></div>
                                 </div>
 
                                 {/* Messages for this date */}
@@ -209,15 +210,15 @@ export default function ChatWindow({
                         animate={{ opacity: 1, height: 'auto' }}
                         exit={{ opacity: 0, height: 0 }}
                         transition={{ duration: 0.2 }}
-                        className="px-6 py-2 border-t border-neutral-100 bg-neutral-50"
+                        className="px-6 py-2 border-t border-neutral-100 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900"
                     >
-                        <div className="flex items-center gap-2 text-sm text-neutral-600">
+                        <div className="flex items-center gap-2 text-sm text-neutral-600 dark:text-neutral-300">
                             <div className="flex gap-1">
                                 <span className="w-2 h-2 bg-olive-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
                                 <span className="w-2 h-2 bg-olive-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
                                 <span className="w-2 h-2 bg-olive-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
                             </div>
-                            <span className="text-xs text-neutral-500 italic">
+                            <span className="text-xs text-neutral-500 dark:text-neutral-400 italic">
                                 {typingUsers.length === 1
                                     ? `${typingUsers[0].userName} está escribiendo...`
                                     : `${typingUsers.length} personas están escribiendo...`}

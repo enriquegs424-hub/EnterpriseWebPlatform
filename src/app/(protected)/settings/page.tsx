@@ -4,10 +4,12 @@ import { useState, useEffect } from 'react';
 import { getCurrentUser, updateUserProfile, changePassword, updateUserPreferences } from './actions';
 import { useSession } from 'next-auth/react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { User, Lock, Bell, Palette, Save, AlertCircle, CheckCircle2, Eye, EyeOff } from 'lucide-react';
+import { User, Lock, Bell, Palette, Save, AlertCircle, CheckCircle2, Eye, EyeOff, Sun, Moon } from 'lucide-react';
+import { useTheme } from '@/providers/ThemeProvider';
 
 export default function SettingsPage() {
     const { data: session, update: updateSession } = useSession();
+    const { theme, setTheme } = useTheme();
     const [activeTab, setActiveTab] = useState('profile');
     const [user, setUser] = useState<any>(null);
     const [loading, setLoading] = useState(true);
@@ -20,7 +22,8 @@ export default function SettingsPage() {
         department: '',
         dailyWorkHours: 8,
         language: 'es',
-        timezone: 'Europe/Madrid'
+        timezone: 'Europe/Madrid',
+        image: ''
     });
 
     // Password form
@@ -57,7 +60,8 @@ export default function SettingsPage() {
                 department: userData.department,
                 dailyWorkHours: userData.dailyWorkHours,
                 language: (userData.preferences as any)?.language || 'es',
-                timezone: (userData.preferences as any)?.timezone || 'Europe/Madrid'
+                timezone: (userData.preferences as any)?.timezone || 'Europe/Madrid',
+                image: userData.image || '' // Add image with fallback
             });
             if (userData.preferences) {
                 // Merge with defaults
@@ -162,8 +166,8 @@ export default function SettingsPage() {
     return (
         <div className="max-w-5xl mx-auto space-y-6">
             <div>
-                <h1 className="text-2xl font-bold text-neutral-900 border-l-4 border-olive-500 pl-4">Configuración</h1>
-                <p className="text-neutral-500 mt-1 ml-5">Personaliza tu cuenta y preferencias</p>
+                <h1 className="text-2xl font-bold text-neutral-900 dark:text-neutral-100 border-l-4 border-olive-500 pl-4">Configuración</h1>
+                <p className="text-neutral-500 dark:text-neutral-400 mt-1 ml-5">Personaliza tu cuenta y preferencias</p>
             </div>
 
             <AnimatePresence mode="wait">
@@ -186,14 +190,14 @@ export default function SettingsPage() {
             <div className="grid grid-cols-12 gap-6">
                 {/* Tabs Sidebar */}
                 <div className="col-span-3">
-                    <div className="bg-white rounded-2xl border border-neutral-200 overflow-hidden shadow-sm">
+                    <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200 dark:border-neutral-800 overflow-hidden shadow-sm">
                         {tabs.map((tab) => (
                             <button
                                 key={tab.id}
                                 onClick={() => setActiveTab(tab.id)}
-                                className={`w-full flex items-center space-x-3 px-4 py-3 text-left transition-all border-b border-neutral-100 last:border-b-0 ${activeTab === tab.id
-                                    ? 'bg-olive-50 text-olive-700 font-bold border-l-4 border-l-olive-600'
-                                    : 'text-neutral-600 hover:bg-neutral-50 border-l-4 border-l-transparent'
+                                className={`w-full flex items-center space-x-3 px-4 py-3 text-left transition-all border-b border-neutral-100 dark:border-neutral-800 last:border-b-0 ${activeTab === tab.id
+                                    ? 'bg-olive-50 dark:bg-olive-900/20 text-olive-700 dark:text-olive-400 font-bold border-l-4 border-l-olive-600'
+                                    : 'text-neutral-600 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-800 border-l-4 border-l-transparent'
                                     }`}
                             >
                                 <tab.icon size={18} />
@@ -205,7 +209,7 @@ export default function SettingsPage() {
 
                 {/* Content Area */}
                 <div className="col-span-9">
-                    <div className="bg-white rounded-2xl border border-neutral-200 shadow-sm p-6">
+                    <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200 dark:border-neutral-800 shadow-sm p-6">
                         <AnimatePresence mode="wait">
                             {activeTab === 'profile' && (
                                 <motion.div
@@ -214,12 +218,59 @@ export default function SettingsPage() {
                                     animate={{ opacity: 1, x: 0 }}
                                     exit={{ opacity: 0, x: -20 }}
                                 >
-                                    <h2 className="text-xl font-bold text-neutral-900 mb-6 flex items-center">
+                                    <h2 className="text-xl font-bold text-neutral-900 dark:text-neutral-100 mb-6 flex items-center">
                                         <User className="w-5 h-5 mr-3 text-olive-600" />
                                         Información Personal
                                     </h2>
 
-                                    <form onSubmit={handleProfileSubmit} className="space-y-5">
+                                    <form onSubmit={handleProfileSubmit} className="space-y-8">
+                                        {/* Avatar Section */}
+                                        <div className="flex items-center gap-6 pb-6 border-b border-neutral-100">
+                                            <div className="relative group">
+                                                <div className="w-24 h-24 rounded-full overflow-hidden bg-neutral-100 border-4 border-white shadow-lg flex items-center justify-center">
+                                                    {(profileData as any).image ? (
+                                                        <img src={(profileData as any).image} alt="Profile" className="w-full h-full object-cover" />
+                                                    ) : (
+                                                        <User size={40} className="text-neutral-400" />
+                                                    )}
+                                                </div>
+                                                <label className="absolute inset-0 flex items-center justify-center bg-black/40 rounded-full opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer text-white">
+                                                    <Palette size={20} />
+                                                    <input
+                                                        type="file"
+                                                        className="hidden"
+                                                        accept="image/*"
+                                                        onChange={async (e) => {
+                                                            const file = e.target.files?.[0];
+                                                            if (!file) return;
+
+                                                            const formData = new FormData();
+                                                            formData.append('file', file);
+
+                                                            try {
+                                                                // Optimistic preview
+                                                                const reader = new FileReader();
+                                                                reader.onload = (ev) => setProfileData(prev => ({ ...prev, image: ev.target?.result as string }));
+                                                                reader.readAsDataURL(file);
+
+                                                                const res = await fetch('/api/upload', { method: 'POST', body: formData });
+                                                                if (res.ok) {
+                                                                    const json = await res.json();
+                                                                    setProfileData(prev => ({ ...prev, image: json.url }));
+                                                                }
+                                                            } catch (err) {
+                                                                // Handle error
+                                                            }
+                                                        }}
+                                                    />
+                                                </label>
+                                            </div>
+                                            <div>
+                                                <h3 className="font-bold text-neutral-900">Foto de Perfil</h3>
+                                                <p className="text-sm text-neutral-500">Haz clic en la imagen para cambiarla.</p>
+                                            </div>
+                                        </div>
+
                                         <div>
                                             <label className="block text-sm font-semibold text-neutral-700 mb-2">Nombre Completo</label>
                                             <input
@@ -405,10 +456,10 @@ export default function SettingsPage() {
                                             { id: 'newProjects', label: 'Nuevos proyectos asignados', desc: 'Aviso inmediato cuando se te asigne un nuevo código.' },
                                             { id: 'dailyReminder', label: 'Recordatorio de registro diario', desc: 'Si olvidas registrar tus horas antes de las 18:00.' },
                                         ].map((n) => (
-                                            <div key={n.id} className="flex items-start justify-between p-4 bg-neutral-50 rounded-2xl border border-neutral-100 hover:border-olive-200 transition-colors">
+                                            <div key={n.id} className="flex items-start justify-between p-4 bg-neutral-50 dark:bg-neutral-800/50 rounded-2xl border border-neutral-100 dark:border-neutral-800 hover:border-olive-200 dark:hover:border-olive-700 transition-colors">
                                                 <div>
-                                                    <p className="font-bold text-neutral-900 text-sm">{n.label}</p>
-                                                    <p className="text-xs text-neutral-500 mt-0.5">{n.desc}</p>
+                                                    <p className="font-bold text-neutral-900 dark:text-neutral-200 text-sm">{n.label}</p>
+                                                    <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">{n.desc}</p>
                                                 </div>
                                                 <div className="relative inline-flex items-center cursor-pointer">
                                                     <input
@@ -417,7 +468,7 @@ export default function SettingsPage() {
                                                         onChange={() => toggleNotification(n.id)}
                                                         className="sr-only peer"
                                                     />
-                                                    <div className="w-11 h-6 bg-neutral-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-olive-600"></div>
+                                                    <div className="w-11 h-6 bg-neutral-200 dark:bg-neutral-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-olive-600"></div>
                                                 </div>
                                             </div>
                                         ))}
@@ -442,17 +493,26 @@ export default function SettingsPage() {
                                     </div>
 
                                     <div className="grid grid-cols-2 gap-4">
-                                        <div className="p-4 bg-olive-50 rounded-3xl border-2 border-olive-500 shadow-lg shadow-olive-600/5 cursor-pointer flex flex-col items-center text-center">
+                                        <div
+                                            onClick={() => setTheme('light')}
+                                            className={`p-4 rounded-3xl border-2 shadow-lg cursor-pointer flex flex-col items-center text-center transition-all ${theme === 'light' || theme === 'system' ? 'bg-olive-50 border-olive-500 shadow-olive-600/10' : 'bg-white border-transparent hover:border-neutral-200'}`}
+                                        >
                                             <div className="w-12 h-12 bg-olive-600 rounded-2xl mb-3 flex items-center justify-center text-white shadow-inner">
-                                                <Palette size={24} />
+                                                <Sun size={24} />
                                             </div>
-                                            <p className="font-black text-olive-900 text-sm">Tema MEP</p>
-                                            <p className="text-[10px] text-olive-600/70 font-bold uppercase tracking-widest mt-1">Activo por defecto</p>
+                                            <p className={`font-black text-sm ${theme === 'light' ? 'text-olive-900' : 'text-neutral-600'}`}>Modo Claro</p>
+                                            {theme === 'light' && <p className="text-[10px] text-olive-600/70 font-bold uppercase tracking-widest mt-1">Activo</p>}
                                         </div>
-                                        <div className="p-4 bg-neutral-50 rounded-3xl border border-neutral-200 grayscale opacity-40 cursor-not-allowed flex flex-col items-center text-center">
-                                            <div className="w-12 h-12 bg-neutral-300 rounded-2xl mb-3" />
-                                            <p className="font-bold text-neutral-400 text-sm">Modo Oscuro</p>
-                                            <p className="text-[10px] text-neutral-400 font-bold uppercase tracking-widest mt-1">Próximamente</p>
+
+                                        <div
+                                            onClick={() => setTheme('dark')}
+                                            className={`p-4 rounded-3xl border-2 shadow-lg cursor-pointer flex flex-col items-center text-center transition-all ${theme === 'dark' ? 'bg-neutral-800 border-neutral-600 shadow-neutral-900/10' : 'bg-white border-transparent hover:border-neutral-200'}`}
+                                        >
+                                            <div className="w-12 h-12 bg-neutral-900 rounded-2xl mb-3 flex items-center justify-center text-white shadow-inner">
+                                                <Moon size={24} />
+                                            </div>
+                                            <p className={`font-black text-sm ${theme === 'dark' ? 'text-white' : 'text-neutral-600'}`}>Modo Oscuro</p>
+                                            {theme === 'dark' && <p className="text-[10px] text-neutral-400 font-bold uppercase tracking-widest mt-1">Activo</p>}
                                         </div>
                                     </div>
 

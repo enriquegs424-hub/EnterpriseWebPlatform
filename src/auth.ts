@@ -56,9 +56,19 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
                 token.id = user.id;
                 token.role = user.role;
                 token.preferences = (user as any).preferences;
+                token.image = user.image; // Pass image
             }
-            if (trigger === "update" && session) {
-                token.preferences = session.user.preferences;
+            if (trigger === "update") {
+                const freshUser = await prisma.user.findUnique({
+                    where: { id: token.sub || (token.id as string) }
+                });
+                if (freshUser) {
+                    token.name = freshUser.name;
+                    token.email = freshUser.email;
+                    token.image = freshUser.image;
+                    token.role = freshUser.role;
+                    token.preferences = freshUser.preferences;
+                }
             }
             return token;
         },

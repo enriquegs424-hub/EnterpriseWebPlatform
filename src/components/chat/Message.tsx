@@ -2,7 +2,7 @@
 
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { MoreVertical, Reply, Edit2, Trash2 } from 'lucide-react';
+import { MoreVertical, Reply, Edit2, Trash2, FileIcon } from 'lucide-react';
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { parseMentions } from '@/utils/mentions';
@@ -10,6 +10,7 @@ import { parseMentions } from '@/utils/mentions';
 interface MessageProps {
     id: string;
     content: string;
+    attachments?: any; // JSON type from Prisma
     author: {
         id: string;
         name: string;
@@ -39,6 +40,7 @@ export default function Message({
     isEdited = false,
     deletedAt,
     replyTo,
+    attachments,
     isOwnMessage = false,
     onReply,
     onEdit,
@@ -148,9 +150,36 @@ export default function Message({
                         </div>
                     </div>
                 ) : (
-                    <div className={`text-[13.5px] leading-relaxed whitespace-pre-wrap break-words ${isDeleted ? 'italic text-neutral-400' : 'text-neutral-800'
-                        }`}>
-                        {isDeleted ? content : parseMentions(content)}
+                    <div className="space-y-2">
+                        {/* Attachments */}
+                        {Array.isArray(attachments) && attachments.length > 0 && (
+                            <div className="flex flex-wrap gap-2 mb-2">
+                                {attachments.map((file: any, index: number) => (
+                                    <div key={index}>
+                                        {file.type.startsWith('image/') ? (
+                                            <a href={file.url} target="_blank" rel="noopener noreferrer" className="block max-w-[300px] overflow-hidden rounded-lg border border-neutral-200 hover:opacity-90 transition-opacity">
+                                                <img src={file.url} alt={file.name} className="w-full h-auto object-cover max-h-[300px]" />
+                                            </a>
+                                        ) : (
+                                            <a href={file.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-3 bg-neutral-50 border border-neutral-200 rounded-lg hover:bg-neutral-100 transition-colors min-w-[200px]">
+                                                <div className="p-2 bg-white rounded border border-neutral-100 text-blue-500">
+                                                    <FileIcon className="w-5 h-5" />
+                                                </div>
+                                                <div className="flex-1 min-w-0">
+                                                    <p className="text-sm font-medium text-neutral-900 truncate">{file.name}</p>
+                                                    <p className="text-xs text-neutral-500">{(file.size / 1024).toFixed(0)} KB</p>
+                                                </div>
+                                            </a>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+
+                        <div className={`text-[13.5px] leading-relaxed whitespace-pre-wrap break-words ${isDeleted ? 'italic text-neutral-400' : 'text-neutral-800'
+                            }`}>
+                            {isDeleted ? content : parseMentions(content)}
+                        </div>
                     </div>
                 )}
             </div>

@@ -87,30 +87,30 @@ export default function Header() {
     };
 
     return (
-        <header className="h-16 bg-white border-b border-neutral-200 flex items-center justify-between px-6 sticky top-0 z-20 shadow-sm">
+        <header className="h-16 bg-white dark:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-800 flex items-center justify-between px-6 sticky top-0 z-20 shadow-sm transition-colors">
             <GlobalSearch isOpen={isCommandOpen} onClose={() => setIsCommandOpen(false)} />
 
             <div className="flex-1 max-w-md">
                 <div onClick={handleSearchClick} className="relative group cursor-pointer">
                     <Search className="w-5 h-5 text-neutral-400 group-focus-within:text-olive-600 absolute left-3 top-1/2 transform -translate-y-1/2 pointer-events-none transition-colors" />
-                    <div className="w-full pl-10 pr-10 py-2.5 border border-neutral-200 rounded-full text-sm bg-neutral-50 hover:bg-white transition-all text-neutral-400 flex items-center justify-between">
+                    <div className="w-full pl-10 pr-10 py-2.5 border border-neutral-200 dark:border-neutral-700 rounded-full text-sm bg-neutral-50 dark:bg-neutral-800 hover:bg-white dark:hover:bg-neutral-800 transition-all text-neutral-400 flex items-center justify-between">
                         <span>Buscar (Ctrl + K)</span>
-                        <kbd className="hidden sm:inline-block border border-neutral-200 rounded px-1 text-xs font-sans">⌘K</kbd>
+                        <kbd className="hidden sm:inline-block border border-neutral-200 dark:border-neutral-600 rounded px-1 text-xs font-sans text-neutral-500">⌘K</kbd>
                     </div>
                 </div>
             </div>
 
             <div className="flex items-center space-x-4 ml-6">
                 {/* Timer - Lazy loaded to avoid SSR issues */}
-                <div className="hidden md:block">
+                {/* <div className="hidden md:block">
                     <TimerWrapper />
-                </div>
+                </div> */}
 
                 {/* Notifications */}
                 <div className="relative">
                     <button
                         onClick={() => setShowNotifications(!showNotifications)}
-                        className="relative p-2 text-neutral-600 hover:bg-neutral-100 rounded-full transition-all"
+                        className="relative p-2 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-full transition-all"
                         title="Notificaciones"
                     >
                         <Bell size={22} />
@@ -132,10 +132,10 @@ export default function Header() {
                                     initial={{ opacity: 0, y: -10 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     exit={{ opacity: 0, y: -10 }}
-                                    className="absolute right-0 top-12 w-96 bg-white rounded-2xl shadow-2xl border border-neutral-200 z-40 max-h-[600px] overflow-hidden flex flex-col"
+                                    className="absolute right-0 top-12 w-96 bg-white dark:bg-neutral-900 rounded-2xl shadow-2xl border border-neutral-200 dark:border-neutral-800 z-40 max-h-[600px] overflow-hidden flex flex-col"
                                 >
-                                    <div className="p-4 border-b border-neutral-100 flex items-center justify-between bg-neutral-50">
-                                        <h3 className="font-bold text-neutral-900">Notificaciones</h3>
+                                    <div className="p-4 border-b border-neutral-100 dark:border-neutral-800 flex items-center justify-between bg-neutral-50 dark:bg-neutral-950">
+                                        <h3 className="font-bold text-neutral-900 dark:text-neutral-100">Notificaciones</h3>
                                         {unreadCount > 0 && (
                                             <button
                                                 onClick={handleMarkAllAsRead}
@@ -149,7 +149,7 @@ export default function Header() {
                                     <div className="overflow-y-auto flex-1">
                                         {notifications.length === 0 ? (
                                             <div className="p-12 text-center">
-                                                <Bell size={48} className="mx-auto text-neutral-200 mb-3" />
+                                                <Bell size={48} className="mx-auto text-neutral-200 dark:text-neutral-800 mb-3" />
                                                 <p className="text-neutral-400 font-medium">Sin notificaciones</p>
                                             </div>
                                         ) : (

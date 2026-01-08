@@ -85,46 +85,38 @@ El trabajador tiene en una sola pantalla:
 
 ## 🚀 ROADMAP: PRÓXIMOS PASOS
 
-### **🔄 FASE 4 (En Progreso - 40%)**
+### **🔄 FASE 4 (En Progreso - 60%)**
 **Objetivo**: Pulir la experiencia de usuario y optimizar el rendimiento.
 
 **Pendientes**:
-- [ ] **ErrorBoundary Global**: Manejo elegante de crashes inesperados.
+- [x] **ErrorBoundary Global**: Manejo elegante de crashes inesperados.
 - [ ] **Optimización de Rendimiento**: React.memo, useMemo, lazy loading de modales.
-- [ ] **Accesibilidad (A11y)**: 
-  - [ ] ARIA labels en todos los modales
-  - [ ] Focus trapping en formularios
-  - [ ] Navegación por teclado mejorada
-- [ ] **Responsive Mobile**:
-  - [ ] Sidebar drawer/hamburger para móviles
-  - [ ] Tablas responsivas con scroll horizontal
-  - [ ] Touch targets optimizados (44px mínimo)
-- [ ] **Testing**:
-  - [ ] Tests unitarios para lógica crítica
-  - [ ] Tests E2E para flujos principales
+- [ ] **Accesibilidad (A11y)**: Navegación por teclado completa y aria-labels.
+- [ ] **Responsive Mobile**: Asegurar que tablas y dashboards sean usables en móvil.
+- [ ] **Testing**: Unit tests para utilidades críticas y E2E para flujos principales.
 
 ---
 
-### **⏳ FASE 5: COMUNICACIÓN (Alta Prioridad)**
+### **⏳ FASE 5: COMUNICACIÓN (Alta Prioridad - 80%)**
 **Objetivo**: Eliminar el email interno y centralizar la comunicación.
 
-- [ ] **Chat de Proyecto**: Canales temáticos por obra con historial persistente.
-- [ ] **Menciones**: Sistema @usuario para alertas directas.
-- [ ] **Mensajes Directos**: Chat 1-a-1 entre miembros del equipo.
-- [ ] **Notificaciones en Tiempo Real**: WebSockets para mensajes instantáneos.
-- [ ] **Adjuntos**: Compartir archivos directamente en el chat.
+- [x] **Chat de Proyecto**: Canales temáticos por obra con historial persistente.
+- [x] **Menciones**: Sistema @usuario para alertas directas.
+- [x] **Mensajes Directos**: Chat 1-a-1 entre miembros del equipo.
+- [ ] **Notificaciones en Tiempo Real**: WebSockets para mensajes instantáneos (Actualmente Polling).
+- [x] **Adjuntos**: Compartir archivos directamente en el chat.
 
 **Impacto Estimado**: Reducción del 60% en emails internos, respuestas 3x más rápidas.
 
 ---
 
-### **⏳ FASE 6: GASTOS Y FINANZAS**
+### **⏳ FASE 6: GASTOS Y FINANZAS (En Progreso - 30%)**
 **Objetivo**: Control económico en tiempo real.
 
-- [ ] **Registro de Gastos**: 
-  - [ ] Captura de tickets con OCR
-  - [ ] Asignación automática a proyectos
-  - [ ] Categorización de gastos
+- [x] **Registro de Gastos**: 
+  - [x] Captura de tickets (Upload)
+  - [x] Asignación automática a proyectos
+  - [x] Categorización de gastos
 - [ ] **Control Presupuestario**: 
   - [ ] Dashboard de Presupuesto vs Gasto Real
   - [ ] Alertas de sobrecostos
@@ -138,17 +130,17 @@ El trabajador tiene en una sola pantalla:
 
 ---
 
-### **⏳ FASE 7: CRM & CLIENTES**
+### **⏳ FASE 7: CRM & CLIENTES (En Progreso - 60%)**
 **Objetivo**: Gestión comercial integrada.
 
-- [ ] **Ficha de Cliente**: 
+- [x] **Ficha de Cliente**: 
+  - [x] Gestión de Contactos
+  - [x] Campos extendidos (Industria, Website, Notas)
   - [ ] Historial completo de proyectos
-  - [ ] Contactos y comunicaciones
-  - [ ] Documentos contractuales
-- [ ] **Embudo de Ventas**: 
-  - [ ] Gestión de oportunidades (leads)
-  - [ ] Seguimiento de ofertas
-  - [ ] Conversión a proyecto
+- [x] **Embudo de Ventas**: 
+  - [x] Pipeline Kanban (Nuevo, Cualificado, Propuesta, ...)
+  - [x] Gestión de Leads y Valores
+  - [ ] Conversión automática a Proyecto
 - [ ] **Portal de Cliente**: 
   - [ ] Acceso limitado con login
   - [ ] Vista de avances y documentos

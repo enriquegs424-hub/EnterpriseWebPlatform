@@ -18,7 +18,7 @@ export default async function ProtectedLayout({ children }: { children: React.Re
         <SessionProvider>
             <ErrorBoundary>
                 <ToastProvider>
-                    <div className="min-h-screen bg-neutral-50 flex font-sans text-neutral-900">
+                    <div className="min-h-screen bg-neutral-50 dark:bg-neutral-950 flex font-sans text-neutral-900 dark:text-neutral-100 transition-colors">
                         {/* Desktop Sidebar */}
                         <div className="hidden lg:block">
                             <Sidebar />

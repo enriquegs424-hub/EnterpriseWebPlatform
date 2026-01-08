@@ -1,13 +1,14 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { Send, X, Users } from 'lucide-react';
+import { Send, X, Users, Paperclip, Loader2, FileIcon, ImageIcon } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useMentionAutocomplete } from '@/hooks/useMentionAutocomplete';
+import { useToast } from '@/components/ui/Toast';
 
 interface MessageComposerProps {
     chatId?: string;
-    onSendMessage: (content: string, replyToId?: string) => void;
+    onSendMessage: (content: string, replyToId?: string, attachments?: any[]) => void;
     replyingTo?: {
         id: string;
         author: string;
@@ -25,8 +26,12 @@ export default function MessageComposer({
     placeholder = 'Escribe un mensaje...'
 }: MessageComposerProps) {
     const [message, setMessage] = useState('');
+    const [attachments, setAttachments] = useState<any[]>([]);
+    const [isUploading, setIsUploading] = useState(false);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
     const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+    const toast = useToast();
 
     // Import typing actions dynamically to avoid circular deps
     const setTypingStatus = async (isTyping: boolean) => {
@@ -91,12 +96,53 @@ export default function MessageComposer({
         textareaRef.current?.focus();
     }, [replyingTo]);
 
+    const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const files = e.target.files;
+        if (!files || files.length === 0) return;
+
+        setIsUploading(true);
+        const newAttachments: any[] = [];
+
+        for (let i = 0; i < files.length; i++) {
+            const file = files[i];
+            const formData = new FormData();
+            formData.append('file', file);
+
+            try {
+                const response = await fetch('/api/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) throw new Error('Error uploading file');
+
+                const data = await response.json();
+                newAttachments.push(data);
+            } catch (error) {
+                console.error('Upload failed:', error);
+                toast.error('Error', `No se pudo subir ${file.name}`);
+            }
+        }
+
+        setAttachments(prev => [...prev, ...newAttachments]);
+        setIsUploading(false);
+
+        // Reset file input
+        if (fileInputRef.current) fileInputRef.current.value = '';
+    };
+
+    const removeAttachment = (index: number) => {
+        setAttachments(prev => prev.filter((_, i) => i !== index));
+    };
+
     const handleSend = () => {
         const trimmed = message.trim();
-        if (!trimmed) return;
+        if (!trimmed && attachments.length === 0) return;
 
-        onSendMessage(trimmed, replyingTo?.id);
+        // @ts-ignore - Updated sendMessage accepts attachments
+        onSendMessage(trimmed, replyingTo?.id, attachments);
         setMessage('');
+        setAttachments([]);
 
         // Reset textarea height
         if (textareaRef.current) {
@@ -118,11 +164,18 @@ export default function MessageComposer({
         if (e.key === 'Escape' && replyingTo) {
             onCancelReply?.();
         }
-        // Ctrl+Enter or Shift+Enter for line break (default behavior)
     };
 
     return (
         <div className="border-t border-neutral-200 bg-white relative">
+            <input
+                type="file"
+                multiple
+                className="hidden"
+                ref={fileInputRef}
+                onChange={handleFileSelect}
+            />
+
             {/* Reply Preview */}
             <AnimatePresence>
                 {replyingTo && (
@@ -154,8 +207,56 @@ export default function MessageComposer({
                 )}
             </AnimatePresence>
 
+            {/* Attachments Preview */}
+            <AnimatePresence>
+                {attachments.length > 0 && (
+                    <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        className="px-4 pt-4 flex gap-2 overflow-x-auto"
+                    >
+                        {attachments.map((file, index) => (
+                            <div key={index} className="relative group bg-neutral-100 rounded-lg p-2 flex items-center gap-2 min-w-[150px] max-w-[200px] border border-neutral-200">
+                                <div className="p-2 bg-white rounded-md shrink-0">
+                                    {file.type.startsWith('image/') ? (
+                                        <ImageIcon className="w-4 h-4 text-purple-500" />
+                                    ) : (
+                                        <FileIcon className="w-4 h-4 text-blue-500" />
+                                    )}
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                    <p className="text-xs font-medium text-neutral-700 truncate" title={file.name}>{file.name}</p>
+                                    <p className="text-[10px] text-neutral-400">{(file.size / 1024).toFixed(0)} KB</p>
+                                </div>
+                                <button
+                                    onClick={() => removeAttachment(index)}
+                                    className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity shadow-sm"
+                                >
+                                    <X className="w-3 h-3" />
+                                </button>
+                            </div>
+                        ))}
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
             {/* Input Area */}
             <div className="p-4 flex items-end gap-2.5 relative">
+                {/* Upload Button */}
+                <button
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={isUploading}
+                    className="p-3 text-neutral-400 hover:text-olive-600 hover:bg-olive-50 rounded-lg transition-colors"
+                    title="Adjuntar archivo"
+                >
+                    {isUploading ? (
+                        <Loader2 className="w-5 h-5 animate-spin" />
+                    ) : (
+                        <Paperclip className="w-5 h-5" />
+                    )}
+                </button>
+
                 <div className="flex-1 relative">
                     <textarea
                         ref={textareaRef}
@@ -191,7 +292,7 @@ export default function MessageComposer({
                                             onClick={() => selectSuggestion(index)}
                                             className={`w-full px-3 py-2.5 text-left transition-colors flex items-center gap-3 ${index === selectedIndex
                                                 ? 'bg-olive-100 border-l-4 border-olive-600'
-                                                : 'hover:bg-neutral-50 border-l-4 border-transparent'
+                                                : 'hover:bg-neutral-50 border-l-4 border-olive-50'
                                                 }`}
                                         >
                                             <div className="w-8 h-8 rounded-full bg-olive-100 flex items-center justify-center text-olive-700 font-bold text-xs flex-shrink-0">
@@ -222,10 +323,10 @@ export default function MessageComposer({
                 </div>
                 <button
                     onClick={handleSend}
-                    disabled={!message.trim()}
-                    className={`p-3.5 rounded-lg font-bold transition-all flex items-center justify-center shadow-sm ${message.trim()
-                        ? 'bg-olive-600 text-white hover:bg-olive-700 hover:shadow-md active:scale-95'
-                        : 'bg-neutral-100 text-neutral-300 cursor-not-allowed'
+                    disabled={(!message.trim() && attachments.length === 0) || isUploading}
+                    className={`p-3.5 rounded-lg font-bold transition-all flex items-center justify-center shadow-sm ${(!message.trim() && attachments.length === 0) || isUploading
+                        ? 'bg-neutral-100 text-neutral-300 cursor-not-allowed'
+                        : 'bg-olive-600 text-white hover:bg-olive-700 hover:shadow-md active:scale-95'
                         }`}
                     aria-label="Enviar mensaje"
                     title="Enter para enviar"

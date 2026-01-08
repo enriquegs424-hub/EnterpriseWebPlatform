@@ -20,6 +20,7 @@ export async function getCurrentUser() {
             dailyWorkHours: true,
             isActive: true,
             preferences: true,
+            image: true,
         }
     });
 }
@@ -28,6 +29,7 @@ export async function updateUserProfile(data: {
     name: string;
     department: string;
     dailyWorkHours: number;
+    image?: string;
 }) {
     const session = await auth();
     if (!session?.user?.id) return { error: 'No autorizado' };
@@ -39,6 +41,7 @@ export async function updateUserProfile(data: {
                 name: data.name,
                 department: data.department as any,
                 dailyWorkHours: parseFloat(data.dailyWorkHours.toString()),
+                image: data.image
             }
         });
         revalidatePath('/settings');

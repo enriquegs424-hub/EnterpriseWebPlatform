@@ -311,7 +311,7 @@ export async function getUserChats() {
 export async function sendMessage(
     chatId: string,
     content: string,
-    mentions?: string[],
+    attachments: any[] = [],
     replyToId?: string
 ) {
     const session = await auth();
@@ -337,12 +337,23 @@ export async function sendMessage(
         throw new Error('No eres miembro de este chat');
     }
 
+    // Extract mentions from content (simple regex for @Name)
+    const mentionRegex = /@(\w+)/g;
+    const mentions: string[] = [];
+    let match;
+    while ((match = mentionRegex.exec(content)) !== null) {
+        // This is a naive implementation. Ideally, we should resolve usernames to IDs
+        // For now, we just store the matched text
+        mentions.push(match[1]);
+    }
+
     const message = await prisma.message.create({
         data: {
             content,
             chatId,
             authorId: user.id,
-            mentions: mentions || [],
+            attachments: attachments.length > 0 ? attachments : undefined,
+            mentions: mentions,
             replyToId
         },
         include: {

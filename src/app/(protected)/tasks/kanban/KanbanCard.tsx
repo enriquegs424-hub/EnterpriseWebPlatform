@@ -34,21 +34,21 @@ export default function KanbanCard({ task, onDragStart, onEdit, onDelete }: Kanb
 
     const getPriorityColor = (priority: string) => {
         switch (priority) {
-            case 'URGENT': return 'border-l-4 border-l-error-600 bg-error-50/30';
-            case 'HIGH': return 'border-l-4 border-l-orange-600 bg-orange-50/30';
-            case 'MEDIUM': return 'border-l-4 border-l-info-600 bg-info-50/30';
-            case 'LOW': return 'border-l-4 border-l-neutral-400 bg-neutral-50';
+            case 'URGENT': return 'border-l-4 border-l-error-600 bg-error-50/30 dark:bg-error-900/10';
+            case 'HIGH': return 'border-l-4 border-l-orange-600 bg-orange-50/30 dark:bg-orange-900/10';
+            case 'MEDIUM': return 'border-l-4 border-l-info-600 bg-info-50/30 dark:bg-info-900/10';
+            case 'LOW': return 'border-l-4 border-l-neutral-400 bg-neutral-50 dark:bg-neutral-800/20';
             default: return 'border-l-4 border-l-neutral-400';
         }
     };
 
     const getPriorityBadgeColor = (priority: string) => {
         switch (priority) {
-            case 'URGENT': return 'bg-error-100 text-error-700';
-            case 'HIGH': return 'bg-orange-100 text-orange-700';
-            case 'MEDIUM': return 'bg-info-100 text-info-700';
-            case 'LOW': return 'bg-neutral-100 text-neutral-600';
-            default: return 'bg-neutral-100 text-neutral-600';
+            case 'URGENT': return 'bg-error-100 text-error-700 dark:bg-error-900/30 dark:text-error-400';
+            case 'HIGH': return 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400';
+            case 'MEDIUM': return 'bg-info-100 text-info-700 dark:bg-info-900/30 dark:text-info-400';
+            case 'LOW': return 'bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400';
+            default: return 'bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400';
         }
     };
 
@@ -63,7 +63,7 @@ export default function KanbanCard({ task, onDragStart, onEdit, onDelete }: Kanb
             draggable
             onDragStart={(e) => onDragStart(e as any, task.id)}
             onClick={() => onEdit && onEdit(task)}
-            className={`bg-white rounded-xl p-4 shadow-sm hover:shadow-md transition-all cursor-pointer ${getPriorityColor(task.priority)} relative group`}
+            className={`bg-white dark:bg-neutral-900 rounded-xl p-4 shadow-sm hover:shadow-md transition-all cursor-pointer ${getPriorityColor(task.priority)} relative group`}
         >
             {/* Menu Button */}
             <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -72,20 +72,20 @@ export default function KanbanCard({ task, onDragStart, onEdit, onDelete }: Kanb
                         e.stopPropagation();
                         setShowMenu(!showMenu);
                     }}
-                    className="p-1 hover:bg-neutral-100 rounded-lg transition-all"
+                    className="p-1 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-all"
                 >
                     <MoreVertical size={16} className="text-neutral-400" />
                 </button>
 
                 {showMenu && (
-                    <div className="absolute right-0 top-8 bg-white rounded-lg shadow-xl border border-neutral-200 py-1 z-10 min-w-[120px]">
+                    <div className="absolute right-0 top-8 bg-white dark:bg-neutral-900 rounded-lg shadow-xl border border-neutral-200 dark:border-neutral-800 py-1 z-10 min-w-[120px]">
                         {onEdit && (
                             <button
                                 onClick={() => {
                                     onEdit(task);
                                     setShowMenu(false);
                                 }}
-                                className="w-full px-4 py-2 text-left text-sm hover:bg-neutral-50 flex items-center space-x-2"
+                                className="w-full px-4 py-2 text-left text-sm hover:bg-neutral-50 dark:hover:bg-neutral-800 dark:text-neutral-200 flex items-center space-x-2"
                             >
                                 <Edit2 size={14} />
                                 <span>Editar</span>
@@ -99,7 +99,7 @@ export default function KanbanCard({ task, onDragStart, onEdit, onDelete }: Kanb
                                     }
                                     setShowMenu(false);
                                 }}
-                                className="w-full px-4 py-2 text-left text-sm hover:bg-error-50 text-error-600 flex items-center space-x-2"
+                                className="w-full px-4 py-2 text-left text-sm hover:bg-error-50 dark:hover:bg-error-900/20 text-error-600 dark:text-error-400 flex items-center space-x-2"
                             >
                                 <Trash2 size={14} />
                                 <span>Eliminar</span>
@@ -115,24 +115,24 @@ export default function KanbanCard({ task, onDragStart, onEdit, onDelete }: Kanb
                     {task.priority}
                 </span>
                 {task.project && (
-                    <span className="text-xs text-neutral-500 font-medium">{task.project.code}</span>
+                    <span className="text-xs text-neutral-500 dark:text-neutral-400 font-medium">{task.project.code}</span>
                 )}
             </div>
 
             {/* Title */}
-            <h4 className="font-bold text-neutral-900 mb-2 line-clamp-2 text-sm">
+            <h4 className="font-bold text-neutral-900 dark:text-neutral-100 mb-2 line-clamp-2 text-sm">
                 {task.title}
             </h4>
 
             {/* Description */}
             {task.description && (
-                <p className="text-xs text-neutral-600 mb-3 line-clamp-2">
+                <p className="text-xs text-neutral-600 dark:text-neutral-400 mb-3 line-clamp-2">
                     {task.description}
                 </p>
             )}
 
             {/* Footer */}
-            <div className="flex items-center justify-between text-xs text-neutral-500 pt-3 border-t border-neutral-100">
+            <div className="flex items-center justify-between text-xs text-neutral-500 dark:text-neutral-400 pt-3 border-t border-neutral-100 dark:border-neutral-800">
                 <div className="flex items-center space-x-3">
                     {/* Assigned To */}
                     <div className="flex items-center space-x-1" title={task.assignedTo.name}>
@@ -151,7 +151,7 @@ export default function KanbanCard({ task, onDragStart, onEdit, onDelete }: Kanb
 
                 {/* Due Date */}
                 {task.dueDate && (
-                    <div className={`flex items-center space-x-1 ${isOverdue ? 'text-error-600 font-bold' : ''}`}>
+                    <div className={`flex items-center space-x-1 ${isOverdue ? 'text-error-600 dark:text-error-400 font-bold' : ''}`}>
                         <Calendar size={12} />
                         <span>
                             {new Date(task.dueDate).toLocaleDateString('es-ES', {

@@ -8,6 +8,7 @@ import EmptyState from '@/components/ui/EmptyState';
 import { MessageSquare, Loader2 } from 'lucide-react';
 import { getUserChats, sendMessage, editMessage, deleteMessage, getMessages, getOrCreateDirectChat } from './actions';
 import { useToast } from '@/components/ui/Toast';
+import { useSearchParams } from 'next/navigation';
 
 export default function ChatPage() {
     const { data: session } = useSession();
@@ -48,10 +49,43 @@ export default function ChatPage() {
         return () => clearInterval(pollInterval);
     }, [selectedChatId, messages.length, session]);
 
+    const searchParams = useSearchParams();
+    const projectIdParam = searchParams.get('projectId');
+    const chatIdParam = searchParams.get('chatId');
+
     // Load user chats on mount
     useEffect(() => {
         loadChats();
     }, []);
+
+    // Handle query params for auto-selection
+    useEffect(() => {
+        const handleAutoSelect = async () => {
+            if (projectIdParam) {
+                try {
+                    // Dynamic import to avoid circular deps if needed, though actions are safe
+                    const { getOrCreateProjectChat } = await import('./actions');
+                    const chat = await getOrCreateProjectChat(projectIdParam);
+                    if (chat) {
+                        setSelectedChatId(chat.id);
+                        // Add to list if not present (optimization)
+                        setChats(prev => {
+                            if (prev.some(c => c.id === chat.id)) return prev;
+                            return [chat, ...prev];
+                        });
+                    }
+                } catch (error) {
+                    console.error('Error loading project chat:', error);
+                }
+            } else if (chatIdParam) {
+                setSelectedChatId(chatIdParam);
+            }
+        };
+
+        if (!isLoadingChats) {
+            handleAutoSelect();
+        }
+    }, [projectIdParam, chatIdParam, isLoadingChats]);
 
     // Load messages when chat is selected
     useEffect(() => {
@@ -84,11 +118,11 @@ export default function ChatPage() {
         }
     };
 
-    const handleSendMessage = async (content: string, replyToId?: string) => {
+    const handleSendMessage = async (content: string, replyToId?: string, attachments?: any[]) => {
         if (!selectedChatId) return;
 
         try {
-            const newMessage = await sendMessage(selectedChatId, content, [], replyToId);
+            const newMessage = await sendMessage(selectedChatId, content, attachments, replyToId);
             setMessages(prev => [...prev, newMessage]);
             toast.success('Mensaje enviado', 'Tu mensaje ha sido enviado correctamente');
         } catch (error: any) {
