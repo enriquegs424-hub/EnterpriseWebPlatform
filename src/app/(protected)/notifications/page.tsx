@@ -78,25 +78,25 @@ export default function NotificationsPage() {
     };
 
     return (
-        <div className="flex flex-col h-full bg-neutral-50 p-6 space-y-6">
+        <div className="flex flex-col h-full bg-neutral-50 dark:bg-neutral-900 p-6 space-y-6">
             {/* Header */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center space-y-4 md:space-y-0">
                 <div>
-                    <h1 className="text-3xl font-black text-neutral-900 tracking-tight">Notificaciones</h1>
-                    <p className="text-neutral-600 font-medium">Mantente al día con tu actividad</p>
+                    <h1 className="text-3xl font-black text-neutral-900 dark:text-neutral-100 tracking-tight">Notificaciones</h1>
+                    <p className="text-neutral-600 dark:text-neutral-400 font-medium">Mantente al día con tu actividad</p>
                 </div>
 
                 <div className="flex items-center space-x-3">
-                    <div className="bg-white p-1 rounded-xl shadow-sm border border-neutral-200 flex">
+                    <div className="bg-white dark:bg-neutral-800 p-1 rounded-xl shadow-sm border border-neutral-200 dark:border-neutral-700 flex">
                         <button
                             onClick={() => setFilter('all')}
-                            className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${filter === 'all' ? 'bg-olive-100 text-olive-700' : 'text-neutral-600 hover:bg-neutral-50'}`}
+                            className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${filter === 'all' ? 'bg-olive-100 dark:bg-olive-900/30 text-olive-700 dark:text-olive-400' : 'text-neutral-600 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-700'}`}
                         >
                             Todas
                         </button>
                         <button
                             onClick={() => setFilter('unread')}
-                            className={`px-4 py-2 rounded-lg text-sm font-bold transition-all flex items-center space-x-2 ${filter === 'unread' ? 'bg-olive-100 text-olive-700' : 'text-neutral-600 hover:bg-neutral-50'}`}
+                            className={`px-4 py-2 rounded-lg text-sm font-bold transition-all flex items-center space-x-2 ${filter === 'unread' ? 'bg-olive-100 dark:bg-olive-900/30 text-olive-700 dark:text-olive-400' : 'text-neutral-600 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-700'}`}
                         >
                             <span>No leídas</span>
                             {unreadCount > 0 && (
@@ -110,7 +110,7 @@ export default function NotificationsPage() {
                     {unreadCount > 0 && (
                         <button
                             onClick={handleMarkAllAsRead}
-                            className="flex items-center space-x-2 bg-white text-neutral-600 px-4 py-2.5 rounded-xl hover:bg-neutral-100 transition-all border border-neutral-200 font-bold text-sm shadow-sm"
+                            className="flex items-center space-x-2 bg-white dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300 px-4 py-2.5 rounded-xl hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-all border border-neutral-200 dark:border-neutral-700 font-bold text-sm shadow-sm"
                         >
                             <Check size={16} />
                             <span>Marcar todo leído</span>
@@ -126,7 +126,7 @@ export default function NotificationsPage() {
                         <div className="w-8 h-8 border-4 border-olive-600 border-t-transparent rounded-full animate-spin"></div>
                     </div>
                 ) : filteredNotifications.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center h-64 text-neutral-400">
+                    <div className="flex flex-col items-center justify-center h-64 text-neutral-400 dark:text-neutral-500">
                         <Bell size={48} className="mb-4 opacity-20" />
                         <p className="font-medium">No tienes notificaciones {filter === 'unread' ? 'sin leer' : ''}</p>
                     </div>
@@ -142,28 +142,28 @@ export default function NotificationsPage() {
                                     exit={{ opacity: 0, x: -20 }}
                                     className={`
                                         group relative p-4 rounded-2xl border transition-all hover:shadow-md cursor-pointer
-                                        ${notification.isRead ? 'bg-white border-neutral-200' : 'bg-blue-50/50 border-blue-100 shadow-sm'}
+                                        ${notification.isRead ? 'bg-white dark:bg-neutral-800 border-neutral-200 dark:border-neutral-700' : 'bg-blue-50/50 dark:bg-blue-900/20 border-blue-100 dark:border-blue-900/30 shadow-sm'}
                                     `}
                                     onClick={() => handleNotificationClick(notification)}
                                 >
                                     <div className="flex items-start space-x-4">
                                         <div className={`
                                             w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0
-                                            ${notification.isRead ? 'bg-neutral-100' : 'bg-white shadow-sm'}
+                                            ${notification.isRead ? 'bg-neutral-100 dark:bg-neutral-700' : 'bg-white dark:bg-neutral-700 shadow-sm'}
                                         `}>
                                             {getIcon(notification.type)}
                                         </div>
 
                                         <div className="flex-1 pt-1">
                                             <div className="flex justify-between items-start">
-                                                <h3 className={`text-sm font-bold ${notification.isRead ? 'text-neutral-700' : 'text-neutral-900'}`}>
+                                                <h3 className={`text-sm font-bold ${notification.isRead ? 'text-neutral-700 dark:text-neutral-300' : 'text-neutral-900 dark:text-neutral-100'}`}>
                                                     {notification.title}
                                                 </h3>
-                                                <span className="text-xs text-neutral-400 whitespace-nowrap ml-2">
+                                                <span className="text-xs text-neutral-400 dark:text-neutral-500 whitespace-nowrap ml-2">
                                                     {format(new Date(notification.createdAt), "d MMM, HH:mm", { locale: es })}
                                                 </span>
                                             </div>
-                                            <p className={`text-sm mt-1 ${notification.isRead ? 'text-neutral-500' : 'text-neutral-700'}`}>
+                                            <p className={`text-sm mt-1 ${notification.isRead ? 'text-neutral-500 dark:text-neutral-400' : 'text-neutral-700 dark:text-neutral-300'}`}>
                                                 {notification.message}
                                             </p>
                                         </div>
@@ -175,7 +175,7 @@ export default function NotificationsPage() {
                                                         e.stopPropagation();
                                                         handleMarkAsRead(notification.id);
                                                     }}
-                                                    className="p-1.5 hover:bg-neutral-100 rounded-lg text-neutral-400 hover:text-blue-600 transition-colors"
+                                                    className="p-1.5 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded-lg text-neutral-400 hover:text-blue-600 transition-colors"
                                                     title="Marcar como leída"
                                                 >
                                                     <Check size={16} />
@@ -186,7 +186,7 @@ export default function NotificationsPage() {
                                                     e.stopPropagation();
                                                     handleDelete(notification.id);
                                                 }}
-                                                className="p-1.5 hover:bg-neutral-100 rounded-lg text-neutral-400 hover:text-red-600 transition-colors"
+                                                className="p-1.5 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded-lg text-neutral-400 hover:text-red-600 transition-colors"
                                                 title="Eliminar"
                                             >
                                                 <Trash2 size={16} />

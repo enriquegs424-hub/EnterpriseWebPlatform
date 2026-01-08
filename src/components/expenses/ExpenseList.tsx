@@ -114,21 +114,21 @@ export default function ExpenseList({ initialExpenses, projects }: { initialExpe
         new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(amount);
 
     return (
-        <div className="bg-white rounded-2xl border border-neutral-200 shadow-sm overflow-hidden">
+        <div className="bg-white dark:bg-neutral-800 rounded-2xl border border-neutral-200 dark:border-neutral-700 shadow-sm overflow-hidden">
             {/* Toolbar */}
-            <div className="p-4 border-b border-neutral-100 flex flex-col md:flex-row gap-4 justify-between items-center bg-neutral-50/50">
+            <div className="p-4 border-b border-neutral-100 dark:border-neutral-700 flex flex-col md:flex-row gap-4 justify-between items-center bg-neutral-50/50 dark:bg-neutral-900/50">
                 <div className="flex gap-3 w-full md:w-auto">
                     <div className="relative">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" size={16} />
                         <input
                             placeholder="Buscar..."
-                            className="pl-9 pr-4 py-2 border border-neutral-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-olive-500 w-full md:w-64"
+                            className="pl-9 pr-4 py-2 border border-neutral-200 dark:border-neutral-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-olive-500 w-full md:w-64 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100"
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />
                     </div>
                     <select
-                        className="px-3 py-2 border border-neutral-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-olive-500 bg-white"
+                        className="px-3 py-2 border border-neutral-200 dark:border-neutral-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-olive-500 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100"
                         value={statusFilter}
                         onChange={(e) => setStatusFilter(e.target.value)}
                     >
@@ -151,7 +151,7 @@ export default function ExpenseList({ initialExpenses, projects }: { initialExpe
             <div className="overflow-x-auto">
                 <table className="w-full text-left text-sm">
                     <thead>
-                        <tr className="bg-neutral-50 border-b border-neutral-200 text-neutral-500 font-bold uppercase text-[10px]">
+                        <tr className="bg-neutral-50 dark:bg-neutral-900/50 border-b border-neutral-200 dark:border-neutral-700 text-neutral-500 dark:text-neutral-400 font-bold uppercase text-[10px]">
                             <th className="px-6 py-3">Fecha</th>
                             <th className="px-6 py-3">Descripción</th>
                             <th className="px-6 py-3">Categoría</th>
@@ -161,30 +161,30 @@ export default function ExpenseList({ initialExpenses, projects }: { initialExpe
                             <th className="px-6 py-3 text-right">Acciones</th>
                         </tr>
                     </thead>
-                    <tbody className="divide-y divide-neutral-100">
+                    <tbody className="divide-y divide-neutral-100 dark:divide-neutral-700">
                         {filteredExpenses.map((expense) => (
-                            <tr key={expense.id} className="hover:bg-neutral-50/50 transition-colors">
-                                <td className="px-6 py-4 whitespace-nowrap text-neutral-600">
+                            <tr key={expense.id} className="hover:bg-neutral-50/50 dark:hover:bg-neutral-700/30 transition-colors">
+                                <td className="px-6 py-4 whitespace-nowrap text-neutral-600 dark:text-neutral-400">
                                     <div className="flex items-center gap-2">
                                         <Calendar size={14} className="text-neutral-400" />
                                         {new Date(expense.date).toLocaleDateString()}
                                     </div>
                                 </td>
                                 <td className="px-6 py-4">
-                                    <p className="font-bold text-neutral-900">{expense.description}</p>
+                                    <p className="font-bold text-neutral-900 dark:text-neutral-100">{expense.description}</p>
                                     {expense.project?.name && (
-                                        <div className="flex items-center gap-1 text-[10px] text-neutral-500 mt-0.5">
+                                        <div className="flex items-center gap-1 text-[10px] text-neutral-500 dark:text-neutral-400 mt-0.5">
                                             <Building2 size={10} />
                                             {expense.project.name}
                                         </div>
                                     )}
                                 </td>
                                 <td className="px-6 py-4">
-                                    <span className="px-2 py-1 bg-neutral-100 text-neutral-600 rounded-lg text-xs font-medium">
+                                    <span className="px-2 py-1 bg-neutral-100 dark:bg-neutral-700 text-neutral-600 dark:text-neutral-300 rounded-lg text-xs font-medium">
                                         {CATEGORIES[expense.category as keyof typeof CATEGORIES] || expense.category}
                                     </span>
                                 </td>
-                                <td className="px-6 py-4 font-black text-neutral-900">
+                                <td className="px-6 py-4 font-black text-neutral-900 dark:text-neutral-100">
                                     {formatCurrency(expense.amount)}
                                 </td>
                                 <td className="px-6 py-4">
@@ -192,7 +192,7 @@ export default function ExpenseList({ initialExpenses, projects }: { initialExpe
                                         <div className="w-6 h-6 rounded-full bg-olive-100 text-olive-700 flex items-center justify-center text-xs font-bold">
                                             {expense.user?.name?.[0] || 'U'}
                                         </div>
-                                        <span className="text-neutral-600">{expense.user?.name}</span>
+                                        <span className="text-neutral-600 dark:text-neutral-300">{expense.user?.name}</span>
                                     </div>
                                 </td>
                                 <td className="px-6 py-4">

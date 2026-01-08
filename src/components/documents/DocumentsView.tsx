@@ -149,28 +149,28 @@ export default function DocumentsView({ projectId }: DocumentsViewProps) {
             {/* Header */}
             <div className="flex justify-between items-center">
                 <div>
-                    <h1 className="text-3xl font-black text-neutral-900 flex items-center">
+                    <h1 className="text-3xl font-black text-neutral-900 dark:text-neutral-100 flex items-center">
                         <FileText className="w-8 h-8 mr-3 text-olive-600" />
                         Documentos {projectId ? ' del Proyecto' : ''}
                     </h1>
-                    <p className="text-neutral-500 mt-1 font-medium">Gestiona archivos y documentos</p>
+                    <p className="text-neutral-500 dark:text-neutral-400 mt-1 font-medium">Gestiona archivos y documentos</p>
                 </div>
                 <div className="flex items-center space-x-3">
                     {/* View Toggle */}
-                    <div className="flex items-center space-x-2 bg-neutral-100 p-1 rounded-xl">
+                    <div className="flex items-center space-x-2 bg-neutral-100 dark:bg-neutral-800 p-1 rounded-xl">
                         <button
                             onClick={() => setViewMode('grid')}
-                            className={`p-2 rounded-lg transition-all ${viewMode === 'grid' ? 'bg-white shadow-sm' : 'hover:bg-white/50'
+                            className={`p-2 rounded-lg transition-all ${viewMode === 'grid' ? 'bg-white dark:bg-neutral-700 shadow-sm' : 'hover:bg-white/50 dark:hover:bg-neutral-700/50'
                                 }`}
                         >
-                            <Grid size={20} className={viewMode === 'grid' ? 'text-olive-600' : 'text-neutral-600'} />
+                            <Grid size={20} className={viewMode === 'grid' ? 'text-olive-600' : 'text-neutral-600 dark:text-neutral-400'} />
                         </button>
                         <button
                             onClick={() => setViewMode('list')}
-                            className={`p-2 rounded-lg transition-all ${viewMode === 'list' ? 'bg-white shadow-sm' : 'hover:bg-white/50'
+                            className={`p-2 rounded-lg transition-all ${viewMode === 'list' ? 'bg-white dark:bg-neutral-700 shadow-sm' : 'hover:bg-white/50 dark:hover:bg-neutral-700/50'
                                 }`}
                         >
-                            <List size={20} className={viewMode === 'list' ? 'text-olive-600' : 'text-neutral-600'} />
+                            <List size={20} className={viewMode === 'list' ? 'text-olive-600' : 'text-neutral-600 dark:text-neutral-400'} />
                         </button>
                     </div>
 
@@ -188,9 +188,9 @@ export default function DocumentsView({ projectId }: DocumentsViewProps) {
             {/* Stats */}
             {stats && (
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                    <div className="bg-white rounded-2xl p-5 border border-neutral-200 shadow-sm">
-                        <p className="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-1">Total</p>
-                        <p className="text-3xl font-black text-neutral-900">{stats.total}</p>
+                    <div className="bg-white dark:bg-neutral-800 rounded-2xl p-5 border border-neutral-200 dark:border-neutral-700 shadow-sm">
+                        <p className="text-xs font-bold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider mb-1">Total</p>
+                        <p className="text-3xl font-black text-neutral-900 dark:text-neutral-100">{stats.total}</p>
                     </div>
                     <div className="bg-error-50 rounded-2xl p-5 border border-error-200">
                         <p className="text-xs font-bold text-error-600 uppercase tracking-wider mb-1">PDFs</p>
@@ -214,7 +214,7 @@ export default function DocumentsView({ projectId }: DocumentsViewProps) {
             )}
 
             {/* Search and Filters */}
-            <div className="bg-white rounded-2xl p-6 border border-neutral-200 shadow-sm">
+            <div className="bg-white dark:bg-neutral-800 rounded-2xl p-6 border border-neutral-200 dark:border-neutral-700 shadow-sm">
                 <div className="flex items-center space-x-4">
                     <div className="flex-1 relative">
                         <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400" />
@@ -223,13 +223,13 @@ export default function DocumentsView({ projectId }: DocumentsViewProps) {
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             placeholder="Buscar documentos..."
-                            className="w-full pl-12 pr-4 py-3 bg-neutral-50 border border-neutral-200 rounded-xl focus:ring-4 focus:ring-olive-500/10 focus:border-olive-500 outline-none"
+                            className="w-full pl-12 pr-4 py-3 bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-xl focus:ring-4 focus:ring-olive-500/10 focus:border-olive-500 outline-none text-neutral-900 dark:text-neutral-100"
                         />
                     </div>
                     <div className="relative">
                         <button
                             onClick={() => setIsFilterOpen(!isFilterOpen)}
-                            className={`flex items-center space-x-2 px-6 py-3 border rounded-xl transition-all ${filterType !== 'all' ? 'bg-olive-50 border-olive-200 text-olive-800' : 'border-neutral-200 hover:bg-neutral-50'}`}
+                            className={`flex items-center space-x-2 px-6 py-3 border rounded-xl transition-all ${filterType !== 'all' ? 'bg-olive-50 dark:bg-olive-900/30 border-olive-200 dark:border-olive-800 text-olive-800 dark:text-olive-400' : 'border-neutral-200 dark:border-neutral-700 hover:bg-neutral-50 dark:hover:bg-neutral-700 text-neutral-900 dark:text-neutral-100'}`}
                         >
                             <Filter size={20} />
                             <span className="font-bold">
@@ -246,7 +246,7 @@ export default function DocumentsView({ projectId }: DocumentsViewProps) {
                                     initial={{ opacity: 0, y: 10 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     exit={{ opacity: 0, y: 10 }}
-                                    className="absolute right-0 top-full mt-2 w-48 bg-white rounded-xl shadow-xl border border-neutral-100 z-20 overflow-hidden"
+                                    className="absolute right-0 top-full mt-2 w-48 bg-white dark:bg-neutral-800 rounded-xl shadow-xl border border-neutral-100 dark:border-neutral-700 z-20 overflow-hidden"
                                 >
                                     {[
                                         { id: 'all', label: 'Todos' },
@@ -261,7 +261,7 @@ export default function DocumentsView({ projectId }: DocumentsViewProps) {
                                                 setFilterType(type.id);
                                                 setIsFilterOpen(false);
                                             }}
-                                            className={`w-full text-left px-4 py-3 hover:bg-neutral-50 text-sm font-medium transition-colors ${filterType === type.id ? 'text-olive-600 bg-olive-50' : 'text-neutral-600'}`}
+                                            className={`w-full text-left px-4 py-3 hover:bg-neutral-50 dark:hover:bg-neutral-700 text-sm font-medium transition-colors ${filterType === type.id ? 'text-olive-600 dark:text-olive-400 bg-olive-50 dark:bg-olive-900/30' : 'text-neutral-600 dark:text-neutral-300'}`}
                                         >
                                             {type.label}
                                         </button>
@@ -281,21 +281,21 @@ export default function DocumentsView({ projectId }: DocumentsViewProps) {
             {/* Folders */}
             {folders.length > 0 && (
                 <div>
-                    <h3 className="text-lg font-bold text-neutral-900 mb-4">Carpetas</h3>
+                    <h3 className="text-lg font-bold text-neutral-900 dark:text-neutral-100 mb-4">Carpetas</h3>
                     <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
                         {folders.map((folder) => (
                             <button
                                 key={folder.id}
                                 onClick={() => setSelectedFolder(folder.id)}
                                 className={`p-4 rounded-2xl border-2 transition-all ${selectedFolder === folder.id
-                                    ? 'bg-olive-50 border-olive-600'
-                                    : 'bg-white border-neutral-200 hover:border-olive-300'
+                                    ? 'bg-olive-50 dark:bg-olive-900/30 border-olive-600'
+                                    : 'bg-white dark:bg-neutral-800 border-neutral-200 dark:border-neutral-700 hover:border-olive-300'
                                     }`}
                             >
                                 <Folder className={`w-12 h-12 mx-auto mb-2 ${selectedFolder === folder.id ? 'text-olive-600' : 'text-neutral-400'
                                     }`} />
-                                <p className="text-sm font-bold text-neutral-900 truncate">{folder.name}</p>
-                                <p className="text-xs text-neutral-500">{folder._count.documents} archivos</p>
+                                <p className="text-sm font-bold text-neutral-900 dark:text-neutral-100 truncate">{folder.name}</p>
+                                <p className="text-xs text-neutral-500 dark:text-neutral-400">{folder._count.documents} archivos</p>
                             </button>
                         ))}
                     </div>
@@ -306,12 +306,12 @@ export default function DocumentsView({ projectId }: DocumentsViewProps) {
             {loading ? (
                 <div className="text-center py-20">
                     <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-olive-600 border-t-transparent"></div>
-                    <p className="mt-4 text-neutral-500 font-medium">Cargando documentos...</p>
+                    <p className="mt-4 text-neutral-500 dark:text-neutral-400 font-medium">Cargando documentos...</p>
                 </div>
             ) : (
                 <div>
                     <div className="flex justify-between items-center mb-4">
-                        <h3 className="text-lg font-bold text-neutral-900">
+                        <h3 className="text-lg font-bold text-neutral-900 dark:text-neutral-100">
                             {selectedFolder ? 'Documentos en carpeta' : 'Todos los documentos'}
                         </h3>
                         {selectedFolder && (
@@ -325,10 +325,10 @@ export default function DocumentsView({ projectId }: DocumentsViewProps) {
                     </div>
 
                     {filteredDocuments.length === 0 ? (
-                        <div className="bg-neutral-50 rounded-3xl p-20 text-center border-2 border-dashed border-neutral-200">
-                            <FileText size={64} className="mx-auto text-neutral-200 mb-4" />
-                            <h3 className="text-xl font-bold text-neutral-400 mb-2">Sin documentos</h3>
-                            <p className="text-neutral-400">Sube el primer archivo para empezar</p>
+                        <div className="bg-neutral-50 dark:bg-neutral-800 rounded-3xl p-20 text-center border-2 border-dashed border-neutral-200 dark:border-neutral-700">
+                            <FileText size={64} className="mx-auto text-neutral-200 dark:text-neutral-600 mb-4" />
+                            <h3 className="text-xl font-bold text-neutral-400 dark:text-neutral-500 mb-2">Sin documentos</h3>
+                            <p className="text-neutral-400 dark:text-neutral-500">Sube el primer archivo para empezar</p>
                         </div>
                     ) : viewMode === 'grid' ? (
                         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
@@ -385,15 +385,15 @@ export default function DocumentsView({ projectId }: DocumentsViewProps) {
                             {filteredDocuments.map((doc) => (
                                 <div
                                     key={doc.id}
-                                    className="bg-white rounded-xl p-4 border border-neutral-200 hover:shadow-md transition-all flex items-center justify-between"
+                                    className="bg-white dark:bg-neutral-800 rounded-xl p-4 border border-neutral-200 dark:border-neutral-700 hover:shadow-md transition-all flex items-center justify-between"
                                 >
                                     <div className="flex items-center space-x-4 flex-1">
                                         <div className={`p-3 rounded-xl ${getFileColor(doc.fileType)}`}>
                                             {getFileIcon(doc.fileType)}
                                         </div>
                                         <div className="flex-1">
-                                            <h4 className="font-bold text-neutral-900">{doc.name}</h4>
-                                            <p className="text-sm text-neutral-500">
+                                            <h4 className="font-bold text-neutral-900 dark:text-neutral-100">{doc.name}</h4>
+                                            <p className="text-sm text-neutral-500 dark:text-neutral-400">
                                                 {formatFileSize(doc.fileSize)} • {doc.uploadedBy.name} • {new Date(doc.createdAt).toLocaleDateString()}
                                             </p>
                                         </div>
@@ -401,21 +401,21 @@ export default function DocumentsView({ projectId }: DocumentsViewProps) {
                                     <div className="flex items-center space-x-2">
                                         <button
                                             onClick={() => handleView(doc)}
-                                            className="p-2 hover:bg-neutral-50 rounded-lg transition-all"
+                                            className="p-2 hover:bg-neutral-50 dark:hover:bg-neutral-700 rounded-lg transition-all"
                                             title="Ver"
                                         >
                                             <Eye size={20} />
                                         </button>
                                         <button
                                             onClick={() => handleDownload(doc)}
-                                            className="p-2 hover:bg-neutral-50 rounded-lg transition-all"
+                                            className="p-2 hover:bg-neutral-50 dark:hover:bg-neutral-700 rounded-lg transition-all"
                                             title="Descargar"
                                         >
                                             <Download size={20} />
                                         </button>
                                         <button
                                             onClick={() => handleShare(doc)}
-                                            className="p-2 hover:bg-neutral-50 rounded-lg transition-all"
+                                            className="p-2 hover:bg-neutral-50 dark:hover:bg-neutral-700 rounded-lg transition-all"
                                             title="Compartir"
                                         >
                                             <Share2 size={20} />
@@ -438,12 +438,12 @@ export default function DocumentsView({ projectId }: DocumentsViewProps) {
             {/* Upload Modal */}
             {showUploadModal && (
                 <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-                    <div className="bg-white rounded-3xl shadow-2xl max-w-2xl w-full p-8">
-                        <h3 className="text-2xl font-black text-neutral-900 mb-4">Subir Archivo {projectId ? 'al Proyecto' : ''}</h3>
+                    <div className="bg-white dark:bg-neutral-800 rounded-3xl shadow-2xl max-w-2xl w-full p-8">
+                        <h3 className="text-2xl font-black text-neutral-900 dark:text-neutral-100 mb-4">Subir Archivo {projectId ? 'al Proyecto' : ''}</h3>
 
                         {!uploading ? (
                             <div
-                                className="border-2 border-dashed border-neutral-300 rounded-2xl p-12 text-center cursor-pointer hover:bg-neutral-50 transition-colors"
+                                className="border-2 border-dashed border-neutral-300 dark:border-neutral-600 rounded-2xl p-12 text-center cursor-pointer hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors"
                                 onDragOver={(e) => e.preventDefault()}
                                 onDrop={(e) => {
                                     e.preventDefault();
@@ -462,8 +462,8 @@ export default function DocumentsView({ projectId }: DocumentsViewProps) {
                                     }}
                                 />
                                 <Upload size={48} className="mx-auto text-neutral-400 mb-4" />
-                                <p className="text-neutral-600 font-medium">Arrastra archivos aquí o haz click para seleccionar</p>
-                                <p className="text-sm text-neutral-400 mt-2">Máximo 50MB por archivo</p>
+                                <p className="text-neutral-600 dark:text-neutral-300 font-medium">Arrastra archivos aquí o haz click para seleccionar</p>
+                                <p className="text-sm text-neutral-400 dark:text-neutral-500 mt-2">Máximo 50MB por archivo</p>
                             </div>
                         ) : (
                             <div className="text-center py-12">
