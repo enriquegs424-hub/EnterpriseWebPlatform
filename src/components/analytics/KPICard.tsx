@@ -44,7 +44,7 @@ export default function KPICard({
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3 }}
-            className="relative bg-white rounded-2xl shadow-sm border border-neutral-200 p-6 overflow-hidden hover:shadow-md transition-shadow"
+            className="relative bg-white dark:bg-neutral-800 rounded-2xl shadow-sm border border-neutral-200 dark:border-neutral-700 p-6 overflow-hidden hover:shadow-md transition-shadow"
         >
             {/* Background gradient */}
             <div className={`absolute top-0 right-0 w-32 h-32 bg-gradient-to-br ${variantStyles[variant]} opacity-5 rounded-full blur-3xl -mr-16 -mt-16`}></div>
@@ -54,7 +54,7 @@ export default function KPICard({
                 {/* Header */}
                 <div className="flex items-start justify-between mb-4">
                     <div className="flex-1">
-                        <p className="text-sm font-semibold text-neutral-500 uppercase tracking-wide">
+                        <p className="text-sm font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wide">
                             {title}
                         </p>
                         {subtitle && (
@@ -70,7 +70,7 @@ export default function KPICard({
 
                 {/* Value */}
                 <div className="mb-3">
-                    <h3 className="text-4xl font-black text-neutral-900 tracking-tight">
+                    <h3 className="text-4xl font-black text-neutral-900 dark:text-neutral-100 tracking-tight">
                         {value}
                     </h3>
                 </div>

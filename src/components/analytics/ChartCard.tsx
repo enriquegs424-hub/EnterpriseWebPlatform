@@ -184,18 +184,18 @@ export default function ChartCard({
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.3 }}
-            className={`bg-white rounded-2xl border border-neutral-200 p-6 shadow-sm hover:shadow-md transition-shadow ${className}`}
+            className={`bg-white dark:bg-neutral-800 rounded-2xl border border-neutral-200 dark:border-neutral-700 p-6 shadow-sm hover:shadow-md transition-shadow ${className}`}
         >
             <div className="flex items-center justify-between mb-6">
                 <div>
-                    <h3 className="text-lg font-bold text-neutral-900">{title}</h3>
+                    <h3 className="text-lg font-bold text-neutral-900 dark:text-neutral-100">{title}</h3>
                     {subtitle && (
-                        <p className="text-sm text-neutral-500 mt-1">{subtitle}</p>
+                        <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-1">{subtitle}</p>
                     )}
                 </div>
                 <button
                     onClick={handleDownload}
-                    className="p-2 text-neutral-400 hover:text-olive-600 hover:bg-olive-50 rounded-lg transition-colors"
+                    className="p-2 text-neutral-400 hover:text-olive-600 hover:bg-olive-50 dark:hover:bg-olive-900/20 rounded-lg transition-colors"
                     title="Descargar gráfico"
                 >
                     <Download className="w-4 h-4" />

@@ -149,7 +149,7 @@ export default function ChatWindow({
     }
 
     return (
-        <div className="flex-1 flex flex-col h-full bg-neutral-50/30 dark:bg-neutral-950/50">
+        <div className="flex-1 flex flex-col h-full bg-neutral-50/30 dark:bg-neutral-900">
             {/* Header */}
             {chatName && (
                 <div className="px-6 py-4 border-b border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-sm transition-colors">

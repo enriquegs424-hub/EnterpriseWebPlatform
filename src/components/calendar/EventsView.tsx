@@ -134,7 +134,7 @@ export default function EventsView({ projectId }: EventsViewProps) {
     };
 
     return (
-        <div className="flex flex-col h-full bg-neutral-50 p-6 space-y-6">
+        <div className="flex flex-col h-full bg-neutral-50 dark:bg-neutral-900 p-6 space-y-6">
             <CreateEventModal
                 isOpen={isModalOpen}
                 onClose={handleModalClose}
@@ -152,28 +152,28 @@ export default function EventsView({ projectId }: EventsViewProps) {
             {/* Header */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center space-y-4 md:space-y-0">
                 <div>
-                    <h1 className="text-3xl font-black text-neutral-900 tracking-tight">
+                    <h1 className="text-3xl font-black text-neutral-900 dark:text-neutral-100 tracking-tight">
                         Calendario {projectId ? ' del Proyecto' : ''}
                     </h1>
-                    <p className="text-neutral-600 font-medium">Gestiona eventos y reuniones del equipo</p>
+                    <p className="text-neutral-600 dark:text-neutral-400 font-medium">Gestiona eventos y reuniones del equipo</p>
                 </div>
 
-                <div className="flex items-center space-x-3 bg-white p-1 rounded-xl shadow-sm border border-neutral-200">
+                <div className="flex items-center space-x-3 bg-white dark:bg-neutral-800 p-1 rounded-xl shadow-sm border border-neutral-200 dark:border-neutral-700">
                     <button
                         onClick={() => setView('month')}
-                        className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${view === 'month' ? 'bg-olive-100 text-olive-700' : 'text-neutral-600 hover:bg-neutral-50'}`}
+                        className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${view === 'month' ? 'bg-olive-100 dark:bg-olive-900/40 text-olive-700 dark:text-olive-400' : 'text-neutral-600 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-700'}`}
                     >
                         Mes
                     </button>
                     <button
                         onClick={() => setView('week')}
-                        className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${view === 'week' ? 'bg-olive-100 text-olive-700' : 'text-neutral-600 hover:bg-neutral-50'}`}
+                        className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${view === 'week' ? 'bg-olive-100 dark:bg-olive-900/40 text-olive-700 dark:text-olive-400' : 'text-neutral-600 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-700'}`}
                     >
                         Semana
                     </button>
                     <button
                         onClick={() => setView('day')}
-                        className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${view === 'day' ? 'bg-olive-100 text-olive-700' : 'text-neutral-600 hover:bg-neutral-50'}`}
+                        className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${view === 'day' ? 'bg-olive-100 dark:bg-olive-900/40 text-olive-700 dark:text-olive-400' : 'text-neutral-600 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-700'}`}
                     >
                         Día
                     </button>
@@ -197,20 +197,20 @@ export default function EventsView({ projectId }: EventsViewProps) {
             )}
 
             {/* Calendar Controls */}
-            <div className="flex items-center justify-between bg-white p-4 rounded-2xl shadow-sm border border-neutral-200">
+            <div className="flex items-center justify-between bg-white dark:bg-neutral-800 p-4 rounded-2xl shadow-sm border border-neutral-200 dark:border-neutral-700">
                 <div className="flex items-center space-x-4">
-                    <h2 className="text-xl font-bold text-neutral-900 capitalize min-w-[200px] flex items-center">
+                    <h2 className="text-xl font-bold text-neutral-900 dark:text-neutral-100 capitalize min-w-[200px] flex items-center">
                         {format(currentDate, 'MMMM yyyy', { locale })}
                         {loading && <div className="ml-3 w-4 h-4 border-2 border-olive-600 border-t-transparent rounded-full animate-spin"></div>}
                     </h2>
                     <div className="flex items-center space-x-1">
-                        <button onClick={handlePrevious} className="p-2 hover:bg-neutral-100 rounded-lg transition-all text-neutral-600">
+                        <button onClick={handlePrevious} className="p-2 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded-lg transition-all text-neutral-600 dark:text-neutral-400">
                             <ChevronLeft size={20} />
                         </button>
-                        <button onClick={goToToday} className="px-3 py-1 hover:bg-neutral-100 rounded-lg transition-all text-sm font-bold text-neutral-600">
+                        <button onClick={goToToday} className="px-3 py-1 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded-lg transition-all text-sm font-bold text-neutral-600 dark:text-neutral-400">
                             Hoy
                         </button>
-                        <button onClick={handleNext} className="p-2 hover:bg-neutral-100 rounded-lg transition-all text-neutral-600">
+                        <button onClick={handleNext} className="p-2 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded-lg transition-all text-neutral-600 dark:text-neutral-400">
                             <ChevronRight size={20} />
                         </button>
                     </div>
@@ -218,13 +218,13 @@ export default function EventsView({ projectId }: EventsViewProps) {
             </div>
 
             {/* Calendar Grid */}
-            <div className="flex-1 bg-white rounded-3xl shadow-sm border border-neutral-200 overflow-hidden flex flex-col">
+            <div className="flex-1 bg-white dark:bg-neutral-800 rounded-3xl shadow-sm border border-neutral-200 dark:border-neutral-700 overflow-hidden flex flex-col">
                 {/* Month View */}
                 {view === 'month' && (
                     <>
-                        <div className="grid grid-cols-7 border-b border-neutral-200 bg-neutral-50">
+                        <div className="grid grid-cols-7 border-b border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800/50">
                             {weekDays.map(day => (
-                                <div key={day} className="py-3 text-center text-sm font-bold text-neutral-600">
+                                <div key={day} className="py-3 text-center text-sm font-bold text-neutral-600 dark:text-neutral-400">
                                     {day}
                                 </div>
                             ))}
@@ -236,9 +236,9 @@ export default function EventsView({ projectId }: EventsViewProps) {
                                     <div
                                         key={day.toString()}
                                         className={`
-                                            min-h-[120px] p-2 border-b border-r border-neutral-100 hover:bg-neutral-50 transition-colors relative group
-                                            ${!isSameMonth(day, currentDate) ? 'bg-neutral-50/50' : ''}
-                                            ${isToday(day) ? 'bg-olive-50/30' : ''}
+                                            min-h-[120px] p-2 border-b border-r border-neutral-100 dark:border-neutral-700/50 hover:bg-neutral-50 dark:hover:bg-neutral-700/30 transition-colors relative group
+                                            ${!isSameMonth(day, currentDate) ? 'bg-neutral-50/50 dark:bg-neutral-900/30' : 'dark:bg-neutral-800'}
+                                            ${isToday(day) ? 'bg-olive-50/30 dark:bg-olive-900/10' : ''}
                                         `}
                                         onClick={() => handleCreateClick(day)}
                                     >
@@ -246,7 +246,7 @@ export default function EventsView({ projectId }: EventsViewProps) {
                                             <span
                                                 className={`
                                                     text-sm font-medium w-7 h-7 flex items-center justify-center rounded-full
-                                                    ${isToday(day) ? 'bg-olive-600 text-white shadow-md shadow-olive-600/30' : (!isSameMonth(day, currentDate) ? 'text-neutral-400' : 'text-neutral-700')}
+                                                    ${isToday(day) ? 'bg-olive-600 text-white shadow-md shadow-olive-600/30' : (!isSameMonth(day, currentDate) ? 'text-neutral-400 dark:text-neutral-600' : 'text-neutral-700 dark:text-neutral-300')}
                                                 `}
                                             >
                                                 {format(day, 'd')}
@@ -288,14 +288,14 @@ export default function EventsView({ projectId }: EventsViewProps) {
                 {/* Week View */}
                 {view === 'week' && (
                     <div className="flex-1 flex flex-col overflow-hidden">
-                        <div className="grid grid-cols-7 border-b border-neutral-200 bg-neutral-50 flex-shrink-0">
+                        <div className="grid grid-cols-7 border-b border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800/50 flex-shrink-0">
                             {eachDayOfInterval({
                                 start: startOfWeek(currentDate, { weekStartsOn: 1 }),
                                 end: endOfWeek(currentDate, { weekStartsOn: 1 })
                             }).map(day => (
-                                <div key={day.toString()} className={`py-3 text-center border-r border-neutral-100 ${isToday(day) ? 'bg-olive-50/50' : ''}`}>
-                                    <div className="text-sm font-bold text-neutral-600">{format(day, 'EEE', { locale })}</div>
-                                    <div className={`text-xl font-black ${isToday(day) ? 'text-olive-600' : 'text-neutral-800'}`}>
+                                <div key={day.toString()} className={`py-3 text-center border-r border-neutral-100 dark:border-neutral-700/50 ${isToday(day) ? 'bg-olive-50/50 dark:bg-olive-900/10' : ''}`}>
+                                    <div className="text-sm font-bold text-neutral-600 dark:text-neutral-400">{format(day, 'EEE', { locale })}</div>
+                                    <div className={`text-xl font-black ${isToday(day) ? 'text-olive-600 dark:text-olive-400' : 'text-neutral-800 dark:text-neutral-200'}`}>
                                         {format(day, 'd')}
                                     </div>
                                 </div>
@@ -307,11 +307,11 @@ export default function EventsView({ projectId }: EventsViewProps) {
                                     start: startOfWeek(currentDate, { weekStartsOn: 1 }),
                                     end: endOfWeek(currentDate, { weekStartsOn: 1 })
                                 }).map(day => (
-                                    <div key={day.toString()} className="border-r border-neutral-100 min-h-[600px] relative hover:bg-neutral-50/30 transition-colors" onClick={() => handleCreateClick(day)}>
+                                    <div key={day.toString()} className="border-r border-neutral-100 dark:border-neutral-700/50 min-h-[600px] relative hover:bg-neutral-50/30 dark:hover:bg-neutral-800/30 transition-colors" onClick={() => handleCreateClick(day)}>
                                         {/* Time Grid Lines */}
                                         {Array.from({ length: 24 }).map((_, hour) => (
-                                            <div key={hour} className="h-12 border-b border-neutral-50 relative group">
-                                                <span className="absolute -left-2 top-0 text-[10px] text-neutral-300 transform -translate-y-1/2 w-0 overflow-hidden group-hover:w-auto group-hover:text-neutral-400 bg-white px-1 z-10">
+                                            <div key={hour} className="h-12 border-b border-neutral-50 dark:border-neutral-800/50 relative group">
+                                                <span className="absolute -left-2 top-0 text-[10px] text-neutral-300 dark:text-neutral-600 transform -translate-y-1/2 w-0 overflow-hidden group-hover:w-auto group-hover:text-neutral-400 bg-white dark:bg-neutral-800 px-1 z-10">
                                                     {hour}:00
                                                 </span>
                                             </div>
@@ -349,23 +349,23 @@ export default function EventsView({ projectId }: EventsViewProps) {
                 {/* Day View */}
                 {view === 'day' && (
                     <div className="flex-1 flex flex-col overflow-hidden">
-                        <div className="p-4 border-b border-neutral-200 bg-neutral-50 text-center flex-shrink-0">
-                            <div className="text-sm font-bold text-neutral-600">{format(currentDate, 'EEEE', { locale })}</div>
-                            <div className={`text-3xl font-black ${isToday(currentDate) ? 'text-olive-600' : 'text-neutral-800'}`}>
+                        <div className="p-4 border-b border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800/50 text-center flex-shrink-0">
+                            <div className="text-sm font-bold text-neutral-600 dark:text-neutral-400">{format(currentDate, 'EEEE', { locale })}</div>
+                            <div className={`text-3xl font-black ${isToday(currentDate) ? 'text-olive-600 dark:text-olive-400' : 'text-neutral-800 dark:text-neutral-200'}`}>
                                 {format(currentDate, 'd')}
                             </div>
                         </div>
-                        <div className="flex-1 overflow-y-auto custom-scrollbar relative bg-white" ref={scrollContainerRef}>
+                        <div className="flex-1 overflow-y-auto custom-scrollbar relative bg-white dark:bg-neutral-800" ref={scrollContainerRef}>
                             <div className="min-h-[1000px] relative">
                                 {Array.from({ length: 24 }).map((_, hour) => (
-                                    <div key={hour} className="h-20 border-b border-neutral-100 flex group hover:bg-neutral-50/50 transition-colors" onClick={() => {
+                                    <div key={hour} className="h-20 border-b border-neutral-100 dark:border-neutral-700/50 flex group hover:bg-neutral-50/50 dark:hover:bg-neutral-700/20 transition-colors" onClick={() => {
                                         const d = new Date(currentDate);
                                         d.setHours(hour, 0, 0, 0);
                                         handleCreateClick(d);
                                     }}>
-                                        <div className="w-16 text-right pr-4 text-xs font-medium text-neutral-400 pt-2 border-r border-neutral-100 relative">
+                                        <div className="w-16 text-right pr-4 text-xs font-medium text-neutral-400 pt-2 border-r border-neutral-100 dark:border-neutral-700/50 relative">
                                             {hour}:00
-                                            <div className="absolute right-0 top-0 w-2 h-[1px] bg-neutral-200"></div>
+                                            <div className="absolute right-0 top-0 w-2 h-[1px] bg-neutral-200 dark:bg-neutral-700"></div>
                                         </div>
                                         <div className="flex-1 relative"></div>
                                     </div>

@@ -121,26 +121,26 @@ export default function AnalyticsPage() {
 
     if (isLoading) {
         return (
-            <div className="h-full flex items-center justify-center bg-neutral-50">
+            <div className="h-full flex items-center justify-center bg-neutral-50 dark:bg-neutral-900">
                 <div className="text-center">
                     <Loader2 className="w-10 h-10 text-olive-600 animate-spin mx-auto mb-3" />
-                    <p className="text-neutral-600 font-medium">Cargando analytics...</p>
+                    <p className="text-neutral-600 dark:text-neutral-400 font-medium">Cargando analytics...</p>
                 </div>
             </div>
         );
     }
 
     return (
-        <div className="h-full flex flex-col bg-neutral-50 overflow-auto">
+        <div className="h-full flex flex-col bg-neutral-50 dark:bg-neutral-900 overflow-auto">
             {/* Header */}
-            <div className="bg-white border-b border-neutral-200 px-8 py-6">
+            <div className="bg-white dark:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-800 px-8 py-6">
                 <div className="flex items-center justify-between">
                     <div>
-                        <h1 className="text-3xl font-black text-neutral-900 tracking-tight flex items-center gap-3">
+                        <h1 className="text-3xl font-black text-neutral-900 dark:text-neutral-100 tracking-tight flex items-center gap-3">
                             <BarChart3 className="w-8 h-8 text-olive-600" />
                             Analytics Dashboard
                         </h1>
-                        <p className="text-neutral-500 mt-1">
+                        <p className="text-neutral-500 dark:text-neutral-400 mt-1">
                             Métricas y rendimiento del negocio en tiempo real
                         </p>
                     </div>
@@ -148,13 +148,13 @@ export default function AnalyticsPage() {
                         <button
                             onClick={handleExport}
                             disabled={isExporting}
-                            className="flex items-center gap-2 px-4 py-2 bg-white border border-neutral-300 rounded-lg text-sm font-medium text-neutral-700 hover:bg-neutral-50 hover:text-olive-700 transition-colors disabled:opacity-50"
+                            className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 rounded-lg text-sm font-medium text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-700 hover:text-olive-700 dark:hover:text-olive-400 transition-colors disabled:opacity-50"
                         >
                             {isExporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
                             Exportar Reporte
                         </button>
                         <select
-                            className="px-4 py-2 border border-neutral-300 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-olive-500"
+                            className="px-4 py-2 border border-neutral-300 dark:border-neutral-700 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-olive-500 bg-white dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300"
                             defaultValue="30d"
                         >
                             <option value="7d">Últimos 7 días</option>
@@ -180,7 +180,7 @@ export default function AnalyticsPage() {
                                 onClick={() => setSelectedTab(tab.id as any)}
                                 className={`px-4 py-2.5 rounded-lg font-bold text-sm transition-all flex items-center gap-2 ${selectedTab === tab.id
                                     ? 'bg-olive-600 text-white shadow-md'
-                                    : 'bg-neutral-100 text-neutral-600 hover:bg-neutral-200'
+                                    : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200 dark:hover:bg-neutral-700'
                                     }`}
                             >
                                 <TabIcon className="w-4 h-4" />
@@ -265,11 +265,11 @@ export default function AnalyticsPage() {
                         </div>
 
                         {/* Recent Projects Table (Keep placeholder for now or implement) */}
-                        <div className="bg-white rounded-2xl border border-neutral-200 p-6">
-                            <h3 className="text-lg font-bold text-neutral-900 mb-4">Rendimiento Reciente de Proyectos</h3>
+                        <div className="bg-white dark:bg-neutral-800 rounded-2xl border border-neutral-200 dark:border-neutral-700 p-6">
+                            <h3 className="text-lg font-bold text-neutral-900 dark:text-neutral-100 mb-4">Rendimiento Reciente de Proyectos</h3>
                             <div className="overflow-x-auto">
                                 <table className="w-full text-sm text-left">
-                                    <thead className="text-xs text-neutral-500 uppercase bg-neutral-50">
+                                    <thead className="text-xs text-neutral-500 dark:text-neutral-400 uppercase bg-neutral-50 dark:bg-neutral-900/50">
                                         <tr>
                                             <th className="px-4 py-3">Proyecto</th>
                                             <th className="px-4 py-3">Código</th>
@@ -279,9 +279,9 @@ export default function AnalyticsPage() {
                                     </thead>
                                     <tbody>
                                         {projectMetrics?.projects?.map((project: any) => (
-                                            <tr key={project.id} className="border-b border-neutral-100 hover:bg-neutral-50">
-                                                <td className="px-4 py-3 font-medium text-neutral-900">{project.name}</td>
-                                                <td className="px-4 py-3 text-neutral-500">{project.code}</td>
+                                            <tr key={project.id} className="border-b border-neutral-100 dark:border-neutral-700/50 hover:bg-neutral-50 dark:hover:bg-neutral-700/30">
+                                                <td className="px-4 py-3 font-medium text-neutral-900 dark:text-neutral-200">{project.name}</td>
+                                                <td className="px-4 py-3 text-neutral-500 dark:text-neutral-400">{project.code}</td>
                                                 <td className="px-4 py-3">
                                                     <div className="flex items-center gap-2">
                                                         <div className="flex-1 h-1.5 bg-neutral-100 rounded-full overflow-hidden">
@@ -390,18 +390,18 @@ export default function AnalyticsPage() {
                     >
                         {/* Financial Summary */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div className="bg-white rounded-2xl border border-neutral-200 p-6 shadow-sm">
-                                <h3 className="text-sm font-medium text-neutral-500 mb-1">Ingresos Totales Estimados</h3>
-                                <div className="text-3xl font-black text-neutral-900">
+                            <div className="bg-white dark:bg-neutral-800 rounded-2xl border border-neutral-200 dark:border-neutral-700 p-6 shadow-sm">
+                                <h3 className="text-sm font-medium text-neutral-500 dark:text-neutral-400 mb-1">Ingresos Totales Estimados</h3>
+                                <div className="text-3xl font-black text-neutral-900 dark:text-neutral-100">
                                     €{financialMetrics?.totalRevenue?.toLocaleString() || '0'}
                                 </div>
-                                <div className="text-xs text-neutral-500 mt-2">
+                                <div className="text-xs text-neutral-500 dark:text-neutral-400 mt-2">
                                     Calculado base €50/hr promedio
                                 </div>
                             </div>
-                            <div className="bg-white rounded-2xl border border-neutral-200 p-6 shadow-sm">
-                                <h3 className="text-sm font-medium text-neutral-500 mb-1">Costo Operativo Estimado</h3>
-                                <div className="text-3xl font-black text-neutral-900">
+                            <div className="bg-white dark:bg-neutral-800 rounded-2xl border border-neutral-200 dark:border-neutral-700 p-6 shadow-sm">
+                                <h3 className="text-sm font-medium text-neutral-500 dark:text-neutral-400 mb-1">Costo Operativo Estimado</h3>
+                                <div className="text-3xl font-black text-neutral-900 dark:text-neutral-100">
                                     €{(kpis?.totalHours * 35)?.toLocaleString() || '0'}
                                 </div>
                                 <div className="text-xs text-neutral-500 mt-2">

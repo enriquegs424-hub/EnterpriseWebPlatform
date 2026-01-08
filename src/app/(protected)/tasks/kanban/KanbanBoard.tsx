@@ -92,19 +92,19 @@ export default function KanbanBoard({
 
     const getColumnHeaderColor = (color: string) => {
         switch (color) {
-            case 'neutral': return 'bg-neutral-100 text-neutral-700';
-            case 'info': return 'bg-info-100 text-info-700';
-            case 'success': return 'bg-success-100 text-success-700';
-            default: return 'bg-neutral-100 text-neutral-700';
+            case 'neutral': return 'bg-neutral-100 text-neutral-700 dark:bg-neutral-800 dark:text-neutral-300';
+            case 'info': return 'bg-info-100 text-info-700 dark:bg-info-900/20 dark:text-info-400';
+            case 'success': return 'bg-success-100 text-success-700 dark:bg-success-900/20 dark:text-success-400';
+            default: return 'bg-neutral-100 text-neutral-700 dark:bg-neutral-800 dark:text-neutral-300';
         }
     };
 
     const getColumnBorderColor = (color: string) => {
         switch (color) {
-            case 'neutral': return 'border-neutral-200';
-            case 'info': return 'border-info-200';
-            case 'success': return 'border-success-200';
-            default: return 'border-neutral-200';
+            case 'neutral': return 'border-neutral-200 dark:border-neutral-700';
+            case 'info': return 'border-info-200 dark:border-info-800';
+            case 'success': return 'border-success-200 dark:border-success-800';
+            default: return 'border-neutral-200 dark:border-neutral-700';
         }
     };
 
@@ -115,7 +115,7 @@ export default function KanbanBoard({
                     key={column.id}
                     onDragOver={handleDragOver}
                     onDrop={(e) => handleDrop(e, column.status)}
-                    className={`bg-neutral-50 rounded-2xl p-4 border-2 ${getColumnBorderColor(column.color)} min-h-[600px]`}
+                    className={`bg-neutral-50 dark:bg-neutral-800/50 rounded-2xl p-4 border-2 ${getColumnBorderColor(column.color)} min-h-[600px]`}
                 >
                     {/* Column Header */}
                     <div className="flex items-center justify-between mb-4">
@@ -130,7 +130,7 @@ export default function KanbanBoard({
                         {onCreateTask && (
                             <button
                                 onClick={() => onCreateTask(column.status)}
-                                className="p-2 hover:bg-white rounded-lg transition-all"
+                                className="p-2 hover:bg-white dark:hover:bg-neutral-700 rounded-lg transition-all"
                                 title="Nueva tarea"
                             >
                                 <Plus size={18} className="text-neutral-400" />
@@ -167,7 +167,7 @@ export default function KanbanBoard({
 
                     {/* Drop Zone Indicator */}
                     {draggedTaskId && (
-                        <div className="mt-4 p-4 border-2 border-dashed border-neutral-300 rounded-xl text-center text-neutral-400 text-sm">
+                        <div className="mt-4 p-4 border-2 border-dashed border-neutral-300 dark:border-neutral-600 rounded-xl text-center text-neutral-400 dark:text-neutral-500 text-sm">
                             Soltar aquí para mover a "{column.title}"
                         </div>
                     )}

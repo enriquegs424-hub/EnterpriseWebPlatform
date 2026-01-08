@@ -197,7 +197,7 @@ export default function ChatPage() {
     const currentUserId = session?.user?.id || '';
 
     return (
-        <div className="h-[calc(100vh-5rem)] flex bg-neutral-50">
+        <div className="h-[calc(100vh-5rem)] flex bg-neutral-50 dark:bg-neutral-900">
             {/* Chat List */}
             <ChatList
                 chats={chats}
@@ -224,7 +224,7 @@ export default function ChatPage() {
                     isLoading={isLoadingMessages}
                 />
             ) : (
-                <div className="flex-1 flex items-center justify-center bg-white">
+                <div className="flex-1 flex items-center justify-center bg-white dark:bg-neutral-800">
                     <EmptyState
                         icon={MessageSquare}
                         title="Selecciona una conversación"
