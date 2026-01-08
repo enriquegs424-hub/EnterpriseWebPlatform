@@ -11,6 +11,7 @@ import { getProjectDetails, getProjectStats, getProjectTeam } from './actions';
 import Link from 'next/link';
 
 import { useAppLocale } from '@/providers/LocaleContext';
+import ProjectChat from '@/components/chat/ProjectChat';
 
 export default function ProjectDetailsPage({ params }: { params: { id: string } }) {
     const { locale } = useAppLocale();
@@ -166,6 +167,23 @@ export default function ProjectDetailsPage({ params }: { params: { id: string } 
                                 ))
                             )}
                         </div>
+                    </div>
+
+                    {/* Chat Section */}
+                    <div className="bg-white p-6 rounded-3xl shadow-sm border border-neutral-200">
+                        <div className="flex justify-between items-center mb-6">
+                            <h2 className="text-xl font-bold text-neutral-900 flex items-center">
+                                <svg className="mr-2 text-olive-600" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                    <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
+                                </svg>
+                                Chat del Proyecto
+                            </h2>
+                            <Link href="/chat" className="text-sm font-bold text-olive-600 hover:text-olive-700 flex items-center">
+                                Ir a Chat completo <ArrowRight size={16} className="ml-1" />
+                            </Link>
+                        </div>
+
+                        <ProjectChat projectId={project.id} projectName={project.name} />
                     </div>
                 </div>
 

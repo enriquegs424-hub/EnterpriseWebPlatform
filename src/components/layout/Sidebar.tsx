@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
     LayoutDashboard, Briefcase, Users, Settings,
-    Clock, FileText, BarChart, CheckSquare, FolderOpen, Calendar, Bell
+    Clock, FileText, BarChart, CheckSquare, FolderOpen, Calendar, Bell, MessageSquare
 } from 'lucide-react';
 import Image from 'next/image';
 
@@ -13,6 +13,7 @@ const navItems = [
         section: 'Principal', items: [
             { label: 'Inicio', href: '/dashboard', icon: LayoutDashboard, desc: 'Panel de control personal' },
             { label: 'Calendario', href: '/calendar', icon: Calendar, desc: 'Eventos y reuniones' },
+            { label: 'Chat', href: '/chat', icon: MessageSquare, desc: 'Mensajes y comunicación' },
             { label: 'Mis Tareas', href: '/tasks', icon: CheckSquare, desc: 'Gestionar tareas asignadas' },
             { label: 'Documentos', href: '/documents', icon: FolderOpen, desc: 'Gestión de archivos' },
             { label: 'Registro Diario', href: '/hours/daily', icon: Clock, desc: 'Registrar horas del día' },
@@ -27,6 +28,7 @@ const navItems = [
     },
     {
         section: 'Administración', items: [
+            { label: 'Analytics', href: '/analytics', icon: BarChart, desc: 'Métricas y reportes' },
             { label: 'Monitor de Horas', href: '/admin/hours', icon: BarChart, desc: 'Supervisión en tiempo real' },
             { label: 'Usuarios', href: '/admin/users', icon: Users, desc: 'Gestión de equipo' },
             { label: 'Configuración', href: '/settings', icon: Settings, desc: 'Preferencias personales' },
@@ -37,6 +39,7 @@ const navItems = [
 import { useSession } from 'next-auth/react';
 
 import { getUnreadCount } from '@/app/(protected)/notifications/actions';
+import { getUnreadCount as getChatUnreadCount } from '@/app/(protected)/chat/actions';
 import { useState, useEffect } from 'react';
 
 // ... (imports)
@@ -45,11 +48,16 @@ export default function Sidebar() {
     const pathname = usePathname();
     const { data: session } = useSession();
     const [unreadCount, setUnreadCount] = useState(0);
+    const [chatUnreadCount, setChatUnreadCount] = useState(0);
 
     useEffect(() => {
         const fetchUnread = async () => {
             const count = await getUnreadCount();
             setUnreadCount(count);
+
+            // Fetch chat unread count
+            const chatCount = await getChatUnreadCount();
+            setChatUnreadCount(chatCount);
         };
 
         if (session?.user) {
@@ -88,6 +96,7 @@ export default function Sidebar() {
                                 {section.items.map((item) => {
                                     const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
                                     const isNotificationItem = item.href === '/notifications';
+                                    const isChatItem = item.href === '/chat';
 
                                     return (
                                         <Link
@@ -104,6 +113,9 @@ export default function Sidebar() {
                                                 {isNotificationItem && unreadCount > 0 && (
                                                     <span className={`absolute -top-1 right-2 w-2.5 h-2.5 rounded-full border-2 ${isActive ? 'bg-red-400 border-olive-600' : 'bg-red-500 border-white'}`}></span>
                                                 )}
+                                                {isChatItem && chatUnreadCount > 0 && (
+                                                    <span className={`absolute -top-1 right-2 w-2.5 h-2.5 rounded-full border-2 ${isActive ? 'bg-blue-400 border-olive-600' : 'bg-blue-500 border-white'}`}></span>
+                                                )}
                                             </div>
                                             <span className="flex-1">{item.label}</span>
                                             {isNotificationItem && unreadCount > 0 && (
@@ -111,7 +123,12 @@ export default function Sidebar() {
                                                     {unreadCount}
                                                 </span>
                                             )}
-                                            {!isNotificationItem && isActive && (
+                                            {isChatItem && chatUnreadCount > 0 && (
+                                                <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-md ml-auto ${isActive ? 'bg-white/20 text-white' : 'bg-blue-100 text-blue-600'}`}>
+                                                    {chatUnreadCount}
+                                                </span>
+                                            )}
+                                            {!isNotificationItem && !isChatItem && isActive && (
                                                 <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse ml-auto"></div>
                                             )}
                                         </Link>

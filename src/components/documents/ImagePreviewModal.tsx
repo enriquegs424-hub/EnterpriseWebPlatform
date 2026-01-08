@@ -20,7 +20,7 @@ export default function ImagePreviewModal({ isOpen, onClose, imageUrl, title }: 
     const handleZoomOut = () => setScale(prev => Math.max(prev - 0.5, 0.5));
     const handleRotate = () => setRotation(prev => prev + 90);
 
-    if (!isOpen) return null;
+    if (!isOpen || !imageUrl) return null;
 
     return (
         <AnimatePresence>

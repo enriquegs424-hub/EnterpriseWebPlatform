@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { getAllDocuments, getAllFolders, deleteDocument, getDocumentStats, uploadDocument } from '@/app/(protected)/documents/actions';
 import {
     FileText, Upload, Folder, Grid, List, Search, Filter,
@@ -11,6 +11,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import { format } from 'date-fns';
 import ImagePreviewModal from './ImagePreviewModal';
+import { useToast } from '@/components/ui/Toast';
+import Spinner from '@/components/ui/Spinner';
+import { DocumentGridSkeleton } from '@/components/ui/Skeleton';
+import EmptyState, { NoResultsState } from '@/components/ui/EmptyState';
 
 type ViewMode = 'grid' | 'list';
 
@@ -19,6 +23,7 @@ interface DocumentsViewProps {
 }
 
 export default function DocumentsView({ projectId }: DocumentsViewProps) {
+    const toast = useToast();
     const [viewMode, setViewMode] = useState<ViewMode>('grid');
     const [documents, setDocuments] = useState<any[]>([]);
     const [folders, setFolders] = useState<any[]>([]);
@@ -44,8 +49,9 @@ export default function DocumentsView({ projectId }: DocumentsViewProps) {
         if (result.success) {
             await fetchData();
             setShowUploadModal(false);
+            toast.success('Documento subido', 'El archivo se ha subido correctamente');
         } else {
-            alert(result.error || 'Error al subir archivo');
+            toast.error('Error al subir archivo', result.error || 'Ocurrió un error inesperado');
         }
         setUploading(false);
     };
@@ -78,21 +84,23 @@ export default function DocumentsView({ projectId }: DocumentsViewProps) {
 
     const handleDownload = (doc: any) => {
         // En un entorno real, esto usaría doc.fileUrl
-        alert(`Descargando ${doc.name}... (Simulación)\nURL: ${doc.fileUrl}`);
+        toast.info('Descargando documento', `Iniciando descarga de ${doc.name}`);
+        // window.open(doc.fileUrl, '_blank');
     };
 
     const handleView = (doc: any) => {
         if (doc.fileType.includes('image')) {
             setPreviewDoc(doc);
         } else {
-            alert(`Visualizando ${doc.name}... (Simulación)\nAbriría un visor para el tipo: ${doc.fileType}`);
+            toast.info('Vista previa', `Abriendo visor para ${doc.name}`);
+            // window.open(doc.fileUrl, '_blank');
         }
     };
 
     const handleShare = (doc: any) => {
         // Simular copiado al portapapeles
         navigator.clipboard.writeText(`${window.location.origin}/documents/${doc.id}`);
-        alert(`Enlace copiado al portapapeles: ${window.location.origin}/documents/${doc.id}`);
+        toast.success('Enlace copiado', 'El enlace se ha copiado al portapapeles');
     };
 
     const getFileIcon = (fileType: string) => {
@@ -117,20 +125,24 @@ export default function DocumentsView({ projectId }: DocumentsViewProps) {
         return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
     };
 
-    const filteredDocuments = documents.filter(doc => {
-        const matchesSearch = doc.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            doc.description?.toLowerCase().includes(searchQuery.toLowerCase());
 
-        if (!matchesSearch) return false;
+    // Optimized filtering with useMemo to avoid re-computation on every render
+    const filteredDocuments = useMemo(() => {
+        return documents.filter(doc => {
+            const matchesSearch = doc.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                doc.description?.toLowerCase().includes(searchQuery.toLowerCase());
 
-        if (filterType === 'all') return true;
-        if (filterType === 'pdf') return doc.fileType.includes('pdf');
-        if (filterType === 'image') return doc.fileType.includes('image');
-        if (filterType === 'spreadsheet') return doc.fileType.includes('sheet') || doc.fileType.includes('excel');
-        if (filterType === 'other') return !doc.fileType.includes('pdf') && !doc.fileType.includes('image') && !doc.fileType.includes('sheet') && !doc.fileType.includes('excel');
+            if (!matchesSearch) return false;
 
-        return true;
-    });
+            if (filterType === 'all') return true;
+            if (filterType === 'pdf') return doc.fileType.includes('pdf');
+            if (filterType === 'image') return doc.fileType.includes('image');
+            if (filterType === 'spreadsheet') return doc.fileType.includes('sheet') || doc.fileType.includes('excel');
+            if (filterType === 'other') return !doc.fileType.includes('pdf') && !doc.fileType.includes('image') && !doc.fileType.includes('sheet') && !doc.fileType.includes('excel');
+
+            return true;
+        });
+    }, [documents, searchQuery, filterType]);
 
     return (
         <div className="space-y-6">

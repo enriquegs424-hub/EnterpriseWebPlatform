@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { Search, FileText, CheckSquare, Folder, Users, Building2, X, Command } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
+import { useFocusTrap } from '@/hooks/useAccessibility';
 
 interface SearchResult {
     id: string;
@@ -24,6 +25,9 @@ export default function GlobalSearch({ isOpen, onClose }: GlobalSearchProps) {
     const [loading, setLoading] = useState(false);
     const [selectedIndex, setSelectedIndex] = useState(0);
     const router = useRouter();
+
+    // Focus trap for accessibility
+    const modalRef = useFocusTrap(isOpen);
 
     // Reset state when closed
     useEffect(() => {
@@ -121,8 +125,16 @@ export default function GlobalSearch({ isOpen, onClose }: GlobalSearchProps) {
     return (
         <AnimatePresence>
             {isOpen && (
-                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-start justify-center z-50 p-4 pt-20">
+                <div
+                    className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-start justify-center z-50 p-4 pt-20"
+                    onClick={onClose}
+                    role="dialog"
+                    aria-modal="true"
+                    aria-labelledby="search-title"
+                >
                     <motion.div
+                        ref={modalRef}
+                        onClick={(e) => e.stopPropagation()}
                         initial={{ scale: 0.98, opacity: 0, y: -10 }}
                         animate={{ scale: 1, opacity: 1, y: 0 }}
                         exit={{ scale: 0.98, opacity: 0, y: -10 }}

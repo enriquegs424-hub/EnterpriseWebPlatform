@@ -8,28 +8,30 @@ datasource db {
 }
 
 model User {
-  id                String         @id @default(cuid())
+  id                String            @id @default(cuid())
   name              String
-  email             String         @unique
+  email             String            @unique
   passwordHash      String
-  role              Role           @default(WORKER)
-  department        Department     @default(OTHER)
-  dailyWorkHours    Float          @default(8.0)
-  isActive          Boolean        @default(true)
-  createdAt         DateTime       @default(now())
-  updatedAt         DateTime       @updatedAt
+  role              Role              @default(WORKER)
+  department        Department        @default(OTHER)
+  dailyWorkHours    Float             @default(8.0)
+  isActive          Boolean           @default(true)
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
   timeEntries       TimeEntry[]
-  assignedTasks     Task[]         @relation("AssignedTasks")
-  createdTasks      Task[]         @relation("CreatedTasks")
+  assignedTasks     Task[]            @relation("AssignedTasks")
+  createdTasks      Task[]            @relation("CreatedTasks")
   notifications     Notification[]
   taskComments      TaskComment[]
-  uploadedDocuments Document[]     @relation("UploadedDocuments")
+  uploadedDocuments Document[]        @relation("UploadedDocuments")
   documentVersions  DocumentVersion[]
   createdFolders    Folder[]
   documentShares    DocumentShare[]
   createdEvents     Event[]
   eventInvitations  EventAttendee[]
   preferences       Json?
+  chatMemberships   ChatMember[]      @relation("ChatMemberships")
+  authoredMessages  Message[]         @relation("AuthoredMessages")
 }
 
 model Project {
@@ -46,6 +48,7 @@ model Project {
   documents   Document[]
   folders     Folder[]
   events      Event[]
+  Chat        Chat[]
 
   @@index([clientId])
 }
@@ -79,24 +82,24 @@ model TimeEntry {
 }
 
 model Task {
-  id          String        @id @default(cuid())
-  title       String
-  description String?
-  status      TaskStatus    @default(PENDING)
-  priority    TaskPriority  @default(MEDIUM)
-  type        TaskType      @default(GENERAL)
-  dueDate     DateTime?
-  projectId   String?
+  id           String       @id @default(cuid())
+  title        String
+  description  String?
+  status       TaskStatus   @default(PENDING)
+  priority     TaskPriority @default(MEDIUM)
+  type         TaskType     @default(GENERAL)
+  dueDate      DateTime?
+  projectId    String?
   assignedToId String
-  createdById String
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
-  completedAt DateTime?
-  
-  project     Project?      @relation(fields: [projectId], references: [id])
-  assignedTo  User          @relation("AssignedTasks", fields: [assignedToId], references: [id])
-  createdBy   User          @relation("CreatedTasks", fields: [createdById], references: [id])
-  comments    TaskComment[]
+  createdById  String
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  completedAt  DateTime?
+
+  project    Project?      @relation(fields: [projectId], references: [id])
+  assignedTo User          @relation("AssignedTasks", fields: [assignedToId], references: [id])
+  createdBy  User          @relation("CreatedTasks", fields: [createdById], references: [id])
+  comments   TaskComment[]
 
   @@index([assignedToId])
   @@index([createdById])
@@ -111,9 +114,9 @@ model TaskComment {
   taskId    String
   userId    String
   createdAt DateTime @default(now())
-  
-  task      Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
-  user      User     @relation(fields: [userId], references: [id])
+
+  task Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id])
 
   @@index([taskId])
   @@index([userId])
@@ -128,35 +131,35 @@ model Notification {
   link      String?
   isRead    Boolean          @default(false)
   createdAt DateTime         @default(now())
-  
-  user      User             @relation(fields: [userId], references: [id])
+
+  user User @relation(fields: [userId], references: [id])
 
   @@index([userId, isRead])
   @@index([createdAt])
 }
 
 model Document {
-  id          String   @id @default(cuid())
-  name        String
-  description String?
-  fileName    String
-  fileSize    Int
-  fileType    String
-  filePath    String
-  version     Int      @default(1)
-  projectId   String?
-  folderId    String?
+  id           String   @id @default(cuid())
+  name         String
+  description  String?
+  fileName     String
+  fileSize     Int
+  fileType     String
+  filePath     String
+  version      Int      @default(1)
+  projectId    String?
+  folderId     String?
   uploadedById String
-  isPublic    Boolean  @default(false)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
-  project     Project?  @relation(fields: [projectId], references: [id])
-  folder      Folder?   @relation(fields: [folderId], references: [id])
-  uploadedBy  User      @relation("UploadedDocuments", fields: [uploadedById], references: [id])
-  versions    DocumentVersion[]
-  shares      DocumentShare[]
-  
+  isPublic     Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  project    Project?          @relation(fields: [projectId], references: [id])
+  folder     Folder?           @relation(fields: [folderId], references: [id])
+  uploadedBy User              @relation("UploadedDocuments", fields: [uploadedById], references: [id])
+  versions   DocumentVersion[]
+  shares     DocumentShare[]
+
   @@index([projectId])
   @@index([folderId])
   @@index([uploadedById])
@@ -164,19 +167,19 @@ model Document {
 }
 
 model DocumentVersion {
-  id          String   @id @default(cuid())
-  documentId  String
-  version     Int
-  fileName    String
-  filePath    String
-  fileSize    Int
+  id           String   @id @default(cuid())
+  documentId   String
+  version      Int
+  fileName     String
+  filePath     String
+  fileSize     Int
   uploadedById String
-  changes     String?
-  createdAt   DateTime @default(now())
-  
-  document    Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
-  uploadedBy  User     @relation(fields: [uploadedById], references: [id])
-  
+  changes      String?
+  createdAt    DateTime @default(now())
+
+  document   Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  uploadedBy User     @relation(fields: [uploadedById], references: [id])
+
   @@index([documentId])
   @@index([createdAt])
 }
@@ -189,36 +192,37 @@ model Folder {
   parentId    String?
   createdById String
   createdAt   DateTime @default(now())
-  
-  project     Project?  @relation(fields: [projectId], references: [id])
-  parent      Folder?   @relation("FolderHierarchy", fields: [parentId], references: [id], onDelete: Restrict, onUpdate: Restrict)
-  children    Folder[]  @relation("FolderHierarchy")
-  createdBy   User      @relation(fields: [createdById], references: [id])
-  documents   Document[]
-  
+
+  project   Project?   @relation(fields: [projectId], references: [id])
+  parent    Folder?    @relation("FolderHierarchy", fields: [parentId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  children  Folder[]   @relation("FolderHierarchy")
+  createdBy User       @relation(fields: [createdById], references: [id])
+  documents Document[]
+
   @@index([projectId])
   @@index([parentId])
   @@index([createdById])
 }
 
 model DocumentShare {
-  id              String   @id @default(cuid())
+  id              String      @id @default(cuid())
   documentId      String
   sharedWithId    String?
   sharedWithEmail String?
   accessLevel     AccessLevel @default(VIEW)
   expiresAt       DateTime?
-  createdAt       DateTime @default(now())
-  
-  document    Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
-  sharedWith  User?    @relation(fields: [sharedWithId], references: [id])
-  
+  createdAt       DateTime    @default(now())
+
+  document   Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  sharedWith User?    @relation(fields: [sharedWithId], references: [id])
+
   @@index([documentId])
   @@index([sharedWithId])
 }
 
 enum Role {
   ADMIN
+  MANAGER
   WORKER
   CLIENT
 }
@@ -277,17 +281,17 @@ model Event {
   allDay      Boolean   @default(false)
   location    String?
   type        EventType @default(MEETING)
-  
-  userId      String
-  projectId   String?
-  
-  user        User      @relation(fields: [userId], references: [id])
-  project     Project?  @relation(fields: [projectId], references: [id])
-  
-  attendees   EventAttendee[]
-  
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+
+  userId    String
+  projectId String?
+
+  user    User     @relation(fields: [userId], references: [id])
+  project Project? @relation(fields: [projectId], references: [id])
+
+  attendees EventAttendee[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([userId])
   @@index([projectId])
@@ -295,17 +299,76 @@ model Event {
 }
 
 model EventAttendee {
-  id        String         @id @default(cuid())
-  eventId   String
-  userId    String
-  status    AttendeeStatus @default(PENDING)
-  
-  event     Event          @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  user      User           @relation(fields: [userId], references: [id])
-  
+  id      String         @id @default(cuid())
+  eventId String
+  userId  String
+  status  AttendeeStatus @default(PENDING)
+
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id])
+
   @@unique([eventId, userId])
   @@index([eventId])
   @@index([userId])
+}
+
+// ============================================
+// COMMUNICATION MODULE (Phase 5)
+// ============================================
+
+model Chat {
+  id        String   @id @default(cuid())
+  type      ChatType @default(PROJECT)
+  name      String? // For project chats, null for DMs
+  projectId String?
+  project   Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  messages Message[]
+  members  ChatMember[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([projectId])
+}
+
+model ChatMember {
+  id     String @id @default(cuid())
+  chatId String
+  chat   Chat   @relation(fields: [chatId], references: [id], onDelete: Cascade)
+  userId String
+  user   User   @relation("ChatMemberships", fields: [userId], references: [id], onDelete: Cascade)
+
+  lastRead DateTime @default(now())
+  joinedAt DateTime @default(now())
+
+  @@unique([chatId, userId])
+  @@index([userId])
+}
+
+model Message {
+  id       String @id @default(cuid())
+  content  String @db.Text
+  chatId   String
+  chat     Chat   @relation(fields: [chatId], references: [id], onDelete: Cascade)
+  authorId String
+  author   User   @relation("AuthoredMessages", fields: [authorId], references: [id])
+
+  replyToId String?
+  replyTo   Message?  @relation("MessageReplies", fields: [replyToId], references: [id], onDelete: SetNull)
+  replies   Message[] @relation("MessageReplies")
+
+  attachments Json? // Array of document IDs or file URLs
+  mentions    String[] // Array of user IDs mentioned
+
+  isEdited  Boolean   @default(false)
+  deletedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([chatId, createdAt])
+  @@index([authorId])
 }
 
 enum EventType {
@@ -321,4 +384,9 @@ enum AttendeeStatus {
   ACCEPTED
   DECLINED
   TENTATIVE
+}
+
+enum ChatType {
+  PROJECT
+  DIRECT
 }

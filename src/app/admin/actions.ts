@@ -27,28 +27,159 @@ export async function toggleProjectStatus(id: string) {
     revalidatePath('/admin/projects');
 }
 
+import { hash } from 'bcryptjs';
+
+import { auth } from "@/auth";
+
+export async function getUsers(params?: {
+    search?: string;
+    role?: string;
+    department?: string;
+    status?: string;
+    page?: number;
+    limit?: number;
+}) {
+    const session = await auth();
+    // @ts-ignore
+    if (!session || !['ADMIN', 'MANAGER'].includes(session.user?.role)) {
+        throw new Error('Unauthorized');
+    }
+
+    const {
+        search = '',
+        role,
+        department,
+        status,
+        page = 1,
+        limit = 50
+    } = params || {};
+
+    const where: any = {};
+
+    if (search) {
+        where.OR = [
+            { name: { contains: search, mode: 'insensitive' } },
+            { email: { contains: search, mode: 'insensitive' } }
+        ];
+    }
+
+    if (role && role !== 'ALL') where.role = role;
+    if (department && department !== 'ALL') where.department = department;
+    if (status && status !== 'ALL') where.isActive = status === 'ACTIVE';
+
+    const [users, total] = await Promise.all([
+        prisma.user.findMany({
+            where,
+            select: {
+                id: true,
+                name: true,
+                email: true,
+                role: true,
+                isActive: true,
+                department: true,
+                dailyWorkHours: true,
+                createdAt: true,
+            },
+            take: limit,
+            skip: (page - 1) * limit,
+            orderBy: { createdAt: 'desc' }
+        }),
+        prisma.user.count({ where })
+    ]);
+
+    return { users, total, pages: Math.ceil(total / limit) };
+}
+
+// Deprecated: use getUsers instead
 export async function getAllUsers() {
-    return await prisma.user.findMany({
-        select: {
-            id: true,
-            name: true,
-            email: true,
-            role: true,
-            isActive: true,
-            department: true,
-            dailyWorkHours: true,
-        }
-    });
+    const session = await auth();
+    // @ts-ignore
+    if (!session || !['ADMIN', 'MANAGER'].includes(session.user?.role)) return [];
+
+    const result = await getUsers();
+    return result.users;
 }
 
 export async function updateUser(id: string, data: any) {
+    const session = await auth();
+    // @ts-ignore
+    const currentUserRole = session?.user?.role;
+    if (!currentUserRole || !['ADMIN', 'MANAGER'].includes(currentUserRole)) {
+        throw new Error('Unauthorized');
+    }
+
+    // MANAGER restrictions
+    if (currentUserRole === 'MANAGER') {
+        const targetUser = await prisma.user.findUnique({ where: { id }, select: { role: true } });
+        if (targetUser?.role === 'ADMIN' || targetUser?.role === 'MANAGER') {
+            throw new Error('Managers cannot edit Admin or Manager accounts');
+        }
+        if (['ADMIN', 'MANAGER'].includes(data.role)) {
+            throw new Error('Managers cannot promote users to Admin or Manager');
+        }
+    }
+
+    if (data.email) {
+        // Check uniqueness if email is changing
+        const existing = await prisma.user.findFirst({
+            where: {
+                email: data.email,
+                NOT: { id }
+            }
+        });
+        if (existing) throw new Error('Email ya está en uso');
+    }
+
     await prisma.user.update({
         where: { id },
         data: {
+            name: data.name,
+            email: data.email,
             role: data.role,
             department: data.department,
             isActive: data.isActive,
-            dailyWorkHours: parseFloat(data.dailyWorkHours) || 8.0,
+            dailyWorkHours: typeof data.dailyWorkHours === 'string'
+                ? parseFloat(data.dailyWorkHours)
+                : data.dailyWorkHours || 8.0,
+        }
+    });
+    revalidatePath('/admin/users');
+}
+
+export async function inviteUser(data: {
+    name: string;
+    email: string;
+    role: string;
+    department: string;
+}) {
+    const session = await auth();
+    // @ts-ignore
+    const currentUserRole = session?.user?.role;
+    if (!currentUserRole || !['ADMIN', 'MANAGER'].includes(currentUserRole)) {
+        throw new Error('Unauthorized');
+    }
+
+    // MANAGER restrictions
+    if (currentUserRole === 'MANAGER') {
+        if (['ADMIN', 'MANAGER'].includes(data.role)) {
+            throw new Error('Managers cannot invite Admins or Managers');
+        }
+    }
+
+    const existing = await prisma.user.findUnique({ where: { email: data.email } });
+    if (existing) throw new Error('Usuario ya existe');
+
+    const hashedPassword = await hash('Mep1234!', 10); // Default password
+
+    await prisma.user.create({
+        data: {
+            name: data.name,
+            email: data.email,
+            role: data.role as any,
+            department: data.department as any,
+            passwordHash: hashedPassword,
+            isActive: true,
+            dailyWorkHours: 8.0
         }
     });
     revalidatePath('/admin/users');

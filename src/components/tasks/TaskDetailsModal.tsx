@@ -7,6 +7,7 @@ import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { deleteTask, updateTask } from '@/app/(protected)/tasks/actions';
 import { getAllUsers, getAllProjects } from '@/app/admin/actions';
+import { useToast } from '@/components/ui/Toast';
 
 interface TaskDetailsModalProps {
     task: any;
@@ -16,6 +17,7 @@ interface TaskDetailsModalProps {
 }
 
 export default function TaskDetailsModal({ task, isOpen, onClose, onUpdate }: TaskDetailsModalProps) {
+    const toast = useToast();
     const [isEditing, setIsEditing] = useState(false);
     const [loading, setLoading] = useState(false);
 
@@ -51,12 +53,17 @@ export default function TaskDetailsModal({ task, isOpen, onClose, onUpdate }: Ta
 
         setLoading(true);
         try {
-            await deleteTask(task.id);
-            onClose();
-            if (onUpdate) onUpdate();
+            const result = await deleteTask(task.id);
+            if (result.success) {
+                toast.success('Tarea eliminada', 'La tarea se ha eliminado correctamente');
+                onClose();
+                if (onUpdate) onUpdate();
+            } else {
+                toast.error('Error', result.error || 'No se pudo eliminar la tarea');
+            }
         } catch (error) {
             console.error(error);
-            alert('Error al eliminar la tarea');
+            toast.error('Error', 'Ocurrió un error al eliminar la tarea');
         } finally {
             setLoading(false);
         }
@@ -65,18 +72,24 @@ export default function TaskDetailsModal({ task, isOpen, onClose, onUpdate }: Ta
     const handleUpdate = async () => {
         setLoading(true);
         try {
-            await updateTask(task.id, {
+            const result = await updateTask(task.id, {
                 title,
                 description,
-                status: status as any,
-                priority: priority as any,
+                status,
+                priority,
                 dueDate: dueDate || undefined
             });
-            setIsEditing(false);
-            if (onUpdate) onUpdate();
+
+            if (result.success) {
+                toast.success('Tarea actualizada', 'Los cambios se han guardado correctamente');
+                setIsEditing(false);
+                if (onUpdate) onUpdate();
+            } else {
+                toast.error('Error', result.error || 'No se pudo actualizar la tarea');
+            }
         } catch (error) {
             console.error(error);
-            alert('Error al actualizar la tarea');
+            toast.error('Error', 'Ocurrió un error al actualizar la tarea');
         } finally {
             setLoading(false);
         }
