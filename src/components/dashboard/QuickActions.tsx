@@ -47,15 +47,15 @@ export default function QuickActions() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="bg-white dark:bg-neutral-900 rounded-2xl p-6 border border-neutral-200 dark:border-neutral-800 shadow-sm"
+            className="card-lg p-6"
         >
             <div className="flex items-center space-x-3 mb-4">
-                <div className="p-3 bg-neutral-50 dark:bg-neutral-800 rounded-xl">
-                    <Plus className="w-6 h-6 text-neutral-600 dark:text-neutral-400" />
+                <div className="p-3 surface-tertiary rounded-xl">
+                    <Plus className="w-6 h-6 text-theme-secondary" />
                 </div>
                 <div>
-                    <h3 className="font-bold text-neutral-900 dark:text-neutral-100">Acciones Rápidas</h3>
-                    <p className="text-sm text-neutral-500 dark:text-neutral-400">Atajos frecuentes</p>
+                    <h3 className="font-bold text-theme-primary">Acciones Rápidas</h3>
+                    <p className="text-sm text-theme-tertiary">Atajos frecuentes</p>
                 </div>
             </div>
 
@@ -90,16 +90,16 @@ export default function QuickActions() {
             </div>
 
             {/* Keyboard Shortcuts Hint */}
-            <div className="mt-4 p-3 bg-neutral-50 dark:bg-neutral-800 rounded-xl">
-                <p className="text-xs text-neutral-500 dark:text-neutral-400 font-medium mb-2">💡 Atajos de teclado:</p>
-                <div className="space-y-1 text-xs text-neutral-600 dark:text-neutral-400">
+            <div className="mt-4 p-3 surface-tertiary rounded-xl">
+                <p className="text-xs text-theme-tertiary font-medium mb-2">💡 Atajos de teclado:</p>
+                <div className="space-y-1 text-xs text-theme-secondary">
                     <div className="flex justify-between">
                         <span>Registrar horas</span>
-                        <kbd className="px-2 py-1 bg-white dark:bg-neutral-700/50 rounded border border-neutral-200 dark:border-neutral-600 font-mono text-neutral-500 dark:text-neutral-300">Ctrl + H</kbd>
+                        <kbd className="px-2 py-1 surface-secondary rounded border border-theme-primary font-mono text-theme-tertiary">Ctrl + H</kbd>
                     </div>
                     <div className="flex justify-between">
                         <span>Nueva tarea</span>
-                        <kbd className="px-2 py-1 bg-white dark:bg-neutral-700/50 rounded border border-neutral-200 dark:border-neutral-600 font-mono text-neutral-500 dark:text-neutral-300">Ctrl + T</kbd>
+                        <kbd className="px-2 py-1 surface-secondary rounded border border-theme-primary font-mono text-theme-tertiary">Ctrl + T</kbd>
                     </div>
                 </div>
             </div>

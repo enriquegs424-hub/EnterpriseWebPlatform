@@ -167,7 +167,7 @@ export default function MessageComposer({
     };
 
     return (
-        <div className="border-t border-neutral-200 bg-white relative">
+        <div className="border-t border-theme-primary surface-secondary relative">
             <input
                 type="file"
                 multiple
@@ -184,20 +184,20 @@ export default function MessageComposer({
                         animate={{ height: 'auto', opacity: 1 }}
                         exit={{ height: 0, opacity: 0 }}
                         transition={{ duration: 0.2 }}
-                        className="px-5 pt-3 border-b border-neutral-100 overflow-hidden"
+                        className="px-5 pt-3 border-b border-theme-secondary overflow-hidden"
                     >
-                        <div className="flex items-start gap-2 pb-3 bg-olive-50/50 rounded-lg px-3 py-2.5 border-l-3 border-olive-500">
+                        <div className="flex items-start gap-2 pb-3 accent-bg rounded-lg px-3 py-2.5 border-l-3 border-olive-500">
                             <div className="flex-1 min-w-0">
-                                <div className="text-[11px] font-bold text-olive-700 mb-0.5 uppercase tracking-wide">
+                                <div className="text-[11px] font-bold accent-text mb-0.5 uppercase tracking-wide">
                                     Respondiendo a {replyingTo.author}
                                 </div>
-                                <div className="text-xs text-neutral-600 truncate">
+                                <div className="text-xs text-theme-secondary truncate">
                                     {replyingTo.content}
                                 </div>
                             </div>
                             <button
                                 onClick={onCancelReply}
-                                className="p-1 hover:bg-neutral-200 rounded transition-colors flex-shrink-0"
+                                className="p-1 interactive rounded transition-colors flex-shrink-0"
                                 aria-label="Cancelar respuesta"
                             >
                                 <X className="w-3.5 h-3.5 text-neutral-500" />
@@ -217,8 +217,8 @@ export default function MessageComposer({
                         className="px-4 pt-4 flex gap-2 overflow-x-auto"
                     >
                         {attachments.map((file, index) => (
-                            <div key={index} className="relative group bg-neutral-100 rounded-lg p-2 flex items-center gap-2 min-w-[150px] max-w-[200px] border border-neutral-200">
-                                <div className="p-2 bg-white rounded-md shrink-0">
+                            <div key={index} className="relative group surface-tertiary rounded-lg p-2 flex items-center gap-2 min-w-[150px] max-w-[200px] border border-theme-primary">
+                                <div className="p-2 surface-secondary rounded-md shrink-0">
                                     {file.type.startsWith('image/') ? (
                                         <ImageIcon className="w-4 h-4 text-purple-500" />
                                     ) : (
@@ -226,8 +226,8 @@ export default function MessageComposer({
                                     )}
                                 </div>
                                 <div className="flex-1 min-w-0">
-                                    <p className="text-xs font-medium text-neutral-700 truncate" title={file.name}>{file.name}</p>
-                                    <p className="text-[10px] text-neutral-400">{(file.size / 1024).toFixed(0)} KB</p>
+                                    <p className="text-xs font-medium text-theme-secondary truncate" title={file.name}>{file.name}</p>
+                                    <p className="text-[10px] text-theme-muted">{(file.size / 1024).toFixed(0)} KB</p>
                                 </div>
                                 <button
                                     onClick={() => removeAttachment(index)}
@@ -264,7 +264,7 @@ export default function MessageComposer({
                         onChange={(e) => setMessage(e.target.value)}
                         onKeyDown={handleKeyDown}
                         placeholder={placeholder}
-                        className="w-full px-4 py-3 border-2 border-neutral-200 rounded-lg focus:border-olive-500 focus:outline-none resize-none min-h-[44px] max-h-[150px] text-[13.5px] leading-relaxed transition-all"
+                        className="w-full px-4 py-3 border-2 input-base min-h-[44px] max-h-[150px] text-[13.5px] leading-relaxed resize-none"
                         rows={1}
                         aria-label="Campo de mensaje"
                     />
@@ -336,19 +336,19 @@ export default function MessageComposer({
             </div>
 
             {/* Hint */}
-            <div className="px-5 pb-3 text-[11px] text-neutral-400 flex items-center gap-3">
+            <div className="px-5 pb-3 text-[11px] text-theme-muted flex items-center gap-3">
                 <span className="flex items-center gap-1">
-                    <kbd className="px-1.5 py-0.5 bg-neutral-100 rounded text-[10px] font-mono text-neutral-600">@</kbd>
+                    <kbd className="px-1.5 py-0.5 surface-tertiary rounded text-[10px] font-mono text-theme-secondary">@</kbd>
                     <span>mencionar</span>
                 </span>
-                <span className="text-neutral-300">•</span>
+                <span className="text-theme-muted">•</span>
                 <span className="flex items-center gap-1">
-                    <kbd className="px-1.5 py-0.5 bg-neutral-100 rounded text-[10px] font-mono text-neutral-600">Enter</kbd>
+                    <kbd className="px-1.5 py-0.5 surface-tertiary rounded text-[10px] font-mono text-theme-secondary">Enter</kbd>
                     <span>enviar</span>
                 </span>
-                <span className="text-neutral-300">•</span>
+                <span className="text-theme-muted">•</span>
                 <span className="flex items-center gap-1">
-                    <kbd className="px-1.5 py-0.5 bg-neutral-100 rounded text-[10px] font-mono text-neutral-600">Ctrl+Enter</kbd>
+                    <kbd className="px-1.5 py-0.5 surface-tertiary rounded text-[10px] font-mono text-theme-secondary">Ctrl+Enter</kbd>
                     <span>salto</span>
                 </span>
             </div>

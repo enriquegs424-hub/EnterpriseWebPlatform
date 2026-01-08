@@ -34,17 +34,17 @@ export default function EmptyState({
         >
             {/* Icon Container */}
             <div className="relative mb-6">
-                <div className="absolute inset-0 bg-olive-100 rounded-full blur-2xl opacity-50 animate-pulse" />
-                <div className="relative bg-gradient-to-br from-olive-50 to-olive-100 p-6 rounded-full border-2 border-olive-200 shadow-lg">
-                    <Icon className="w-12 h-12 text-olive-600" strokeWidth={1.5} />
+                <div className="absolute inset-0 bg-olive-100 dark:bg-olive-900/30 rounded-full blur-2xl opacity-50 animate-pulse" />
+                <div className="relative bg-gradient-to-br from-olive-50 to-olive-100 dark:from-olive-900/50 dark:to-olive-900/30 p-6 rounded-full border-2 border-olive-200 dark:border-olive-800 shadow-lg">
+                    <Icon className="w-12 h-12 text-olive-600 dark:text-olive-400" strokeWidth={1.5} />
                 </div>
             </div>
 
             {/* Text Content */}
-            <h3 className="text-xl font-bold text-neutral-900 mb-2 text-center">
+            <h3 className="text-xl font-bold text-theme-primary mb-2 text-center">
                 {title}
             </h3>
-            <p className="text-neutral-600 text-center max-w-md mb-8">
+            <p className="text-theme-secondary text-center max-w-md mb-8">
                 {description}
             </p>
 
@@ -55,7 +55,7 @@ export default function EmptyState({
                     className={`
                         px-6 py-3 rounded-xl font-bold transition-all duration-200
                         ${action.variant === 'secondary'
-                            ? 'bg-white text-neutral-900 border-2 border-neutral-200 hover:bg-neutral-50 hover:border-neutral-300'
+                            ? 'surface-secondary text-theme-primary border-2 border-theme-primary hover:surface-tertiary'
                             : 'bg-olive-600 text-white hover:bg-olive-700 shadow-lg hover:shadow-xl'
                         }
                     `}

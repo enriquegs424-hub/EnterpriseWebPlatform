@@ -122,16 +122,16 @@ export default function TaskDetailsModal({ task, isOpen, onClose, onUpdate }: Ta
                 initial={{ scale: 0.9, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0.9, opacity: 0 }}
-                className="bg-white rounded-3xl shadow-2xl max-w-2xl w-full overflow-hidden flex flex-col max-h-[90vh]"
+                className="modal-content shadow-2xl max-w-2xl w-full overflow-hidden flex flex-col max-h-[90vh]"
             >
                 {/* Header */}
-                <div className="p-6 border-b border-neutral-200 bg-neutral-50 flex justify-between items-start">
+                <div className="p-6 border-b border-theme-primary surface-tertiary flex justify-between items-start">
                     <div className="flex-1 mr-4">
                         {isEditing ? (
                             <input
                                 value={title}
                                 onChange={(e) => setTitle(e.target.value)}
-                                className="text-xl font-black text-neutral-900 bg-white border border-neutral-300 rounded-lg px-3 py-2 w-full"
+                                className="text-xl font-black text-theme-primary input-base w-full"
                                 placeholder="Título de la tarea"
                             />
                         ) : (
@@ -144,11 +144,11 @@ export default function TaskDetailsModal({ task, isOpen, onClose, onUpdate }: Ta
                                         {task.priority}
                                     </span>
                                 </div>
-                                <h3 className="text-2xl font-black text-neutral-900">{task.title}</h3>
+                                <h3 className="text-2xl font-black text-theme-primary">{task.title}</h3>
                             </div>
                         )}
                     </div>
-                    <button onClick={onClose} className="p-2 hover:bg-black/5 rounded-lg text-neutral-500 hover:text-neutral-700 transition-colors">
+                    <button onClick={onClose} className="p-2 interactive rounded-lg text-theme-tertiary hover:text-theme-primary transition-colors">
                         <X size={20} />
                     </button>
                 </div>
@@ -158,11 +158,11 @@ export default function TaskDetailsModal({ task, isOpen, onClose, onUpdate }: Ta
                     {isEditing && (
                         <div className="grid grid-cols-2 gap-4">
                             <div>
-                                <label className="block text-sm font-bold text-neutral-700 mb-1">Estado</label>
+                                <label className="block text-sm font-bold text-theme-secondary mb-1">Estado</label>
                                 <select
                                     value={status}
                                     onChange={(e) => setStatus(e.target.value)}
-                                    className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 bg-white"
+                                    className="w-full text-sm input-base"
                                 >
                                     <option value="PENDING">Pendiente</option>
                                     <option value="IN_PROGRESS">En Progreso</option>
@@ -171,11 +171,11 @@ export default function TaskDetailsModal({ task, isOpen, onClose, onUpdate }: Ta
                                 </select>
                             </div>
                             <div>
-                                <label className="block text-sm font-bold text-neutral-700 mb-1">Prioridad</label>
+                                <label className="block text-sm font-bold text-theme-secondary mb-1">Prioridad</label>
                                 <select
                                     value={priority}
                                     onChange={(e) => setPriority(e.target.value)}
-                                    className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 bg-white"
+                                    className="w-full text-sm input-base"
                                 >
                                     <option value="LOW">Baja</option>
                                     <option value="MEDIUM">Media</option>
@@ -190,18 +190,18 @@ export default function TaskDetailsModal({ task, isOpen, onClose, onUpdate }: Ta
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         {/* Due Date */}
                         <div className="flex items-start space-x-3">
-                            <Calendar className="text-neutral-400 mt-1" size={20} />
+                            <Calendar className="text-theme-muted mt-1" size={20} />
                             <div className="flex-1">
-                                <h4 className="text-sm font-bold text-neutral-900 mb-1">Fecha Límite</h4>
+                                <h4 className="text-sm font-bold text-theme-primary mb-1">Fecha Límite</h4>
                                 {isEditing ? (
                                     <input
                                         type="date"
                                         value={dueDate}
                                         onChange={e => setDueDate(e.target.value)}
-                                        className="w-full text-sm border border-neutral-300 rounded-lg px-2 py-1"
+                                        className="w-full text-sm input-base"
                                     />
                                 ) : (
-                                    <p className="text-neutral-600">
+                                    <p className="text-theme-secondary">
                                         {task.dueDate ? format(new Date(task.dueDate), "EEEE d 'de' MMMM, yyyy", { locale: es }) : 'Sin fecha límite'}
                                     </p>
                                 )}
@@ -210,14 +210,14 @@ export default function TaskDetailsModal({ task, isOpen, onClose, onUpdate }: Ta
 
                         {/* Assignee */}
                         <div className="flex items-start space-x-3">
-                            <User className="text-neutral-400 mt-1" size={20} />
+                            <User className="text-theme-muted mt-1" size={20} />
                             <div className="flex-1">
-                                <h4 className="text-sm font-bold text-neutral-900 mb-1">Asignado a</h4>
+                                <h4 className="text-sm font-bold text-theme-primary mb-1">Asignado a</h4>
                                 <div className="flex items-center space-x-2">
-                                    <div className="w-6 h-6 rounded-full bg-neutral-200 text-neutral-600 flex items-center justify-center text-xs font-bold">
+                                    <div className="w-6 h-6 rounded-full surface-tertiary text-theme-secondary flex items-center justify-center text-xs font-bold">
                                         {task.assignedTo?.name?.charAt(0) || '?'}
                                     </div>
-                                    <span className="text-neutral-600">{task.assignedTo?.name || 'Sin asignar'}</span>
+                                    <span className="text-theme-secondary">{task.assignedTo?.name || 'Sin asignar'}</span>
                                 </div>
                             </div>
                         </div>
@@ -225,10 +225,10 @@ export default function TaskDetailsModal({ task, isOpen, onClose, onUpdate }: Ta
                         {/* Project */}
                         {task.project && (
                             <div className="flex items-start space-x-3">
-                                <Flag className="text-neutral-400 mt-1" size={20} />
+                                <Flag className="text-theme-muted mt-1" size={20} />
                                 <div className="flex-1">
-                                    <h4 className="text-sm font-bold text-neutral-900 mb-1">Proyecto</h4>
-                                    <p className="text-neutral-600 font-medium">{task.project.code} - {task.project.name}</p>
+                                    <h4 className="text-sm font-bold text-theme-primary mb-1">Proyecto</h4>
+                                    <p className="text-theme-secondary font-medium">{task.project.code} - {task.project.name}</p>
                                 </div>
                             </div>
                         )}
@@ -236,18 +236,18 @@ export default function TaskDetailsModal({ task, isOpen, onClose, onUpdate }: Ta
 
                     {/* Description */}
                     <div className="flex items-start space-x-3">
-                        <AlignLeft className="text-neutral-400 mt-1" size={20} />
+                        <AlignLeft className="text-theme-muted mt-1" size={20} />
                         <div className="flex-1">
-                            <h4 className="text-sm font-bold text-neutral-900 mb-2">Descripción</h4>
+                            <h4 className="text-sm font-bold text-theme-primary mb-2">Descripción</h4>
                             {isEditing ? (
                                 <textarea
                                     value={description}
                                     onChange={e => setDescription(e.target.value)}
-                                    className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 h-32 resize-none"
+                                    className="w-full text-sm input-base h-32 resize-none"
                                     placeholder="Detalles de la tarea..."
                                 />
                             ) : (
-                                <p className="text-neutral-600 whitespace-pre-wrap leading-relaxed">
+                                <p className="text-theme-secondary whitespace-pre-wrap leading-relaxed">
                                     {task.description || 'Sin descripción'}
                                 </p>
                             )}
@@ -256,22 +256,22 @@ export default function TaskDetailsModal({ task, isOpen, onClose, onUpdate }: Ta
 
                     {/* Comments Preview (Read Only) */}
                     {task.comments && task.comments.length > 0 && (
-                        <div className="flex items-start space-x-3 pt-4 border-t border-neutral-100">
-                            <MessageSquare className="text-neutral-400 mt-1" size={20} />
+                        <div className="flex items-start space-x-3 pt-4 border-t border-theme-secondary">
+                            <MessageSquare className="text-theme-muted mt-1" size={20} />
                             <div className="flex-1">
-                                <h4 className="text-sm font-bold text-neutral-900 mb-4">Comentarios ({task.comments.length})</h4>
+                                <h4 className="text-sm font-bold text-theme-primary mb-4">Comentarios ({task.comments.length})</h4>
                                 <div className="space-y-4">
                                     {task.comments.slice(0, 3).map((comment: any) => (
-                                        <div key={comment.id} className="bg-neutral-50 rounded-xl p-4">
+                                        <div key={comment.id} className="surface-tertiary rounded-xl p-4">
                                             <div className="flex justify-between items-center mb-2">
-                                                <span className="text-xs font-bold text-neutral-700">{comment.user.name}</span>
-                                                <span className="text-[10px] text-neutral-400">{format(new Date(comment.createdAt), 'dd/MM/yyyy HH:mm')}</span>
+                                                <span className="text-xs font-bold text-theme-secondary">{comment.user.name}</span>
+                                                <span className="text-[10px] text-theme-muted">{format(new Date(comment.createdAt), 'dd/MM/yyyy HH:mm')}</span>
                                             </div>
-                                            <p className="text-sm text-neutral-600">{comment.content}</p>
+                                            <p className="text-sm text-theme-secondary">{comment.content}</p>
                                         </div>
                                     ))}
                                     {task.comments.length > 3 && (
-                                        <p className="text-xs text-center text-neutral-400 italic">... y {task.comments.length - 3} comentarios más</p>
+                                        <p className="text-xs text-center text-theme-muted italic">... y {task.comments.length - 3} comentarios más</p>
                                     )}
                                 </div>
                             </div>
@@ -280,12 +280,12 @@ export default function TaskDetailsModal({ task, isOpen, onClose, onUpdate }: Ta
                 </div>
 
                 {/* Footer Actions */}
-                <div className="p-6 border-t border-neutral-200 bg-neutral-50 flex justify-between items-center">
+                <div className="p-6 border-t border-theme-primary surface-tertiary flex justify-between items-center">
                     {isEditing ? (
                         <>
                             <button
                                 onClick={() => setIsEditing(false)}
-                                className="px-6 py-2.5 text-neutral-600 font-bold hover:bg-neutral-200 rounded-xl transition-all"
+                                className="px-6 py-2.5 text-theme-secondary font-bold interactive rounded-xl transition-all"
                             >
                                 Cancelar
                             </button>
@@ -312,7 +312,7 @@ export default function TaskDetailsModal({ task, isOpen, onClose, onUpdate }: Ta
                             <div className="flex space-x-3">
                                 <button
                                     onClick={onClose}
-                                    className="px-6 py-2.5 text-neutral-600 font-bold hover:bg-neutral-200 rounded-xl transition-all"
+                                    className="px-6 py-2.5 text-theme-secondary font-bold interactive rounded-xl transition-all"
                                 >
                                     Cerrar
                                 </button>

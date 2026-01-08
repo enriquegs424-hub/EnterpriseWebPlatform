@@ -77,7 +77,7 @@ export default function Message({
             initial={{ opacity: 0, y: 5 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.15 }}
-            className={`group flex gap-3 px-6 py-2.5 hover:bg-neutral-50/70 transition-colors relative ${isDeleted ? 'opacity-50' : ''
+            className={`group flex gap-3 px-6 py-2.5 hover:bg-neutral-50/70 dark:hover:bg-neutral-800/50 transition-colors relative ${isDeleted ? 'opacity-50' : ''
                 }`}
             onMouseEnter={() => setShowActions(true)}
             onMouseLeave={() => setShowActions(false)}
@@ -85,8 +85,8 @@ export default function Message({
             {/* Avatar */}
             <div
                 className={`w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center text-xs font-bold mt-0.5 ${isOwnMessage
-                    ? 'bg-olive-600 text-white ring-2 ring-olive-100'
-                    : 'bg-neutral-100 text-neutral-700 ring-2 ring-neutral-50'
+                    ? 'bg-olive-600 text-white ring-2 ring-olive-100 dark:ring-olive-900'
+                    : 'bg-neutral-100 dark:bg-neutral-700 text-neutral-700 dark:text-neutral-300 ring-2 ring-neutral-50 dark:ring-neutral-800'
                     }`}
             >
                 {initials}
@@ -95,18 +95,18 @@ export default function Message({
             <div className="flex-1 min-w-0">
                 {/* Header */}
                 <div className="flex items-baseline gap-2.5 mb-0.5">
-                    <span className={`font-bold text-sm ${isOwnMessage ? 'text-olive-700' : 'text-neutral-900'
+                    <span className={`font-bold text-sm ${isOwnMessage ? 'text-olive-700 dark:text-olive-400' : 'text-neutral-900 dark:text-neutral-100'
                         }`}>
                         {author.name}
                     </span>
-                    <span className="text-[11px] text-neutral-400 font-medium">
+                    <span className="text-[11px] text-neutral-400 dark:text-neutral-500 font-medium">
                         {formatDistanceToNow(new Date(createdAt), {
                             addSuffix: true,
                             locale: es
                         })}
                     </span>
                     {isEdited && !isDeleted && (
-                        <span className="text-[10px] text-neutral-400 italic bg-neutral-100 px-1.5 py-0.5 rounded">
+                        <span className="text-[10px] text-neutral-400 dark:text-neutral-500 italic bg-neutral-100 dark:bg-neutral-700 px-1.5 py-0.5 rounded">
                             editado
                         </span>
                     )}
@@ -114,11 +114,11 @@ export default function Message({
 
                 {/* Reply Preview */}
                 {replyTo && !isDeleted && (
-                    <div className="mb-2 pl-2 border-l-3 border-olive-300 bg-olive-50/50 rounded-r px-3 py-1.5">
-                        <div className="text-[11px] text-olive-700 font-bold mb-0.5">
+                    <div className="mb-2 pl-2 border-l-3 border-olive-300 dark:border-olive-600 bg-olive-50/50 dark:bg-olive-900/30 rounded-r px-3 py-1.5">
+                        <div className="text-[11px] text-olive-700 dark:text-olive-400 font-bold mb-0.5">
                             {replyTo.author.name}
                         </div>
-                        <div className="text-xs text-neutral-600 italic line-clamp-2">
+                        <div className="text-xs text-neutral-600 dark:text-neutral-400 italic line-clamp-2">
                             {replyTo.content}
                         </div>
                     </div>
@@ -130,7 +130,7 @@ export default function Message({
                         <textarea
                             value={editContent}
                             onChange={(e) => setEditContent(e.target.value)}
-                            className="w-full px-3 py-2.5 border-2 border-olive-400 rounded-lg focus:outline-none focus:border-olive-600 resize-none text-sm"
+                            className="w-full px-3 py-2.5 border-2 border-olive-400 dark:border-olive-600 rounded-lg focus:outline-none focus:border-olive-600 dark:focus:border-olive-500 resize-none text-sm bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100"
                             rows={3}
                             autoFocus
                         />
@@ -143,7 +143,7 @@ export default function Message({
                             </button>
                             <button
                                 onClick={handleCancelEdit}
-                                className="px-3 py-1.5 bg-neutral-100 text-neutral-700 text-xs font-bold rounded-md hover:bg-neutral-200 transition-colors"
+                                className="px-3 py-1.5 bg-neutral-100 dark:bg-neutral-700 text-neutral-700 dark:text-neutral-300 text-xs font-bold rounded-md hover:bg-neutral-200 dark:hover:bg-neutral-600 transition-colors"
                             >
                                 Cancelar
                             </button>
@@ -157,17 +157,17 @@ export default function Message({
                                 {attachments.map((file: any, index: number) => (
                                     <div key={index}>
                                         {file.type.startsWith('image/') ? (
-                                            <a href={file.url} target="_blank" rel="noopener noreferrer" className="block max-w-[300px] overflow-hidden rounded-lg border border-neutral-200 hover:opacity-90 transition-opacity">
+                                            <a href={file.url} target="_blank" rel="noopener noreferrer" className="block max-w-[300px] overflow-hidden rounded-lg border border-neutral-200 dark:border-neutral-700 hover:opacity-90 transition-opacity">
                                                 <img src={file.url} alt={file.name} className="w-full h-auto object-cover max-h-[300px]" />
                                             </a>
                                         ) : (
-                                            <a href={file.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-3 bg-neutral-50 border border-neutral-200 rounded-lg hover:bg-neutral-100 transition-colors min-w-[200px]">
-                                                <div className="p-2 bg-white rounded border border-neutral-100 text-blue-500">
+                                            <a href={file.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-3 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors min-w-[200px]">
+                                                <div className="p-2 bg-white dark:bg-neutral-700 rounded border border-neutral-100 dark:border-neutral-600 text-blue-500">
                                                     <FileIcon className="w-5 h-5" />
                                                 </div>
                                                 <div className="flex-1 min-w-0">
-                                                    <p className="text-sm font-medium text-neutral-900 truncate">{file.name}</p>
-                                                    <p className="text-xs text-neutral-500">{(file.size / 1024).toFixed(0)} KB</p>
+                                                    <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100 truncate">{file.name}</p>
+                                                    <p className="text-xs text-neutral-500 dark:text-neutral-400">{(file.size / 1024).toFixed(0)} KB</p>
                                                 </div>
                                             </a>
                                         )}
@@ -176,7 +176,7 @@ export default function Message({
                             </div>
                         )}
 
-                        <div className={`text-[13.5px] leading-relaxed whitespace-pre-wrap break-words ${isDeleted ? 'italic text-neutral-400' : 'text-neutral-800'
+                        <div className={`text-[13.5px] leading-relaxed whitespace-pre-wrap break-words ${isDeleted ? 'italic text-neutral-400 dark:text-neutral-500' : 'text-neutral-800 dark:text-neutral-200'
                             }`}>
                             {isDeleted ? content : parseMentions(content)}
                         </div>
@@ -192,30 +192,30 @@ export default function Message({
                         animate={{ opacity: 1, x: 0 }}
                         exit={{ opacity: 0, x: -5 }}
                         transition={{ duration: 0.1 }}
-                        className="flex items-start gap-0.5 absolute right-4 top-2 bg-white border border-neutral-200 rounded-lg shadow-sm px-1 py-1"
+                        className="flex items-start gap-0.5 absolute right-4 top-2 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg shadow-sm px-1 py-1"
                     >
                         <button
                             onClick={() => onReply?.(id)}
-                            className="p-1.5 hover:bg-neutral-100 rounded transition-colors"
+                            className="p-1.5 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded transition-colors"
                             title="Responder"
                         >
-                            <Reply className="w-3.5 h-3.5 text-neutral-600" />
+                            <Reply className="w-3.5 h-3.5 text-neutral-600 dark:text-neutral-400" />
                         </button>
                         {isOwnMessage && (
                             <>
                                 <button
                                     onClick={() => setIsEditing(true)}
-                                    className="p-1.5 hover:bg-neutral-100 rounded transition-colors"
+                                    className="p-1.5 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded transition-colors"
                                     title="Editar"
                                 >
-                                    <Edit2 className="w-3.5 h-3.5 text-neutral-600" />
+                                    <Edit2 className="w-3.5 h-3.5 text-neutral-600 dark:text-neutral-400" />
                                 </button>
                                 <button
                                     onClick={() => onDelete?.(id)}
-                                    className="p-1.5 hover:bg-red-50 rounded transition-colors"
+                                    className="p-1.5 hover:bg-red-50 dark:hover:bg-red-900/30 rounded transition-colors"
                                     title="Eliminar"
                                 >
-                                    <Trash2 className="w-3.5 h-3.5 text-red-600" />
+                                    <Trash2 className="w-3.5 h-3.5 text-red-600 dark:text-red-400" />
                                 </button>
                             </>
                         )}

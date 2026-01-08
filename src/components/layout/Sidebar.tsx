@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
     LayoutDashboard, Briefcase, Users, Settings,
-    Clock, FileText, BarChart, CheckSquare, FolderOpen, Calendar, Bell, MessageSquare, Activity
+    Clock, FileText, BarChart, CheckSquare, FolderOpen, Calendar, Bell, MessageSquare, Activity, TrendingUp
 } from 'lucide-react';
 import Image from 'next/image';
 
@@ -22,6 +22,7 @@ const navItems = [
     },
     {
         section: 'Gestión', items: [
+            { label: 'CRM', href: '/crm', icon: TrendingUp, desc: 'Gestión de leads y clientes' },
             { label: 'Proyectos', href: '/admin/projects', icon: Briefcase, desc: 'Códigos y clientes' },
             { label: 'Clientes', href: '/admin/clients', icon: Users, desc: 'Cartera de clientes' },
         ]
@@ -70,9 +71,9 @@ export default function Sidebar() {
     }, [session, pathname]); // Re-fetch on navigation too
 
     return (
-        <aside className="w-64 bg-white dark:bg-neutral-900 border-r border-neutral-200 dark:border-neutral-800 flex flex-col h-screen fixed left-0 top-0 overflow-y-auto z-20 transition-colors">
+        <aside className="w-64 surface-secondary border-r border-theme-primary flex flex-col h-screen fixed left-0 top-0 overflow-y-auto z-20 transition-colors">
             {/* ... header ... */}
-            <div className="h-16 flex items-center px-6 border-b border-neutral-200 dark:border-neutral-800 bg-gradient-to-r from-white to-olive-50/20 dark:from-neutral-900 dark:to-neutral-900">
+            <div className="h-16 flex items-center px-6 border-b border-theme-primary bg-gradient-to-r from-white to-olive-50/20 dark:from-neutral-900 dark:to-neutral-900">
                 <div className="w-8 h-8 relative mr-3">
                     <Image src="/M_max.png" alt="Logo" fill className="object-contain" />
                 </div>
@@ -93,9 +94,9 @@ export default function Sidebar() {
 
                     return (
                         <div key={section.section}>
-                            <div className="px-3 mb-3 text-[10px] font-black text-neutral-400 uppercase tracking-widest flex items-center">
+                            <div className="px-3 mb-3 text-[10px] font-black text-theme-muted uppercase tracking-widest flex items-center">
                                 <span className="flex-1">{section.section}</span>
-                                <div className="h-px bg-neutral-200 dark:bg-neutral-800 flex-1 ml-2"></div>
+                                <div className="h-px bg-theme-primary flex-1 ml-2"></div>
                             </div>
                             <div className="space-y-1">
                                 {section.items.map((item) => {
@@ -112,12 +113,12 @@ export default function Sidebar() {
                                             href={item.href}
                                             className={`group flex items-center px-3 py-2.5 text-sm font-semibold rounded-xl transition-all relative ${isActive
                                                 ? 'bg-olive-600 text-white shadow-lg shadow-olive-600/20'
-                                                : 'text-neutral-600 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-800 hover:text-neutral-900 dark:hover:text-neutral-200'
+                                                : 'sidebar-item'
                                                 }`}
                                             title={item.desc}
                                         >
                                             <div className="relative">
-                                                <item.icon className={`w-5 h-5 mr-3 transition-transform group-hover:scale-110 ${isActive ? 'text-white' : 'text-neutral-400'}`} />
+                                                <item.icon className={`w-5 h-5 mr-3 transition-transform group-hover:scale-110 ${isActive ? 'text-white' : 'text-theme-muted'}`} />
                                                 {isNotificationItem && unreadCount > 0 && (
                                                     <span className={`absolute -top-1 right-2 w-2.5 h-2.5 rounded-full border-2 ${isActive ? 'bg-red-400 border-olive-600' : 'bg-red-500 border-white dark:border-neutral-900'}`}></span>
                                                 )}
@@ -149,7 +150,7 @@ export default function Sidebar() {
             </nav>
 
             {/* ... user ... */}
-            <div className="p-4 border-t border-neutral-200 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-900/50">
+            <div className="p-4 border-t border-theme-primary surface-tertiary">
                 <div className="flex items-center">
                     {session?.user?.image ? (
                         <img src={session.user.image} alt="Avatar" className="w-9 h-9 rounded-full object-cover mr-3 border border-olive-200 dark:border-olive-900" />
@@ -159,7 +160,7 @@ export default function Sidebar() {
                         </div>
                     )}
                     <div className="overflow-hidden">
-                        <p className="text-sm font-semibold text-neutral-900 dark:text-neutral-100 truncate">{session?.user?.name || 'Usuario'}</p>
+                        <p className="text-sm font-semibold text-theme-primary truncate">{session?.user?.name || 'Usuario'}</p>
                         <p className="text-xs text-olive-600 dark:text-olive-400 font-medium truncate">
                             {/* @ts-ignore */}
                             {session?.user?.role || 'Trabajador'}

@@ -58,10 +58,268 @@
   --font-mono: var(--font-geist-mono);
 }
 
+/* =============================================================================
+   SEMANTIC DESIGN TOKENS - Auto-switch with theme
+   ============================================================================= */
+
+:root {
+  /* Surface Colors */
+  --surface-primary: var(--color-neutral-50);
+  --surface-secondary: #ffffff;
+  --surface-tertiary: var(--color-neutral-100);
+  --surface-elevated: #ffffff;
+  --surface-overlay: rgba(0, 0, 0, 0.5);
+
+  /* Text Colors */
+  --text-primary: var(--color-neutral-900);
+  --text-secondary: var(--color-neutral-600);
+  --text-tertiary: var(--color-neutral-500);
+  --text-muted: var(--color-neutral-400);
+  --text-inverted: #ffffff;
+
+  /* Border Colors */
+  --border-primary: var(--color-neutral-200);
+  --border-secondary: var(--color-neutral-100);
+  --border-focus: var(--color-olive-500);
+
+  /* Interactive Colors */
+  --interactive-bg: var(--color-neutral-50);
+  --interactive-bg-hover: var(--color-neutral-100);
+  --interactive-bg-active: var(--color-olive-50);
+
+  /* Input Colors */
+  --input-bg: #ffffff;
+  --input-bg-disabled: var(--color-neutral-100);
+  --input-border: var(--color-neutral-200);
+  --input-border-focus: var(--color-olive-500);
+
+  /* Card Colors */
+  --card-bg: #ffffff;
+  --card-border: var(--color-neutral-200);
+  --card-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+
+  /* Accent Colors (olive) */
+  --accent-bg: var(--color-olive-50);
+  --accent-bg-hover: var(--color-olive-100);
+  --accent-text: var(--color-olive-700);
+  --accent-border: var(--color-olive-200);
+}
+
+.dark {
+  /* Surface Colors */
+  --surface-primary: var(--color-neutral-950);
+  --surface-secondary: var(--color-neutral-900);
+  --surface-tertiary: var(--color-neutral-800);
+  --surface-elevated: var(--color-neutral-800);
+  --surface-overlay: rgba(0, 0, 0, 0.7);
+
+  /* Text Colors */
+  --text-primary: var(--color-neutral-50);
+  --text-secondary: var(--color-neutral-300);
+  --text-tertiary: var(--color-neutral-400);
+  --text-muted: var(--color-neutral-500);
+  --text-inverted: var(--color-neutral-900);
+
+  /* Border Colors */
+  --border-primary: var(--color-neutral-700);
+  --border-secondary: var(--color-neutral-800);
+  --border-focus: var(--color-olive-500);
+
+  /* Interactive Colors */
+  --interactive-bg: var(--color-neutral-800);
+  --interactive-bg-hover: var(--color-neutral-700);
+  --interactive-bg-active: rgba(124, 143, 59, 0.2);
+
+  /* Input Colors */
+  --input-bg: var(--color-neutral-800);
+  --input-bg-disabled: var(--color-neutral-900);
+  --input-border: var(--color-neutral-700);
+  --input-border-focus: var(--color-olive-500);
+
+  /* Card Colors */
+  --card-bg: var(--color-neutral-800);
+  --card-border: var(--color-neutral-700);
+  --card-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+
+  /* Accent Colors (olive) */
+  --accent-bg: rgba(124, 143, 59, 0.2);
+  --accent-bg-hover: rgba(124, 143, 59, 0.3);
+  --accent-text: var(--color-olive-400);
+  --accent-border: var(--color-olive-800);
+}
+
+/* =============================================================================
+   COMPONENT UTILITY CLASSES - Use these in components
+   ============================================================================= */
+
+@layer components {
+
+  /* --- Surfaces --- */
+  .surface-primary {
+    background-color: var(--surface-primary);
+  }
+
+  .surface-secondary {
+    background-color: var(--surface-secondary);
+  }
+
+  .surface-tertiary {
+    background-color: var(--surface-tertiary);
+  }
+
+  .surface-elevated {
+    background-color: var(--surface-elevated);
+  }
+
+  /* --- Text --- */
+  .text-theme-primary {
+    color: var(--text-primary);
+  }
+
+  .text-theme-secondary {
+    color: var(--text-secondary);
+  }
+
+  .text-theme-tertiary {
+    color: var(--text-tertiary);
+  }
+
+  .text-theme-muted {
+    color: var(--text-muted);
+  }
+
+  /* --- Borders --- */
+  .border-theme-primary {
+    border-color: var(--border-primary);
+  }
+
+  .border-theme-secondary {
+    border-color: var(--border-secondary);
+  }
+
+  /* --- Cards --- */
+  .card {
+    background-color: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 1rem;
+    box-shadow: var(--card-shadow);
+  }
+
+  .card-lg {
+    background-color: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 1.5rem;
+    box-shadow: var(--card-shadow);
+  }
+
+  /* --- Inputs --- */
+  .input-base {
+    background-color: var(--input-bg);
+    border: 1px solid var(--input-border);
+    border-radius: 0.75rem;
+    color: var(--text-primary);
+    padding: 0.625rem 1rem;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  .input-base:focus {
+    border-color: var(--input-border-focus);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(124, 143, 59, 0.1);
+  }
+
+  .input-base:disabled {
+    background-color: var(--input-bg-disabled);
+    cursor: not-allowed;
+    opacity: 0.7;
+  }
+
+  .input-base::placeholder {
+    color: var(--text-muted);
+  }
+
+  /* --- Interactive Elements --- */
+  .interactive {
+    background-color: var(--interactive-bg);
+    transition: background-color 0.15s ease;
+  }
+
+  .interactive:hover {
+    background-color: var(--interactive-bg-hover);
+  }
+
+  .interactive-active {
+    background-color: var(--interactive-bg-active);
+  }
+
+  /* --- Accent/Highlight --- */
+  .accent-bg {
+    background-color: var(--accent-bg);
+  }
+
+  .accent-bg-hover:hover {
+    background-color: var(--accent-bg-hover);
+  }
+
+  .accent-text {
+    color: var(--accent-text);
+  }
+
+  .accent-border {
+    border-color: var(--accent-border);
+  }
+
+  /* --- Table --- */
+  .table-header {
+    background-color: var(--surface-tertiary);
+    color: var(--text-secondary);
+    font-weight: 600;
+  }
+
+  .table-row {
+    border-bottom: 1px solid var(--border-secondary);
+  }
+
+  .table-row:hover {
+    background-color: var(--interactive-bg);
+  }
+
+  /* --- Modal/Dialog --- */
+  .modal-overlay {
+    background-color: var(--surface-overlay);
+    backdrop-filter: blur(4px);
+  }
+
+  .modal-content {
+    background-color: var(--surface-elevated);
+    border: 1px solid var(--border-primary);
+    border-radius: 1.5rem;
+  }
+
+  /* --- Sidebar --- */
+  .sidebar-item {
+    color: var(--text-secondary);
+    transition: all 0.15s ease;
+  }
+
+  .sidebar-item:hover {
+    background-color: var(--interactive-bg);
+    color: var(--text-primary);
+  }
+
+  .sidebar-item-active {
+    background-color: var(--accent-bg);
+    color: var(--accent-text);
+    font-weight: 700;
+  }
+}
+
 body {
   font-family: var(--font-geist-sans), system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background-color: var(--surface-primary);
+  color: var(--text-primary);
 }
 
 /* Override default button and input reset */

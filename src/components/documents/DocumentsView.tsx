@@ -112,11 +112,11 @@ export default function DocumentsView({ projectId }: DocumentsViewProps) {
     };
 
     const getFileColor = (fileType: string) => {
-        if (fileType.includes('pdf')) return 'bg-error-50 text-error-700 border-error-200';
-        if (fileType.includes('sheet') || fileType.includes('excel')) return 'bg-success-50 text-success-700 border-success-200';
-        if (fileType.includes('image')) return 'bg-purple-50 text-purple-700 border-purple-200';
-        if (fileType.includes('dwg') || fileType.includes('cad')) return 'bg-orange-50 text-orange-700 border-orange-200';
-        return 'bg-neutral-50 text-neutral-700 border-neutral-200';
+        if (fileType.includes('pdf')) return 'bg-error-50 dark:bg-error-900/40 text-error-700 dark:text-error-300 border-error-200 dark:border-error-800';
+        if (fileType.includes('sheet') || fileType.includes('excel')) return 'bg-success-50 dark:bg-success-900/40 text-success-700 dark:text-success-300 border-success-200 dark:border-success-800';
+        if (fileType.includes('image')) return 'bg-purple-50 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-800';
+        if (fileType.includes('dwg') || fileType.includes('cad')) return 'bg-orange-50 dark:bg-orange-900/40 text-orange-700 dark:text-orange-300 border-orange-200 dark:border-orange-800';
+        return 'bg-neutral-50 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 border-neutral-200 dark:border-neutral-700';
     };
 
     const formatFileSize = (bytes: number) => {
@@ -192,21 +192,21 @@ export default function DocumentsView({ projectId }: DocumentsViewProps) {
                         <p className="text-xs font-bold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider mb-1">Total</p>
                         <p className="text-3xl font-black text-neutral-900 dark:text-neutral-100">{stats.total}</p>
                     </div>
-                    <div className="bg-error-50 rounded-2xl p-5 border border-error-200">
-                        <p className="text-xs font-bold text-error-600 uppercase tracking-wider mb-1">PDFs</p>
-                        <p className="text-3xl font-black text-error-700">
+                    <div className="bg-error-50 dark:bg-red-900/30 rounded-2xl p-5 border border-error-200 dark:border-red-800">
+                        <p className="text-xs font-bold text-error-600 dark:text-red-400 uppercase tracking-wider mb-1">PDFs</p>
+                        <p className="text-3xl font-black text-error-700 dark:text-red-400">
                             {stats.byType.find((t: any) => t.fileType.includes('pdf'))?._count || 0}
                         </p>
                     </div>
-                    <div className="bg-success-50 rounded-2xl p-5 border border-success-200">
-                        <p className="text-xs font-bold text-success-600 uppercase tracking-wider mb-1">Excel</p>
-                        <p className="text-3xl font-black text-success-700">
+                    <div className="bg-success-50 dark:bg-green-900/30 rounded-2xl p-5 border border-success-200 dark:border-green-800">
+                        <p className="text-xs font-bold text-success-600 dark:text-green-400 uppercase tracking-wider mb-1">Excel</p>
+                        <p className="text-3xl font-black text-success-700 dark:text-green-400">
                             {stats.byType.find((t: any) => t.fileType.includes('sheet'))?._count || 0}
                         </p>
                     </div>
-                    <div className="bg-purple-50 rounded-2xl p-5 border border-purple-200">
-                        <p className="text-xs font-bold text-purple-600 uppercase tracking-wider mb-1">Imágenes</p>
-                        <p className="text-3xl font-black text-purple-700">
+                    <div className="bg-purple-50 dark:bg-purple-900/30 rounded-2xl p-5 border border-purple-200 dark:border-purple-800">
+                        <p className="text-xs font-bold text-purple-600 dark:text-purple-400 uppercase tracking-wider mb-1">Imágenes</p>
+                        <p className="text-3xl font-black text-purple-700 dark:text-purple-400">
                             {stats.byType.find((t: any) => t.fileType.includes('image'))?._count || 0}
                         </p>
                     </div>

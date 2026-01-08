@@ -166,8 +166,8 @@ export default function SettingsPage() {
     return (
         <div className="max-w-5xl mx-auto space-y-6">
             <div>
-                <h1 className="text-2xl font-bold text-neutral-900 dark:text-neutral-100 border-l-4 border-olive-500 pl-4">Configuración</h1>
-                <p className="text-neutral-500 dark:text-neutral-400 mt-1 ml-5">Personaliza tu cuenta y preferencias</p>
+                <h1 className="text-2xl font-bold text-theme-primary border-l-4 border-olive-500 pl-4">Configuración</h1>
+                <p className="text-theme-tertiary mt-1 ml-5">Personaliza tu cuenta y preferencias</p>
             </div>
 
             <AnimatePresence mode="wait">
@@ -190,14 +190,14 @@ export default function SettingsPage() {
             <div className="grid grid-cols-12 gap-6">
                 {/* Tabs Sidebar */}
                 <div className="col-span-3">
-                    <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200 dark:border-neutral-800 overflow-hidden shadow-sm">
+                    <div className="card-lg overflow-hidden">
                         {tabs.map((tab) => (
                             <button
                                 key={tab.id}
                                 onClick={() => setActiveTab(tab.id)}
-                                className={`w-full flex items-center space-x-3 px-4 py-3 text-left transition-all border-b border-neutral-100 dark:border-neutral-800 last:border-b-0 ${activeTab === tab.id
-                                    ? 'bg-olive-50 dark:bg-olive-900/20 text-olive-700 dark:text-olive-400 font-bold border-l-4 border-l-olive-600'
-                                    : 'text-neutral-600 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-800 border-l-4 border-l-transparent'
+                                className={`w-full flex items-center space-x-3 px-4 py-3 text-left transition-all border-b border-theme-secondary last:border-b-0 ${activeTab === tab.id
+                                    ? 'accent-bg accent-text font-bold border-l-4 border-l-olive-600'
+                                    : 'sidebar-item border-l-4 border-l-transparent'
                                     }`}
                             >
                                 <tab.icon size={18} />
@@ -209,7 +209,7 @@ export default function SettingsPage() {
 
                 {/* Content Area */}
                 <div className="col-span-9">
-                    <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200 dark:border-neutral-800 shadow-sm p-6">
+                    <div className="card-lg p-6">
                         <AnimatePresence mode="wait">
                             {activeTab === 'profile' && (
                                 <motion.div
@@ -218,20 +218,20 @@ export default function SettingsPage() {
                                     animate={{ opacity: 1, x: 0 }}
                                     exit={{ opacity: 0, x: -20 }}
                                 >
-                                    <h2 className="text-xl font-bold text-neutral-900 dark:text-neutral-100 mb-6 flex items-center">
+                                    <h2 className="text-xl font-bold text-theme-primary mb-6 flex items-center">
                                         <User className="w-5 h-5 mr-3 text-olive-600" />
                                         Información Personal
                                     </h2>
 
                                     <form onSubmit={handleProfileSubmit} className="space-y-8">
                                         {/* Avatar Section */}
-                                        <div className="flex items-center gap-6 pb-6 border-b border-neutral-100">
+                                        <div className="flex items-center gap-6 pb-6 border-b border-theme-secondary">
                                             <div className="relative group">
-                                                <div className="w-24 h-24 rounded-full overflow-hidden bg-neutral-100 border-4 border-white shadow-lg flex items-center justify-center">
+                                                <div className="w-24 h-24 rounded-full overflow-hidden surface-tertiary border-4 border-theme-primary shadow-lg flex items-center justify-center">
                                                     {(profileData as any).image ? (
                                                         <img src={(profileData as any).image} alt="Profile" className="w-full h-full object-cover" />
                                                     ) : (
-                                                        <User size={40} className="text-neutral-400" />
+                                                        <User size={40} className="text-theme-muted" />
                                                     )}
                                                 </div>
                                                 <label className="absolute inset-0 flex items-center justify-center bg-black/40 rounded-full opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer text-white">
@@ -266,40 +266,40 @@ export default function SettingsPage() {
                                                 </label>
                                             </div>
                                             <div>
-                                                <h3 className="font-bold text-neutral-900">Foto de Perfil</h3>
-                                                <p className="text-sm text-neutral-500">Haz clic en la imagen para cambiarla.</p>
+                                                <h3 className="font-bold text-theme-primary">Foto de Perfil</h3>
+                                                <p className="text-sm text-theme-tertiary">Haz clic en la imagen para cambiarla.</p>
                                             </div>
                                         </div>
 
                                         <div>
-                                            <label className="block text-sm font-semibold text-neutral-700 mb-2">Nombre Completo</label>
+                                            <label className="block text-sm font-semibold text-theme-secondary mb-2">Nombre Completo</label>
                                             <input
                                                 type="text"
                                                 value={profileData.name}
                                                 onChange={(e) => setProfileData({ ...profileData, name: e.target.value })}
-                                                className="w-full px-4 py-2.5 bg-neutral-50 border border-neutral-200 rounded-xl focus:ring-4 focus:ring-olive-500/10 focus:border-olive-500 outline-none transition-all"
+                                                className="w-full input-base"
                                                 required
                                             />
                                         </div>
 
                                         <div>
-                                            <label className="block text-sm font-semibold text-neutral-700 mb-2">Email</label>
+                                            <label className="block text-sm font-semibold text-theme-secondary mb-2">Email</label>
                                             <input
                                                 type="email"
                                                 value={user?.email || ''}
                                                 disabled
-                                                className="w-full px-4 py-2.5 bg-neutral-100 border border-neutral-200 rounded-xl text-neutral-500 cursor-not-allowed"
+                                                className="w-full input-base opacity-60 cursor-not-allowed"
                                             />
-                                            <p className="text-xs text-neutral-400 mt-1">El email no se puede modificar</p>
+                                            <p className="text-xs text-theme-muted mt-1">El email no se puede modificar</p>
                                         </div>
 
                                         <div className="grid grid-cols-2 gap-4">
                                             <div>
-                                                <label className="block text-sm font-semibold text-neutral-700 mb-2">Departamento</label>
+                                                <label className="block text-sm font-semibold text-theme-secondary mb-2">Departamento</label>
                                                 <select
                                                     value={profileData.department}
                                                     onChange={(e) => setProfileData({ ...profileData, department: e.target.value })}
-                                                    className="w-full px-4 py-2.5 bg-neutral-50 border border-neutral-200 rounded-xl focus:ring-4 focus:ring-olive-500/10 focus:border-olive-500 outline-none transition-all"
+                                                    className="w-full input-base"
                                                 >
                                                     <option value="ENGINEERING">Ingeniería</option>
                                                     <option value="ARCHITECTURE">Arquitectura</option>
@@ -309,7 +309,7 @@ export default function SettingsPage() {
                                             </div>
 
                                             <div>
-                                                <label className="block text-sm font-semibold text-neutral-700 mb-2">Horas Diarias</label>
+                                                <label className="block text-sm font-semibold text-theme-secondary mb-2">Horas Diarias</label>
                                                 <input
                                                     type="number"
                                                     step="0.5"
@@ -317,18 +317,18 @@ export default function SettingsPage() {
                                                     max="24"
                                                     value={profileData.dailyWorkHours}
                                                     onChange={(e) => setProfileData({ ...profileData, dailyWorkHours: parseFloat(e.target.value) })}
-                                                    className="w-full px-4 py-2.5 bg-neutral-50 border border-neutral-200 rounded-xl focus:ring-4 focus:ring-olive-500/10 focus:border-olive-500 outline-none transition-all"
+                                                    className="w-full input-base"
                                                 />
                                             </div>
                                         </div>
 
                                         <div className="grid grid-cols-2 gap-4">
                                             <div>
-                                                <label className="block text-sm font-semibold text-neutral-700 mb-2">Idioma</label>
+                                                <label className="block text-sm font-semibold text-theme-secondary mb-2">Idioma</label>
                                                 <select
                                                     value={(profileData as any).language || 'es'}
                                                     onChange={(e) => setProfileData({ ...profileData, language: e.target.value } as any)}
-                                                    className="w-full px-4 py-2.5 bg-neutral-50 border border-neutral-200 rounded-xl focus:ring-4 focus:ring-olive-500/10 focus:border-olive-500 outline-none transition-all"
+                                                    className="w-full input-base"
                                                 >
                                                     <option value="es">Español</option>
                                                     <option value="en">English</option>
@@ -337,11 +337,11 @@ export default function SettingsPage() {
                                             </div>
 
                                             <div>
-                                                <label className="block text-sm font-semibold text-neutral-700 mb-2">Zona Horaria</label>
+                                                <label className="block text-sm font-semibold text-theme-secondary mb-2">Zona Horaria</label>
                                                 <select
                                                     value={(profileData as any).timezone || 'Europe/Madrid'}
                                                     onChange={(e) => setProfileData({ ...profileData, timezone: e.target.value } as any)}
-                                                    className="w-full px-4 py-2.5 bg-neutral-50 border border-neutral-200 rounded-xl focus:ring-4 focus:ring-olive-500/10 focus:border-olive-500 outline-none transition-all"
+                                                    className="w-full input-base"
                                                 >
                                                     <option value="Europe/Madrid">Madrid (CET/CEST)</option>
                                                     <option value="Europe/London">London (GMT/BST)</option>
@@ -371,26 +371,26 @@ export default function SettingsPage() {
                                     animate={{ opacity: 1, x: 0 }}
                                     exit={{ opacity: 0, x: -20 }}
                                 >
-                                    <h2 className="text-xl font-bold text-neutral-900 mb-6 flex items-center">
+                                    <h2 className="text-xl font-bold text-theme-primary mb-6 flex items-center">
                                         <Lock className="w-5 h-5 mr-3 text-olive-600" />
                                         Cambiar Contraseña
                                     </h2>
 
                                     <form onSubmit={handlePasswordSubmit} className="space-y-5">
                                         <div>
-                                            <label className="block text-sm font-semibold text-neutral-700 mb-2">Contraseña Actual</label>
+                                            <label className="block text-sm font-semibold text-theme-secondary mb-2">Contraseña Actual</label>
                                             <div className="relative">
                                                 <input
                                                     type={showPassword ? 'text' : 'password'}
                                                     value={passwordData.currentPassword}
                                                     onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
-                                                    className="w-full px-4 py-2.5 pr-12 bg-neutral-50 border border-neutral-200 rounded-xl focus:ring-4 focus:ring-olive-500/10 focus:border-olive-500 outline-none transition-all"
+                                                    className="w-full pr-12 input-base"
                                                     required
                                                 />
                                                 <button
                                                     type="button"
                                                     onClick={() => setShowPassword(!showPassword)}
-                                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600"
+                                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-theme-muted hover:text-theme-secondary"
                                                 >
                                                     {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                                                 </button>
@@ -398,24 +398,24 @@ export default function SettingsPage() {
                                         </div>
 
                                         <div>
-                                            <label className="block text-sm font-semibold text-neutral-700 mb-2">Nueva Contraseña</label>
+                                            <label className="block text-sm font-semibold text-theme-secondary mb-2">Nueva Contraseña</label>
                                             <input
                                                 type="password"
                                                 value={passwordData.newPassword}
                                                 onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
-                                                className="w-full px-4 py-2.5 bg-neutral-50 border border-neutral-200 rounded-xl focus:ring-4 focus:ring-olive-500/10 focus:border-olive-500 outline-none transition-all"
+                                                className="w-full input-base"
                                                 required
                                                 minLength={6}
                                             />
                                         </div>
 
                                         <div>
-                                            <label className="block text-sm font-semibold text-neutral-700 mb-2">Confirmar Nueva Contraseña</label>
+                                            <label className="block text-sm font-semibold text-theme-secondary mb-2">Confirmar Nueva Contraseña</label>
                                             <input
                                                 type="password"
                                                 value={passwordData.confirmPassword}
                                                 onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
-                                                className="w-full px-4 py-2.5 bg-neutral-50 border border-neutral-200 rounded-xl focus:ring-4 focus:ring-olive-500/10 focus:border-olive-500 outline-none transition-all"
+                                                className="w-full input-base"
                                                 required
                                                 minLength={6}
                                             />
@@ -443,11 +443,11 @@ export default function SettingsPage() {
                                     className="space-y-8"
                                 >
                                     <div>
-                                        <h2 className="text-xl font-bold text-neutral-900 mb-2 flex items-center">
+                                        <h2 className="text-xl font-bold text-theme-primary mb-2 flex items-center">
                                             <Bell className="w-5 h-5 mr-3 text-olive-600" />
                                             Preferencias de Notificación
                                         </h2>
-                                        <p className="text-sm text-neutral-500">Controla cómo y cuándo recibes avisos del sistema.</p>
+                                        <p className="text-sm text-theme-tertiary">Controla cómo y cuándo recibes avisos del sistema.</p>
                                     </div>
 
                                     <div className="space-y-4">
@@ -456,10 +456,10 @@ export default function SettingsPage() {
                                             { id: 'newProjects', label: 'Nuevos proyectos asignados', desc: 'Aviso inmediato cuando se te asigne un nuevo código.' },
                                             { id: 'dailyReminder', label: 'Recordatorio de registro diario', desc: 'Si olvidas registrar tus horas antes de las 18:00.' },
                                         ].map((n) => (
-                                            <div key={n.id} className="flex items-start justify-between p-4 bg-neutral-50 dark:bg-neutral-800/50 rounded-2xl border border-neutral-100 dark:border-neutral-800 hover:border-olive-200 dark:hover:border-olive-700 transition-colors">
+                                            <div key={n.id} className="flex items-start justify-between p-4 surface-tertiary rounded-2xl border border-theme-secondary hover:border-olive-300 dark:hover:border-olive-700 transition-colors">
                                                 <div>
-                                                    <p className="font-bold text-neutral-900 dark:text-neutral-200 text-sm">{n.label}</p>
-                                                    <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">{n.desc}</p>
+                                                    <p className="font-bold text-theme-primary text-sm">{n.label}</p>
+                                                    <p className="text-xs text-theme-tertiary mt-0.5">{n.desc}</p>
                                                 </div>
                                                 <div className="relative inline-flex items-center cursor-pointer">
                                                     <input
@@ -485,11 +485,11 @@ export default function SettingsPage() {
                                     className="space-y-8"
                                 >
                                     <div>
-                                        <h2 className="text-xl font-bold text-neutral-900 mb-2 flex items-center">
+                                        <h2 className="text-xl font-bold text-theme-primary mb-2 flex items-center">
                                             <Palette className="w-5 h-5 mr-3 text-olive-600" />
                                             Interfaz y Estilo
                                         </h2>
-                                        <p className="text-sm text-neutral-500">Personaliza tu experiencia visual en la plataforma.</p>
+                                        <p className="text-sm text-theme-tertiary">Personaliza tu experiencia visual en la plataforma.</p>
                                     </div>
 
                                     <div className="grid grid-cols-2 gap-4">
@@ -516,11 +516,11 @@ export default function SettingsPage() {
                                         </div>
                                     </div>
 
-                                    <div className="space-y-4 pt-4 border-t border-neutral-100">
+                                    <div className="space-y-4 pt-4 border-t border-theme-secondary">
                                         <div className="flex items-center justify-between p-4">
                                             <div>
-                                                <p className="font-bold text-neutral-900 text-sm">Barra Lateral Compacta</p>
-                                                <p className="text-xs text-neutral-500">Maximiza el espacio de trabajo ocultando textos.</p>
+                                                <p className="font-bold text-theme-primary text-sm">Barra Lateral Compacta</p>
+                                                <p className="text-xs text-theme-tertiary">Maximiza el espacio de trabajo ocultando textos.</p>
                                             </div>
                                             <div className="relative inline-flex items-center cursor-pointer">
                                                 <input
@@ -534,8 +534,8 @@ export default function SettingsPage() {
                                         </div>
                                         <div className="flex items-center justify-between p-4">
                                             <div>
-                                                <p className="font-bold text-neutral-900 text-sm">Animaciones Fluidas</p>
-                                                <p className="text-xs text-neutral-500">Habilitar transiciones suaves entre páginas.</p>
+                                                <p className="font-bold text-theme-primary text-sm">Animaciones Fluidas</p>
+                                                <p className="text-xs text-theme-tertiary">Habilitar transiciones suaves entre páginas.</p>
                                             </div>
                                             <div className="relative inline-flex items-center cursor-pointer">
                                                 <input
