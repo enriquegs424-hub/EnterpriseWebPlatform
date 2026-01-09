@@ -1,10 +1,10 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { formatDistanceToNow } from 'date-fns';
-import { es } from 'date-fns/locale';
-import { FileText, Plus, Eye, Send, Check, X, Euro } from 'lucide-react';
-import Link from 'link';
+import { FileText, Plus, Eye } from 'lucide-react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import DataTable, { type Column } from '@/components/DataTable';
 
 interface Invoice {
     id: string;
@@ -49,9 +49,9 @@ const STATUS_LABELS = {
 };
 
 export default function InvoicesPage() {
+    const router = useRouter();
     const [invoices, setInvoices] = useState<Invoice[]>([]);
     const [loading, setLoading] = useState(true);
-    const [filter, setFilter] = useState<string>('ALL');
     const [stats, setStats] = useState({
         totalAmount: 0,
         totalCount: 0,
@@ -90,10 +90,103 @@ export default function InvoicesPage() {
         }
     }
 
-    const filteredInvoices = invoices.filter((inv) => {
-        if (filter === 'ALL') return true;
-        return inv.status === filter;
-    });
+    // Define columns for DataTable
+    const columns: Column<Invoice>[] = [
+        {
+            key: 'number',
+            label: 'Número',
+            sortable: true,
+            render: (invoice) => (
+                <div className="flex items-center gap-2">
+                    <FileText className="w-4 h-4 text-gray-400" />
+                    <span className="font-medium">{invoice.number}</span>
+                </div>
+            ),
+        },
+        {
+            key: 'client.name',
+            label: 'Cliente',
+            sortable: true,
+            render: (invoice) => invoice.client.name,
+        },
+        {
+            key: 'project',
+            label: 'Proyecto',
+            sortable: false,
+            render: (invoice) => invoice.project ? invoice.project.code : <span className="text-gray-400">-</span>,
+        },
+        {
+            key: 'date',
+            label: 'Fecha',
+            sortable: true,
+            render: (invoice) => (
+                <div>
+                    <div className="text-sm">{new Date(invoice.date).toLocaleDateString('es-ES')}</div>
+                    <div className="text-xs text-gray-500">
+                        Vence: {new Date(invoice.dueDate).toLocaleDateString('es-ES')}
+                    </div>
+                </div>
+            ),
+        },
+        {
+            key: 'total',
+            label: 'Total',
+            sortable: true,
+            className: 'text-right',
+            render: (invoice) => (
+                <div className="text-right">
+                    <div className="font-medium">
+                        {invoice.total.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}
+                    </div>
+                    <div className="text-xs text-gray-500">{invoice._count.items} líneas</div>
+                </div>
+            ),
+        },
+        {
+            key: 'balance',
+            label: 'Pendiente',
+            sortable: true,
+            className: 'text-right',
+            render: (invoice) => (
+                <div className="text-right">
+                    <div className="font-medium">
+                        {invoice.balance.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}
+                    </div>
+                    {invoice._count.payments > 0 && (
+                        <div className="text-xs text-gray-500">{invoice._count.payments} pago(s)</div>
+                    )}
+                </div>
+            ),
+        },
+        {
+            key: 'status',
+            label: 'Estado',
+            sortable: true,
+            render: (invoice) => (
+                <span
+                    className={`px-2 py-1 text-xs font-semibold rounded-full ${STATUS_COLORS[invoice.status as keyof typeof STATUS_COLORS]
+                        }`}
+                >
+                    {STATUS_LABELS[invoice.status as keyof typeof STATUS_LABELS]}
+                </span>
+            ),
+        },
+        {
+            key: 'actions',
+            label: 'Acciones',
+            sortable: false,
+            render: (invoice) => (
+                <Link
+                    href={`/invoices/${invoice.id}`}
+                    className="inline-flex items-center gap-1 text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300"
+                    onClick={(e) => e.stopPropagation()}
+                >
+                    <Eye className="w-4 h-4" />
+                    Ver
+                </Link>
+            ),
+        },
+    ];
 
     return (
         <div className="p-6 space-y-6">
@@ -109,7 +202,7 @@ export default function InvoicesPage() {
                 </div>
                 <Link
                     href="/invoices/new"
-                    className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                    className="inline-flex items-center gap-2 px-4 py-2 bg-olive-600 text-white rounded-lg hover:bg-olive-700 transition-colors"
                 >
                     <Plus className="w-5 h-5" />
                     Nueva Factura
@@ -130,11 +223,11 @@ export default function InvoicesPage() {
                                     currency: 'EUR',
                                 })}
                             </p>
-                            <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
+                            <p className="text-xs text-gray-500 mt-1">
                                 {stats.totalCount} facturas
                             </p>
                         </div>
-                        <FileText className="w-10 h-10 text-blue-500" />
+                        <FileText className="w-10 h-10 text-olive-500" />
                     </div>
                 </div>
 
@@ -150,11 +243,10 @@ export default function InvoicesPage() {
                                     currency: 'EUR',
                                 })}
                             </p>
-                            <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
+                            <p className="text-xs text-gray-500 mt-1">
                                 {stats.paidCount} pagadas
                             </p>
                         </div>
-                        <Check className="w-10 h-10 text-green-500" />
                     </div>
                 </div>
 
@@ -170,11 +262,10 @@ export default function InvoicesPage() {
                                     currency: 'EUR',
                                 })}
                             </p>
-                            <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
+                            <p className="text-xs text-gray-500 mt-1">
                                 {stats.pendingCount} facturas
                             </p>
                         </div>
-                        <Euro className="w-10 h-10 text-yellow-500" />
                     </div>
                 </div>
 
@@ -187,170 +278,25 @@ export default function InvoicesPage() {
                             <p className="text-2xl font-bold text-red-600 dark:text-red-400 mt-1">
                                 {stats.overdueCount}
                             </p>
-                            <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
+                            <p className="text-xs text-gray-500 mt-1">
                                 facturas
                             </p>
                         </div>
-                        <X className="w-10 h-10 text-red-500" />
                     </div>
                 </div>
             </div>
 
-            {/* Filters */}
-            <div className="flex gap-2 flex-wrap">
-                {['ALL', 'DRAFT', 'SENT', 'PARTIAL', 'PAID', 'OVERDUE', 'CANCELLED'].map(
-                    (status) => (
-                        <button
-                            key={status}
-                            onClick={() => setFilter(status)}
-                            className={`px-4 py-2 rounded-lg transition-colors ${filter === status
-                                    ? 'bg-blue-600 text-white'
-                                    : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
-                                }`}
-                        >
-                            {status === 'ALL' ? 'Todas' : STATUS_LABELS[status as keyof typeof STATUS_LABELS]}
-                        </button>
-                    )
-                )}
-            </div>
-
-            {/* Table */}
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
-                <div className="overflow-x-auto">
-                    <table className="w-full">
-                        <thead className="bg-gray-50 dark:bg-gray-900">
-                            <tr>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                    Número
-                                </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                    Cliente
-                                </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                    Proyecto
-                                </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                    Fecha
-                                </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                    Total
-                                </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                    Pendiente
-                                </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                    Estado
-                                </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                    Acciones
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                            {loading ? (
-                                <tr>
-                                    <td colSpan={8} className="px-6 py-12 text-center">
-                                        <div className="flex justify-center">
-                                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                                        </div>
-                                    </td>
-                                </tr>
-                            ) : filteredInvoices.length === 0 ? (
-                                <tr>
-                                    <td
-                                        colSpan={8}
-                                        className="px-6 py-12 text-center text-gray-500 dark:text-gray-400"
-                                    >
-                                        No hay facturas
-                                    </td>
-                                </tr>
-                            ) : (
-                                filteredInvoices.map((invoice) => (
-                                    <tr
-                                        key={invoice.id}
-                                        className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
-                                    >
-                                        <td className="px-6 py-4 whitespace-nowrap">
-                                            <div className="flex items-center">
-                                                <FileText className="w-5 h-5 text-gray-400 mr-2" />
-                                                <span className="font-medium text-gray-900 dark:text-white">
-                                                    {invoice.number}
-                                                </span>
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <div className="text-sm text-gray-900 dark:text-white">
-                                                {invoice.client.name}
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            {invoice.project ? (
-                                                <div className="text-sm text-gray-900 dark:text-white">
-                                                    {invoice.project.code}
-                                                </div>
-                                            ) : (
-                                                <span className="text-sm text-gray-400">-</span>
-                                            )}
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap">
-                                            <div className="text-sm text-gray-900 dark:text-white">
-                                                {new Date(invoice.date).toLocaleDateString('es-ES')}
-                                            </div>
-                                            <div className="text-xs text-gray-500">
-                                                Vence:{' '}
-                                                {new Date(invoice.dueDate).toLocaleDateString('es-ES')}
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap">
-                                            <div className="text-sm font-medium text-gray-900 dark:text-white">
-                                                {invoice.total.toLocaleString('es-ES', {
-                                                    style: 'currency',
-                                                    currency: 'EUR',
-                                                })}
-                                            </div>
-                                            <div className="text-xs text-gray-500">
-                                                {invoice._count.items} líneas
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap">
-                                            <div className="text-sm font-medium text-gray-900 dark:text-white">
-                                                {invoice.balance.toLocaleString('es-ES', {
-                                                    style: 'currency',
-                                                    currency: 'EUR',
-                                                })}
-                                            </div>
-                                            {invoice._count.payments > 0 && (
-                                                <div className="text-xs text-gray-500">
-                                                    {invoice._count.payments} pago(s)
-                                                </div>
-                                            )}
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap">
-                                            <span
-                                                className={`px-2 py-1 text-xs font-semibold rounded-full ${STATUS_COLORS[
-                                                    invoice.status as keyof typeof STATUS_COLORS
-                                                    ]
-                                                    }`}
-                                            >
-                                                {STATUS_LABELS[invoice.status as keyof typeof STATUS_LABELS]}
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap">
-                                            <Link
-                                                href={`/invoices/${invoice.id}`}
-                                                className="inline-flex items-center gap-1 text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300"
-                                            >
-                                                <Eye className="w-4 h-4" />
-                                                Ver
-                                            </Link>
-                                        </td>
-                                    </tr>
-                                ))
-                            )}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+            {/* DataTable with invoices */}
+            <DataTable
+                data={invoices}
+                columns={columns}
+                keyExtractor={(invoice) => invoice.id}
+                loading={loading}
+                emptyMessage="No hay facturas registradas"
+                searchPlaceholder="Buscar por número, cliente o proyecto..."
+                searchable={true}
+                onRowClick={(invoice) => router.push(`/invoices/${invoice.id}`)}
+            />
         </div>
     );
 }

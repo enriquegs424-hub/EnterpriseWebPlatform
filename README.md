@@ -1,331 +1,234 @@
-# 🚀 MEP Projects - Plataforma de Gestión Integral
+# MEP Projects - Enterprise ERP Platform
 
-[![Production Ready](https://img.shields.io/badge/status-production--ready-success)](https://github.com)
-[![Version](https://img.shields.io/badge/version-1.0.0-blue)](https://github.com)
-[![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+Modern enterprise resource planning (ERP) platform built with Next.js, TypeScript, and PostgreSQL. Designed for professional services companies requiring project management, CRM, finance, and HR capabilities.
 
-**MEP Projects** es una plataforma completa de gestión empresarial que unifica tareas, horas, documentos, proyectos, calendario y comunicación en una sola aplicación web moderna y eficiente.
+## 🎯 Vision
 
----
-
-## 🎯 Características Principales
-
-### ✅ Gestión de Tareas
-- **3 Vistas**: Lista, Kanban y Calendario
-- **Prioridades y Estados**: Configurables por proyecto
-- **Asignación Múltiple**: Tareas a varios usuarios
-- **Comentarios y Adjuntos**: Colaboración en tiempo real
-
-### ⏱️ Control de Horas
-- **Temporizador en Tiempo Real**: Inicio/pausa/fin de jornada
-- **Validación Automática**: Máximo 24h, ventana de edición configurable
-- **Reportes Completos**: Diarios, semanales, mensuales y anuales
-- **Análisis de Rentabilidad**: Horas facturables vs no facturables
-
-### 📁 Gestión Documental
-- **Upload Drag & Drop**: Subida masiva de archivos
-- **Organización Jerárquica**: Carpetas por proyecto
-- **Preview de Imágenes**: Modal interactivo con zoom y rotación
-- **Filtros Avanzados**: Por tipo (PDF, imágenes, hojas de cálculo)
-
-### 📊 Dashboard de Proyectos
-- **Vista 360º**: Tareas, documentos, eventos y equipo unificados
-- **Métricas en Tiempo Real**: Progreso, estado de salud, contadores
-- **Navegación Rápida**: Acceso directo a todos los recursos
-
-### 📅 Calendario Corporativo
-- **Vistas Múltiples**: Mes, semana, día y agenda
-- **Eventos Vinculados**: Integración con proyectos
-- **Gestión Completa**: Crear, editar, eliminar con invitados
-
-### 🔔 Sistema de Notificaciones
-- **Alertas en Tiempo Real**: Badge con contador
-- **Centro de Notificaciones**: Bandeja de entrada persistente
-- **Notificaciones Toast**: Feedback visual elegante (no alerts)
-
-### 🔍 Búsqueda Global
-- **Comando Rápido**: `Ctrl+K` / `Cmd+K`
-- **Búsqueda Universal**: Proyectos, tareas, documentos, clientes, usuarios
-- **Navegación Teclado**: Flechas + Enter
-- **Optimizada**: 150ms debounce, animaciones 0.15s
-
----
-
-## 🛠️ Stack Tecnológico
-
-### Frontend
-- **Next.js 15+** (App Router) - Framework React con SSR y RSC
-- **TypeScript** - Type-safe development
-- **Tailwind CSS** - Utility-first styling
-- **Framer Motion** - Animaciones fluidas y performantes
-
-### Backend
-- **Next.js API Routes** / **Server Actions** - Backend serverless
-- **Prisma ORM** - Type-safe database access
-- **PostgreSQL** - Base de datos relacional robusta
-- **NextAuth.js** - Autenticación y sesiones
-
-### Herramientas
-- **Docker** - Containerización para desarrollo
-- **PM2** - Process manager para producción
-- **Nginx** - Reverse proxy y SSL
-- **Git** - Control de versiones
-
----
+Build a comprehensive ERP system with **Odoo-level functionality and professionalism**, featuring full multi-tenant support, granular permissions (RBAC), complete audit trails, and automated business workflows.
 
 ## 🚀 Quick Start
 
-### Prerequisitos
 ```bash
-Node.js >= 18.0.0
-PostgreSQL >= 14
-Git
-```
-
-### Instalación Local
-
-```bash
-# 1. Clonar repositorio
-git clone https://github.com/tu-usuario/mep-projects.git
-cd mep-projects
-
-# 2. Instalar dependencias
+# Install dependencies
 npm install
 
-# 3. Configurar variables de entorno
-cp .env.example .env
-# Editar .env con tus credenciales
+# Setup database
+npm run db:push
+npm run db:seed
 
-# 4. Iniciar base de datos (Docker)
-docker-compose up -d
-
-# 5. Aplicar migraciones
-npx prisma migrate dev
-npx prisma db seed
-
-# 6. Iniciar servidor de desarrollo
+# Start development server
 npm run dev
 ```
 
-Aplicación disponible en: http://localhost:3000
+Visit `http://localhost:3000`
+- **Admin**: admin@mep-projects.com / admin123
 
-**Credenciales de prueba:**
-- **Admin**: `admin@mep.com` / `admin123`
-- **Manager**: `manager@mep.com` / `manager123`
-- **Worker**: `worker@mep.com` / `worker123`
+## 📚 Documentation
 
----
+- **[Architecture](./ARCHITECTURE.md)** - System design, stack, decisions
+- **[Roadmap](./ROADMAP_TRACKING.md)** - Live tracker, priorities, progress
+- **[Backlog](./BACKLOG_EXECUTABLE.md)** - Actionable tasks with DoD
+- **[Changelog](./CHANGELOG.md)** - Version history
+- **[Contributing](./CONTRIBUTING.md)** - Development guidelines
 
-## 📦 Deployment en Producción
+## ✨ Core Features
 
-### Opción 1: Vercel (Recomendado - Más Fácil)
+### Security & Access Control
+- ✅ **Multi-tenant**: Company-level data isolation
+- ✅ **RBAC**: 4 roles (ADMIN, MANAGER, WORKER, CLIENT) × 11 resources
+- ✅ **Proxy middleware**: Global route protection (Next.js 16)
+- ✅ **Rate limiting**: API abuse prevention
+- ✅ **Audit trail**: Automatic CRUD logging
+
+### Business Modules
+- ✅ **Projects**: With tasks, documents, events
+- ✅ **CRM**: Lead pipeline (NEW → QUALIFIED → PROPOSAL → NEGOTIATION → CLOSED)
+- ✅ **Tasks**: Kanban, list, calendar views
+- ✅ **Time Tracking**: Daily entry + approval workflow
+- ✅ **Expenses**: Approval flow (PENDING → APPROVED → PAID)
+- ✅ **Invoices**: Auto-numbering, payment tracking, status flow
+- ✅ **Documents**: Versioning, sharing
+- ✅ **Calendar**: Events, scheduling
+- ✅ **Chat**: Team communications
+- ✅ **Analytics**: Dashboards, reports
+
+### State Management
+- ✅ **State machines**: Validated transitions for Tasks, Leads, Expenses, Invoices, TimeEntries
+- ✅ **Workflow validation**: Invalid state changes blocked automatically
+
+## 🏗️ Tech Stack
+
+| Layer | Technology |
+|-------|------------|
+| **Frontend** | Next.js 16.1, React 19, Tailwind CSS 4 |
+| **Backend** | Next.js Server Actions, Prisma ORM 5.22 |
+| **Database** | PostgreSQL |
+| **Auth** | NextAuth 5 beta (JWT + session) |
+| **Testing** | Vitest 4.0 (30 tests passing) |
+| **Deployment** | Docker Compose |
+
+## 📊 Project Status
+
+| Module | Backend | UI | RBAC | State | Audit | Tests | Status |
+|--------|---------|-----|------|-------|-------|-------|--------|
+| Tasks | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | 100% |
+| Expenses | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | 100% |
+| Leads | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | 100% |
+| Clients | ✅ | ✅ | ✅ | - | ✅ | - | 90% |
+| Invoices | ✅ | 🟡 | ✅ | ✅ | ✅ | ✅ | 85% |
+| Projects | ✅ | ✅ | 🟡 | - | 🟡 | - | 70% |
+| Documents | ✅ | ✅ | 🟡 | - | 🟡 | - | 70% |
+| Hours | ✅ | ✅ | 🟡 | 🟡 | 🟡 | - | 75% |
+
+**Overall Progress**: 85% core functionality complete
+
+## 🎯 Current Priorities (P0)
+
+1. **Invoice creation form** - Backend ready, needs dynamic line items UI
+2. **Invoice PDF generation** - jsPDF installed, implement template
+3. **DataTable generic component** - Reusable across all modules
+4. **ESLint + Prettier strict** - Code quality enforcement
+5. **RBAC application** - Complete for Projects, Documents, Hours
+
+See [BACKLOG_EXECUTABLE.md](./BACKLOG_EXECUTABLE.md) for full task list.
+
+## 📝 Development Scripts
 
 ```bash
-# Instalar Vercel CLI
-npm i -g vercel
+# Development
+npm run dev              # Start dev server (port 3000)
+npm run build            # Production build
+npm run start            # Start production server
 
-# Deploy
-vercel --prod
+# Database
+npm run db:push          # Apply schema changes
+npm run db:seed          # Seed database
+npm run db:studio        # Open Prisma Studio
+npm run db:reset         # Reset + reseed database
+
+# Quality
+npm run lint             # Run ESLint
+npm run type-check       # TypeScript check
+npm test                 # Run tests (30 tests)
+npm run test:ui          # Test UI
+npm run test:coverage    # Coverage report
 ```
 
-### Opción 2: VPS (Control Total)
+## 🔧 Environment Variables
 
-Ver documentación completa en [`DEPLOYMENT.md`](./DEPLOYMENT.md)
+Create `.env` file:
+
+```env
+# Database
+DATABASE_URL="postgresql://user:pass@localhost:5432/mepprojects"
+
+# Auth
+NEXTAUTH_URL="http://localhost:3000"
+NEXTAUTH_SECRET="your-secret-here"
+
+# Optional
+REDIS_URL=""              # For rate limiting (production)
+SMTP_HOST=""              # For email automation
+SMTP_USER=""
+SMTP_PASS=""
+```
+
+## 🏢 Architecture Principles
+
+1. **Multi-tenant first**: All core entities have `companyId`
+2. **RBAC mandatory**: No CRUD without `checkPermission()`
+3. **Audit trail systematic**: Every mutation logs via `auditCrud()`
+4. **State validation**: Business logic uses state machines
+5. **Security multi-layer**: Proxy + RBAC + state + rate limit
+6. **Type-safe strict**: No `any` types allowed
+7. **Database-first**: Prisma schema is source of truth
+8. **Server-side logic**: Critical business logic never in client
+9. **Test critical paths**: State machines and permissions covered
+
+## 🐳 Docker Deployment
 
 ```bash
-# Instalación rápida
-npm ci --production
-npx prisma migrate deploy
-npm run build
-pm2 start npm --name "mep-projects" -- start
+# Build and start
+docker-compose up -d
+
+# View logs
+docker-compose logs -f app
+
+# Stop
+docker-compose down
 ```
-
-### Health Check
-Monitorea el estado de la aplicación:
-```
-GET https://tu-dominio.com/api/health
-```
-
-Respuesta ejemplo:
-```json
-{
-  "status": "healthy",
-  "database": "connected",
-  "uptime": 123456,
-  "metrics": {
-    "users": 25,
-    "projects": 10,
-    "tasks": 150
-  }
-}
-```
-
----
-
-## 📁 Estructura del Proyecto
-
-```
-mep-projects/
-├── prisma/
-│   ├── schema.prisma          # Database schema
-│   ├── seed.ts                # Initial data
-│   └── migrations/            # Database migrations
-├── src/
-│   ├── app/
-│   │   ├── (auth)/           # Authentication pages
-│   │   ├── (protected)/      # Protected pages (dashboard, tasks, etc.)
-│   │   └── api/              # API routes
-│   ├── components/
-│   │   ├── ui/               # Reusable UI components
-│   │   ├── layout/           # Layout components (Header, Sidebar)
-│   │   ├── tasks/            # Task-specific components
-│   │   ├── documents/        # Document management components
-│   │   └── calendar/         # Calendar components
-│   ├── lib/                  # Utilities and helpers
-│   └── providers/            # Context providers (Session, Toast, etc.)
-├── public/                   # Static assets
-├── DEPLOYMENT.md            # Deployment guide
-├── VISION_TODO_EN_UNO.md    # Product vision and roadmap
-└── README.md                # This file
-```
-
----
-
-## 🔒 Seguridad
-
-### Implementado
-- ✅ **HTTPS** en producción (certificado SSL)
-- ✅ **NextAuth** para autenticación segura
-- ✅ **CSRF Protection** en formularios
-- ✅ **SQL Injection Prevention** (Prisma ORM)
-- ✅ **XSS Protection** (Next.js sanitiza por defecto)
-- ✅ **Role-Based Access Control** (Admin, Manager, Worker)
-
-### Variables Sensibles
-**¡NUNCA commitees `.env` al repositorio!**
-```bash
-# .env.example - Template para equipo
-DATABASE_URL="postgresql://..."
-NEXTAUTH_SECRET="usar-openssl-rand-base64-32"
-```
-
----
 
 ## 🧪 Testing
 
 ```bash
-# Run tests (cuando estén implementados)
+# Run all tests
 npm test
 
-# Linter
-npm run lint
+# Watch mode
+npm test -- --watch
 
-# Type checking
-npm run type-check
+# With UI
+npm run test:ui
 
-# Build test
-npm run build
+# Coverage report
+npm run test:coverage
 ```
 
----
+**Current Coverage**:
+- State Machine: 30 tests ✅
+- Permissions: Tests pending
+- Actions: Tests pending
 
-## 📊 ROI y Beneficios
+## 📈 Roadmap to Odoo Parity
 
-### Impacto Medido
-- **40% reducción** en tiempos de gestión administrativa
-- **€135,000/año** en productividad recuperada (equipo de 10)
-- **4 herramientas consolidadas** en 1 plataforma
-- **99.8% uptime** en producción
-- **9.2/10** satisfacción de usuario
+### Completed ✅
+- Multi-tenant architecture
+- RBAC system
+- State machines
+- Core modules (Tasks, CRM, Expenses, Invoices)
+- Audit trail
+- Rate limiting
 
-### Antes vs Después
-| Tarea | Antes | Después | Ahorro |
-|-------|-------|---------|---------|
-| Buscar documento | 5 min | 10 seg | 98% |
-| Registrar horas | 10 min | 30 seg | 95% |
-| Actualizar tarea | 3 min | 20 seg | 89% |
-| Generar reporte | 30 min | 1 min | 97% |
+### In Progress 🟡
+- Invoice form + PDF
+- DataTable component
+- Full RBAC coverage
+- CI/CD pipeline
 
----
+### Planned 📋
+- Products/Services catalog
+- Tax management UI
+- Financial reports (P&L, Balance Sheet)
+- EventBus for automations
+- Notification rules engine
+- Webhooks outbound
+- REST API v1
+- Module system
 
-## 🗺️ Roadmap
+See [ROADMAP_TRACKING.md](./ROADMAP_TRACKING.md) for detailed progress.
 
-### ✅ Fase 1-4: Completado (70%)
-- [x] Core Platform (Tareas, Horas, Documentos)
-- [x] Dashboard Avanzado
-- [x] Búsqueda Global
-- [x] Sistema de Notificaciones
-- [x] UX Polish (Toast, ErrorBoundary, Skeleton loaders)
+## 🤝 Contributing
 
-### 🚧 Fase 5: En Planificación
-- [ ] **Comunicación**: Chat de proyecto, mensajes directos
-- [ ] **WebSockets**: Notificaciones en tiempo real
-- [ ] **Videoconferencia**: Integración ligera
+1. Follow TypeScript strict mode
+2. Run `npm run lint` before commit
+3. Add tests for new features
+4. Update CHANGELOG.md
+5. Document breaking changes
 
-### 📅 Fase 6-8: Futuro
-- [ ] **Gastos y Finanzas**: Control presupuestario
-- [ ] **CRM**: Gestión comercial y portal de cliente
-- [ ] **Analytics & IA**: Predicciones y dashboards ejecutivos
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for details.
 
-Ver más en [`VISION_TODO_EN_UNO.md`](./VISION_TODO_EN_UNO.md)
+## 📄 License
 
----
+Proprietary - MEP Projects S.L.
 
-## 🤝 Contribuir
+## 🆘 Support
 
-1. Fork el proyecto
-2. Crea tu feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit tus cambios (`git commit -m 'Add some AmazingFeature'`)
-4. Push a la branch (`git push origin feature/AmazingFeature`)
-5. Abre un Pull Request
-
-### Coding Standards
-- **TypeScript estricto**: No usar `any` sin justificación
-- **Componentes funcionales**: Hooks sobre class components
-- **Accesibilidad**: ARIA labels en todos los interactive elements
-- **Performance**: useMemo/useCallback para optimizaciones
+- **Issues**: Create GitHub issue
+- **Docs**: Check documentation folder
+- **Troubleshooting**: See `_legacy/docs/TROUBLESHOOTING.md`
 
 ---
 
-## 📝 Changelog
-
-### v1.0.0 (2026-01-08)
-- ✨ Sistema completo de Tareas, Horas y Documentos
-- ✨ Dashboard de Proyecto 360º
-- ✨ Búsqueda Global (Ctrl+K)
-- ✨ Notificaciones Toast elegantes
-- ✨ ErrorBoundary global
-- ✨ Skeleton loaders y Empty states
-- ✨ Health check API para monitoreo
-- 🐛 Correcciones de type safety
-- 📚 Documentación completa
-
----
-
-## 📞 Soporte
-
-- **Documentación**: Ver `/docs` y archivos MD del proyecto
-- **Issues**: [GitHub Issues](https://github.com/tu-usuario/mep-projects/issues)
-- **Email**: support@mep-projects.com
-
----
-
-## 📄 Licencia
-
-Este proyecto está bajo la licencia MIT. Ver archivo `LICENSE` para más detalles.
-
----
-
-## 👏 Agradecimientos
-
-Desarrollado con ❤️ para optimizar la gestión empresarial.
-
-**Tecnologías Clave:**
-- [Next.js](https://nextjs.org)
-- [Prisma](https://prisma.io)
-- [Tailwind CSS](https://tailwindcss.com)
-- [Framer Motion](https://framer.com/motion)
-
----
-
-**Estado**: ✅ Production-Ready | **Última Actualización**: 8 de Enero de 2026
+**Last Updated**: 2026-01-09  
+**Version**: 1.0.0-beta  
+**Status**: 🚀 Production Ready (Core Modules)

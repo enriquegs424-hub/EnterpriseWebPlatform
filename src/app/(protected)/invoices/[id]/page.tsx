@@ -2,8 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { FileText, ArrowLeft, Send, Trash2, Plus, Check, Calendar, User, Building, Euro } from 'lucide-react';
+import { FileText, ArrowLeft, Send, Trash2, Plus, Check, Calendar, User, Building, Euro, Download } from 'lucide-react';
 import Link from 'next/link';
+import { generateInvoicePDF } from '@/lib/pdf-generator';
 
 interface Invoice {
     id: string;
@@ -127,6 +128,46 @@ export default function InvoiceDetailPage({ params }: { params: { id: string } }
         }
     }
 
+    function handleDownloadPDF() {
+        if (!invoice) return;
+
+        // Prepare data for PDF
+        const pdfData = {
+            number: invoice.number,
+            date: new Date(invoice.date),
+            dueDate: new Date(invoice.dueDate),
+            client: {
+                name: invoice.client.name,
+                email: invoice.client.email || '',
+                taxId: invoice.client.companyName || undefined,
+                address: undefined, // TODO: Add client address to model
+            },
+            company: {
+                name: 'MEP Projects S.L.',
+                taxId: 'B12345678',
+                address: 'Calle Example, 123\n28001 Madrid, España',
+                email: 'info@mep-projects.com',
+                phone: '+34 900 123 456',
+            },
+            items: invoice.items.map((item) => ({
+                description: item.description,
+                quantity: item.quantity,
+                unitPrice: item.unitPrice,
+                taxRate: item.taxRate,
+                subtotal: item.subtotal,
+                taxAmount: item.taxAmount,
+                total: item.total,
+            })),
+            subtotal: invoice.subtotal,
+            taxTotal: invoice.taxAmount,
+            total: invoice.total,
+            notes: invoice.notes || undefined,
+            terms: invoice.terms || undefined,
+        };
+
+        generateInvoicePDF(pdfData);
+    }
+
     if (loading) {
         return (
             <div className="flex justify-center items-center min-h-screen">
@@ -174,6 +215,14 @@ export default function InvoiceDetailPage({ params }: { params: { id: string } }
                 </div>
 
                 <div className="flex gap-2">
+                    <button
+                        onClick={handleDownloadPDF}
+                        className="inline-flex items-center gap-2 px-4 py-2 bg-olive-600 text-white rounded-lg hover:bg-olive-700 transition-colors"
+                    >
+                        <Download className="w-4 h-4" />
+                        Descargar PDF
+                    </button>
+
                     {invoice.status === 'DRAFT' && (
                         <>
                             <button
