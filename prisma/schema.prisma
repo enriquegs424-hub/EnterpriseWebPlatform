@@ -34,6 +34,8 @@ model Company {
   leads       Lead[]
   expenses    Expense[]
   invoices    Invoice[]
+  products    Product[]
+  taxRates    TaxRate[]
 
   @@index([slug])
 }
@@ -73,6 +75,7 @@ model User {
   expenses          Expense[]
   createdInvoices   Invoice[]
   createdPayments   Payment[]
+  savedFilters      SavedFilter[]
 
   @@index([companyId])
 }
@@ -694,5 +697,81 @@ enum PaymentMethod {
   OTHER
 }
 
+// ============================================
+// PRODUCT/SERVICE CATALOG
+// ============================================
 
+model Product {
+  id          String      @id @default(cuid())
+  companyId   String
+  company     Company     @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  
+  name        String
+  description String?
+  sku         String?     // Product code/SKU
+  type        ProductType @default(SERVICE)
+  category    String?     // Custom category
+  
+  price       Float       @default(0)
+  cost        Float?      // Cost price (for margin calculation)
+  taxRate     Float       @default(21) // Default IVA %
+  unit        String      @default("unidad") // unit, hour, kg, etc.
+  
+  isActive    Boolean     @default(true)
+  
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  
+  @@index([companyId])
+  @@index([sku])
+  @@index([type])
+  @@index([isActive])
+}
 
+enum ProductType {
+  PRODUCT
+  SERVICE
+}
+
+// ============================================
+// TAX RATES CONFIGURATION
+// ============================================
+
+model TaxRate {
+  id          String   @id @default(cuid())
+  companyId   String
+  company     Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  
+  name        String   // "IVA 21%", "IVA Reducido", etc.
+  rate        Float    // 21, 10, 4, 0
+  description String?
+  isDefault   Boolean  @default(false)
+  isActive    Boolean  @default(true)
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([companyId])
+  @@index([isDefault])
+}
+
+// ============================================
+// SAVED FILTERS (for DataTable persistence)
+// ============================================
+
+model SavedFilter {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  page        String   // "invoices", "tasks", "expenses", etc.
+  name        String   // "Mis tareas pendientes"
+  filters     Json     // { status: "PENDING", assignedTo: "me" }
+  isDefault   Boolean  @default(false)
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([userId])
+  @@index([page])
+}

@@ -55,6 +55,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             if (user && user.id) {
                 token.id = user.id;
                 token.role = user.role;
+                token.companyId = (user as any).companyId;
                 token.preferences = (user as any).preferences;
                 token.image = user.image; // Pass image
             }
@@ -67,6 +68,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
                     token.email = freshUser.email;
                     token.image = freshUser.image;
                     token.role = freshUser.role;
+                    token.companyId = freshUser.companyId;
                     token.preferences = freshUser.preferences;
                 }
             }
@@ -76,6 +78,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             if (token && session.user) {
                 session.user.id = token.id;
                 session.user.role = token.role;
+                (session.user as any).companyId = token.companyId;
                 (session.user as any).preferences = token.preferences;
             }
             return session;

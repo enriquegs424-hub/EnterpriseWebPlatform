@@ -1,0 +1,28 @@
+// Product/Service Model for Invoices
+model Product {
+  id          String   @id @default(cuid())
+  companyId   String
+  company     Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  
+  name        String
+  description String?
+  sku         String?  // Product code
+  type        ProductType @default(SERVICE)
+  
+  price       Float    @default(0)
+  taxRate     Float    @default(21) // Default IVA %
+  
+  isActive    Boolean  @default(true)
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([companyId])
+  @@index([sku])
+  @@index([type])
+}
+
+enum ProductType {
+  PRODUCT
+  SERVICE
+}

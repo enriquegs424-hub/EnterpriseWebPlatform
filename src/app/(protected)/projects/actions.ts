@@ -1,19 +1,19 @@
 "use server";
 
-import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { getAuthenticatedUser } from "@/lib/auth-helpers";
 import { checkPermission, auditCrud } from "@/lib/permissions";
 import { revalidatePath } from "next/cache";
 
 export async function getProjects() {
-    const session = await auth();
-    if (!session?.user) throw new Error("No autenticado");
+    const user = await getAuthenticatedUser();
+    if (!user) throw new Error("No autenticado");
 
-    checkPermission(session.user.role, "projects", "read");
+    await checkPermission("projects", "read");
 
     const projects = await prisma.project.findMany({
         where: {
-            companyId: session.user.companyId,
+            companyId: user.companyId as string,
         },
         include: {
             client: {
@@ -31,7 +31,7 @@ export async function getProjects() {
             },
         },
         orderBy: {
-            createdAt: "desc",
+            year: "desc",
         },
     });
 
@@ -42,31 +42,31 @@ export async function createProject(data: {
     name: string;
     description?: string;
     clientId: string;
-    startDate: Date;
-    endDate?: Date;
-    budget?: number;
+    year: number;
 }) {
-    const session = await auth();
-    if (!session?.user) throw new Error("No autenticado");
+    const user = await getAuthenticatedUser();
+    if (!user) throw new Error("No autenticado");
 
-    checkPermission(session.user.role, "projects", "create");
+    await checkPermission("projects", "create");
 
     // Generate project code
     const count = await prisma.project.count({
-        where: { companyId: session.user.companyId },
+        where: { companyId: user.companyId as string },
     });
     const code = `PRJ-${(count + 1).toString().padStart(4, "0")}`;
 
     const project = await prisma.project.create({
         data: {
-            ...data,
+            name: data.name,
+            clientId: data.clientId,
+            year: data.year,
             code,
-            companyId: session.user.companyId,
+            companyId: user.companyId as string,
             isActive: true,
         },
     });
 
-    await auditCrud("CREATE", "Project", project.id, session.user.id, project);
+    await auditCrud("CREATE", "Project", project.id, project);
     revalidatePath("/projects");
 
     return project;
@@ -76,23 +76,19 @@ export async function updateProject(
     id: string,
     data: {
         name?: string;
-        description?: string;
-        startDate?: Date;
-        endDate?: Date;
-        budget?: number;
         isActive?: boolean;
     }
 ) {
-    const session = await auth();
-    if (!session?.user) throw new Error("No autenticado");
+    const user = await getAuthenticatedUser();
+    if (!user) throw new Error("No autenticado");
 
-    checkPermission(session.user.role, "projects", "update");
+    await checkPermission("projects", "update");
 
     const project = await prisma.project.findUnique({
         where: { id },
     });
 
-    if (!project || project.companyId !== session.user.companyId) {
+    if (!project || project.companyId !== user.companyId) {
         throw new Error("Proyecto no encontrado");
     }
 
@@ -101,7 +97,7 @@ export async function updateProject(
         data,
     });
 
-    await auditCrud("UPDATE", "Project", id, session.user.id, { before: project, after: updated });
+    await auditCrud("UPDATE", "Project", id, { before: project, after: updated });
     revalidatePath("/projects");
     revalidatePath(`/projects/${id}`);
 
@@ -109,10 +105,10 @@ export async function updateProject(
 }
 
 export async function deleteProject(id: string) {
-    const session = await auth();
-    if (!session?.user) throw new Error("No autenticado");
+    const user = await getAuthenticatedUser();
+    if (!user) throw new Error("No autenticado");
 
-    checkPermission(session.user.role, "projects", "delete");
+    await checkPermission("projects", "delete");
 
     const project = await prisma.project.findUnique({
         where: { id },
@@ -126,7 +122,7 @@ export async function deleteProject(id: string) {
         },
     });
 
-    if (!project || project.companyId !== session.user.companyId) {
+    if (!project || project.companyId !== user.companyId) {
         throw new Error("Proyecto no encontrado");
     }
 
@@ -136,38 +132,33 @@ export async function deleteProject(id: string) {
     }
 
     await prisma.project.delete({ where: { id } });
-    await auditCrud("DELETE", "Project", id, session.user.id, project);
+    await auditCrud("DELETE", "Project", id, project);
     revalidatePath("/projects");
 
     return { success: true };
 }
 
 export async function getProjectStats() {
-    const session = await auth();
-    if (!session?.user) throw new Error("No autenticado");
+    const user = await getAuthenticatedUser();
+    if (!user) throw new Error("No autenticado");
 
-    checkPermission(session.user.role, "projects", "read");
+    await checkPermission("projects", "read");
 
-    const [total, active, completed, totalBudget] = await Promise.all([
+    const [total, active, completed] = await Promise.all([
         prisma.project.count({
-            where: { companyId: session.user.companyId },
+            where: { companyId: user.companyId as string },
         }),
         prisma.project.count({
             where: {
-                companyId: session.user.companyId,
+                companyId: user.companyId as string,
                 isActive: true,
-                endDate: { gt: new Date() },
             },
         }),
         prisma.project.count({
             where: {
-                companyId: session.user.companyId,
+                companyId: user.companyId as string,
                 isActive: false,
             },
-        }),
-        prisma.project.aggregate({
-            where: { companyId: session.user.companyId },
-            _sum: { budget: true },
         }),
     ]);
 
@@ -175,6 +166,5 @@ export async function getProjectStats() {
         total,
         active,
         completed,
-        totalBudget: totalBudget._sum.budget || 0,
     };
 }
