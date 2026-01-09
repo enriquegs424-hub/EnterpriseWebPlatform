@@ -7,6 +7,37 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// ============================================
+// COMPANY MODEL (Multi-tenant support)
+// ============================================
+
+model Company {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  logo        String?
+  address     String?
+  phone       String?
+  email       String?
+  website     String?
+  taxId       String?  // NIF/CIF
+  currency    String   @default("EUR")
+  timezone    String   @default("Europe/Madrid")
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  users       User[]
+  projects    Project[]
+  clients     Client[]
+  leads       Lead[]
+  expenses    Expense[]
+  invoices    Invoice[]
+
+  @@index([slug])
+}
+
 model User {
   id                String            @id @default(cuid())
   name              String
@@ -15,6 +46,8 @@ model User {
   passwordHash      String
   role              Role              @default(WORKER)
   department        Department        @default(OTHER)
+  companyId         String?
+  company           Company?          @relation(fields: [companyId], references: [id])
   teamId            String?
   team              Team?             @relation(fields: [teamId], references: [id])
   dailyWorkHours    Float             @default(8.0)
@@ -38,6 +71,10 @@ model User {
   assignedLeads     Lead[]
   activityLogs      ActivityLog[]
   expenses          Expense[]
+  createdInvoices   Invoice[]
+  createdPayments   Payment[]
+
+  @@index([companyId])
 }
 
 model Project {
@@ -47,6 +84,8 @@ model Project {
   year        Int
   department  Department  @default(OTHER)
   isActive    Boolean     @default(true)
+  companyId   String?
+  company     Company?    @relation(fields: [companyId], references: [id])
   clientId    String?
   client      Client?     @relation(fields: [clientId], references: [id])
   timeEntries TimeEntry[]
@@ -56,27 +95,34 @@ model Project {
   events      Event[]
   Chat        Chat[]
   expenses    Expense[]
+  invoices    Invoice[]
 
+  @@index([companyId])
   @@index([clientId])
 }
 
 model Client {
-  id        String    @id @default(cuid())
-  name      String
-  email     String?
-  phone     String?
-  company   String?
-  address   String?
-  industry  String?
-  website   String?
-  notes     String?   @db.Text
-  status    ClientStatus @default(ACTIVE)
-  isActive  Boolean   @default(true)
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  projects  Project[]
-  contacts  ClientContact[]
-  leads     Lead[]
+  id          String    @id @default(cuid())
+  name        String
+  email       String?
+  phone       String?
+  companyName String?   // Nombre de la empresa del cliente
+  companyId   String?   // Tenant owner
+  ownerCompany Company? @relation(fields: [companyId], references: [id])
+  address     String?
+  industry    String?
+  website     String?
+  notes       String?   @db.Text
+  status      ClientStatus @default(ACTIVE)
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  projects    Project[]
+  contacts    ClientContact[]
+  leads       Lead[]
+  invoices    Invoice[]
+
+  @@index([companyId])
 }
 
 model ClientContact {
@@ -105,6 +151,9 @@ model Lead {
   expectedCloseDate DateTime?
   stage           LeadStage   @default(NEW)
   
+  companyId       String?
+  ownerCompany    Company?    @relation(fields: [companyId], references: [id])
+  
   clientId        String?
   client          Client?     @relation(fields: [clientId], references: [id])
   
@@ -114,6 +163,7 @@ model Lead {
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
   
+  @@index([companyId])
   @@index([clientId])
   @@index([assignedToId])
   @@index([stage])
@@ -480,6 +530,9 @@ model Expense {
   date        DateTime
   category    ExpenseCategory @default(OTHER)
   
+  companyId   String?
+  ownerCompany Company? @relation(fields: [companyId], references: [id])
+  
   projectId   String?
   project     Project? @relation(fields: [projectId], references: [id])
   
@@ -492,6 +545,7 @@ model Expense {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   
+  @@index([companyId])
   @@index([projectId])
   @@index([userId])
 }
@@ -526,5 +580,119 @@ model Team {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
+
+// ============================================
+// FINANCE MODULE (Invoices & Payments)
+// ============================================
+
+model Invoice {
+  id            String        @id @default(cuid())
+  number        String        @unique // INV-2024-001
+  date          DateTime      @default(now())
+  dueDate       DateTime
+  status        InvoiceStatus @default(DRAFT)
+  
+  // Multi-tenant
+  companyId     String?
+  company       Company?      @relation(fields: [companyId], references: [id])
+  
+  // Relations
+  clientId      String
+  client        Client        @relation(fields: [clientId], references: [id])
+  
+  projectId     String?
+  project       Project?      @relation(fields: [projectId], references: [id])
+  
+  // Amounts
+  subtotal      Float         @default(0)
+  taxAmount     Float         @default(0)
+  total         Float         @default(0)
+  currency      String        @default("EUR")
+  
+  // Payment tracking
+  paidAmount    Float         @default(0)
+  balance       Float         @default(0) // total - paidAmount
+  
+  // Metadata
+  notes         String?       @db.Text
+  terms         String?       @db.Text
+  createdById   String
+  createdBy     User          @relation(fields: [createdById], references: [id])
+  
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  issuedAt      DateTime?     // When status changed to SENT
+  paidAt        DateTime?     // When fully paid
+  
+  // Relations
+  items         InvoiceItem[]
+  payments      Payment[]
+  
+  @@index([companyId])
+  @@index([clientId])
+  @@index([projectId])
+  @@index([status])
+  @@index([dueDate])
+  @@index([number])
+}
+
+model InvoiceItem {
+  id          String  @id @default(cuid())
+  invoiceId   String
+  invoice     Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  
+  description String
+  quantity    Float   @default(1)
+  unitPrice   Float
+  taxRate     Float   @default(0) // Percentage (21 = 21%)
+  
+  // Calculated fields
+  subtotal    Float   // quantity * unitPrice
+  taxAmount   Float   // subtotal * (taxRate / 100)
+  total       Float   // subtotal + taxAmount
+  
+  order       Int     @default(0) // Display order
+  
+  @@index([invoiceId])
+}
+
+model Payment {
+  id          String        @id @default(cuid())
+  amount      Float
+  date        DateTime      @default(now())
+  method      PaymentMethod @default(TRANSFER)
+  reference   String?       // Transaction reference
+  notes       String?
+  
+  invoiceId   String
+  invoice     Invoice       @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  
+  createdById String
+  createdBy   User          @relation(fields: [createdById], references: [id])
+  
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  
+  @@index([invoiceId])
+  @@index([date])
+}
+
+enum InvoiceStatus {
+  DRAFT       // Being created
+  SENT        // Sent to client
+  OVERDUE     // Past due date
+  PAID        // Fully paid
+  CANCELLED   // Cancelled
+  PARTIAL     // Partially paid
+}
+
+enum PaymentMethod {
+  CASH
+  TRANSFER
+  CARD
+  CHEQUE
+  OTHER
+}
+
 
 

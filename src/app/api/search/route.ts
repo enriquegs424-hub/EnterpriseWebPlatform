@@ -1,8 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { checkAndEnforceRateLimit } from '@/lib/with-rate-limit';
 
 export async function GET(request: NextRequest) {
     try {
+        // Rate limit check (search is expensive)
+        const rateLimitResponse = await checkAndEnforceRateLimit(request);
+        if (rateLimitResponse) return rateLimitResponse;
+
         const searchParams = request.nextUrl.searchParams;
         const query = searchParams.get('q');
 
@@ -85,14 +90,14 @@ export async function GET(request: NextRequest) {
                 where: {
                     OR: [
                         { name: { contains: searchTerm, mode: 'insensitive' } },
-                        { company: { contains: searchTerm, mode: 'insensitive' } },
+                        { companyName: { contains: searchTerm, mode: 'insensitive' } },
                         { email: { contains: searchTerm, mode: 'insensitive' } },
                     ],
                 },
                 select: {
                     id: true,
                     name: true,
-                    company: true,
+                    companyName: true,
                     email: true,
                 },
                 take: 5,
@@ -145,7 +150,7 @@ export async function GET(request: NextRequest) {
                 id: client.id,
                 type: 'client' as const,
                 title: client.name,
-                subtitle: client.company || client.email || '',
+                subtitle: client.companyName || client.email || '',
                 url: `/clients/${client.id}`,
             })),
             ...users.map(user => ({

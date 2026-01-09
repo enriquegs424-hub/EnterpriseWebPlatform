@@ -4,10 +4,15 @@ import { prisma } from '@/lib/prisma';
 import { auth } from '@/auth';
 import { revalidatePath } from 'next/cache';
 import { ExpenseCategory, ExpenseStatus } from '@prisma/client';
+import { checkPermission, auditCrud } from '@/lib/permissions';
+import { ExpenseStateMachine } from '@/lib/state-machine';
 
 export async function getExpenses() {
     const session = await auth();
     if (!session) throw new Error('Unauthorized');
+
+    // Check permission
+    await checkPermission('expenses', 'read');
 
     const where = session.user.role === 'ADMIN' || session.user.role === 'MANAGER'
         ? {}
@@ -34,7 +39,10 @@ export async function createExpense(data: {
     const session = await auth();
     if (!session) throw new Error('Unauthorized');
 
-    return prisma.expense.create({
+    // Check permission
+    await checkPermission('expenses', 'create');
+
+    const expense = await prisma.expense.create({
         data: {
             description: data.description,
             amount: data.amount,
@@ -46,18 +54,39 @@ export async function createExpense(data: {
             status: 'PENDING'
         }
     });
+
+    // Audit log
+    await auditCrud('CREATE', 'Expense', expense.id, { description: data.description, amount: data.amount });
+
+    revalidatePath('/expenses');
+    return expense;
 }
 
 export async function updateExpenseStatus(id: string, status: ExpenseStatus) {
     const session = await auth();
-    if (!session || !['ADMIN', 'MANAGER'].includes(session.user.role)) {
-        throw new Error('Unauthorized');
+    if (!session) throw new Error('Unauthorized');
+
+    // Check permission (approve is special action)
+    await checkPermission('expenses', 'approve');
+
+    // Get current expense
+    const expense = await prisma.expense.findUnique({ where: { id } });
+    if (!expense) throw new Error('Expense not found');
+
+    // Validate state transition
+    try {
+        ExpenseStateMachine.transition(expense.status, status);
+    } catch (e: any) {
+        throw new Error(e.message);
     }
 
     await prisma.expense.update({
         where: { id },
         data: { status }
     });
+
+    // Audit log
+    await auditCrud('UPDATE', 'Expense', id, { status, previousStatus: expense.status });
 
     revalidatePath('/expenses');
 }
@@ -70,15 +99,18 @@ export async function deleteExpense(id: string) {
     const expense = await prisma.expense.findUnique({ where: { id } });
     if (!expense) return;
 
-    if (expense.userId !== session.user.id && session.user.role !== 'ADMIN') {
-        throw new Error('Unauthorized');
-    }
+    // Check permission (with ownership check)
+    await checkPermission('expenses', 'delete', expense.userId);
 
     if (expense.status !== 'PENDING' && session.user.role !== 'ADMIN') {
         throw new Error('Cannot delete processed expense');
     }
 
     await prisma.expense.delete({ where: { id } });
+
+    // Audit log
+    await auditCrud('DELETE', 'Expense', id, { description: expense.description, amount: expense.amount });
+
     revalidatePath('/expenses');
 }
 

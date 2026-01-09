@@ -4,6 +4,8 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
 import { revalidatePath } from "next/cache";
 import { createNotification } from "@/app/(protected)/notifications/actions";
+import { auditCrud } from "@/lib/permissions";
+import { TaskStateMachine } from "@/lib/state-machine";
 
 // Obtener todas las tareas
 export async function getAllTasks(filters?: {
@@ -124,6 +126,9 @@ export async function createTask(data: {
             link: `/tasks/${task.id}`
         });
 
+        // Audit log
+        await auditCrud('CREATE', 'Task', task.id, { title: data.title, assignedToId: data.assignedToId });
+
         revalidatePath('/tasks');
         return { success: true, task };
     } catch (error) {
@@ -159,6 +164,15 @@ export async function updateTask(taskId: string, data: {
 
         if (!canUpdate) return { error: 'No tienes permiso para actualizar esta tarea' };
 
+        // Validar transición de estado si se está cambiando
+        if (data.status && data.status !== task.status) {
+            try {
+                TaskStateMachine.transition(task.status, data.status);
+            } catch (e: any) {
+                return { error: e.message };
+            }
+        }
+
         const updated = await prisma.task.update({
             where: { id: taskId },
             data: {
@@ -173,6 +187,9 @@ export async function updateTask(taskId: string, data: {
                 ...(data.assignedToId && { assignedToId: data.assignedToId }),
             }
         });
+
+        // Audit log
+        await auditCrud('UPDATE', 'Task', taskId, data);
 
         // Notificar si se completó
         if (data.status === 'COMPLETED' && task.createdById !== session.user.id) {
@@ -213,6 +230,9 @@ export async function deleteTask(taskId: string) {
         await prisma.task.delete({
             where: { id: taskId }
         });
+
+        // Audit log
+        await auditCrud('DELETE', 'Task', taskId, { title: task.title });
 
         revalidatePath('/tasks');
         return { success: true };

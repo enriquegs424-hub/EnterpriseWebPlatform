@@ -8,14 +8,54 @@ async function main() {
 
     // Limpiar datos existentes (opcional - comentar si no quieres borrar)
     console.log('🗑️  Limpiando datos anteriores...')
+
+    // Orden correcto para respetar foreign keys: hijo → padre
+    await prisma.notification.deleteMany()
+    await prisma.taskComment.deleteMany()
+    await prisma.documentVersion.deleteMany()
+    await prisma.documentShare.deleteMany()
+    await prisma.document.deleteMany()
+    await prisma.folder.deleteMany()
+    await prisma.message.deleteMany()
+    await prisma.chatMember.deleteMany()
+    await prisma.chat.deleteMany()
+    await prisma.eventAttendee.deleteMany()
+    await prisma.event.deleteMany()
     await prisma.timeEntry.deleteMany()
     await prisma.task.deleteMany()
+    await prisma.lead.deleteMany()
+    await prisma.expense.deleteMany()
+    await prisma.clientContact.deleteMany()
     await prisma.project.deleteMany()
     await prisma.client.deleteMany()
+    await prisma.activityLog.deleteMany()
     await prisma.user.deleteMany()
+    await prisma.company.deleteMany()
+
     console.log('✅ Datos anteriores eliminados\n')
 
     const passwordHash = await bcrypt.hash('admin123', 10)
+
+    // ============================================
+    // COMPANY (Multi-tenant)
+    // ============================================
+    console.log('🏢 Creando empresa...')
+
+    const defaultCompany = await prisma.company.create({
+        data: {
+            name: 'MEP Projects S.L.',
+            slug: 'mep-projects',
+            email: 'info@mep-projects.com',
+            phone: '+34 912 345 678',
+            address: 'Calle Ingeniería 1, 28001 Madrid',
+            taxId: 'B12345678',
+            currency: 'EUR',
+            timezone: 'Europe/Madrid',
+            isActive: true,
+        },
+    })
+
+    console.log(`✅ Empresa creada: ${defaultCompany.name}\n`)
 
     // ============================================
     // USUARIOS
@@ -29,6 +69,7 @@ async function main() {
             passwordHash,
             role: 'ADMIN',
             department: 'ADMINISTRATION',
+            companyId: defaultCompany.id,
             isActive: true,
             dailyWorkHours: 8,
         },
@@ -42,6 +83,7 @@ async function main() {
                 passwordHash,
                 role: 'WORKER',
                 department: 'ENGINEERING',
+                companyId: defaultCompany.id,
                 isActive: true,
                 dailyWorkHours: 8,
             },
@@ -53,6 +95,7 @@ async function main() {
                 passwordHash,
                 role: 'WORKER',
                 department: 'ARCHITECTURE',
+                companyId: defaultCompany.id,
                 isActive: true,
                 dailyWorkHours: 8,
             },
@@ -64,6 +107,7 @@ async function main() {
                 passwordHash,
                 role: 'WORKER',
                 department: 'ENGINEERING',
+                companyId: defaultCompany.id,
                 isActive: true,
                 dailyWorkHours: 8,
             },
@@ -75,6 +119,7 @@ async function main() {
                 passwordHash,
                 role: 'WORKER',
                 department: 'ADMINISTRATION',
+                companyId: defaultCompany.id,
                 isActive: true,
                 dailyWorkHours: 8,
             },
@@ -86,6 +131,7 @@ async function main() {
                 passwordHash,
                 role: 'WORKER',
                 department: 'ENGINEERING',
+                companyId: defaultCompany.id,
                 isActive: true,
                 dailyWorkHours: 8,
             },

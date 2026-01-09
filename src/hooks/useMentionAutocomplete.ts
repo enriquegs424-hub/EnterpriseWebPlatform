@@ -12,7 +12,7 @@ interface User {
 }
 
 interface UseMentionAutocompleteProps {
-    textareaRef: React.RefObject<HTMLTextAreaElement>;
+    textareaRef: React.RefObject<HTMLTextAreaElement | null>;
     onSelectMention: (username: string) => void;
 }
 

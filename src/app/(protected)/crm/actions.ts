@@ -4,6 +4,8 @@ import { prisma } from '@/lib/prisma';
 import { auth } from '@/auth';
 import { revalidatePath } from 'next/cache';
 import { LeadStage, ClientStatus } from '@prisma/client';
+import { checkPermission, auditCrud } from '@/lib/permissions';
+import { LeadStateMachine } from '@/lib/state-machine';
 
 // ==========================================
 // CLIENT ACTIONS
@@ -39,8 +41,11 @@ export async function createClient(data: {
     const session = await auth();
     if (!session) throw new Error('Unauthorized');
 
+    // Check permission
+    await checkPermission('clients', 'create');
+
     // Create Client and optional Primary Contact
-    return prisma.client.create({
+    const client = await prisma.client.create({
         data: {
             name: data.name,
             email: data.email,
@@ -59,6 +64,12 @@ export async function createClient(data: {
             } : undefined
         }
     });
+
+    // Audit log
+    await auditCrud('CREATE', 'Client', client.id, { name: data.name });
+
+    revalidatePath('/crm/clients');
+    return client;
 }
 
 export async function updateClient(id: string, data: any) {
@@ -110,7 +121,10 @@ export async function createLead(data: {
     const session = await auth();
     if (!session) throw new Error('Unauthorized');
 
-    return prisma.lead.create({
+    // Check permission
+    await checkPermission('leads', 'create');
+
+    const lead = await prisma.lead.create({
         data: {
             title: data.title,
             value: data.value,
@@ -121,13 +135,40 @@ export async function createLead(data: {
             expectedCloseDate: data.expectedCloseDate
         }
     });
+
+    // Audit log
+    await auditCrud('CREATE', 'Lead', lead.id, { title: data.title, value: data.value });
+
+    revalidatePath('/crm/pipeline');
+    return lead;
 }
 
 export async function updateLeadStage(id: string, stage: LeadStage) {
+    const session = await auth();
+    if (!session) throw new Error('Unauthorized');
+
+    // Get current lead
+    const lead = await prisma.lead.findUnique({ where: { id } });
+    if (!lead) throw new Error('Lead not found');
+
+    // Check permission (ownership if WORKER)
+    await checkPermission('leads', 'update', lead.assignedToId ?? undefined);
+
+    // Validate state transition
+    try {
+        LeadStateMachine.transition(lead.stage, stage);
+    } catch (e: any) {
+        throw new Error(e.message);
+    }
+
     await prisma.lead.update({
         where: { id },
         data: { stage }
     });
+
+    // Audit log
+    await auditCrud('UPDATE', 'Lead', id, { stage, previousStage: lead.stage });
+
     revalidatePath('/crm/pipeline');
 }
 
