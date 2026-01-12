@@ -4,8 +4,17 @@ import { useState, useEffect } from 'react';
 import { getAllClients, createClient, updateClient, toggleClientStatus } from './actions';
 import { Users, Plus, Edit2, Mail, Phone, Building2, MapPin, Power, PowerOff } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 
 export default function ClientsPage() {
+  return (
+    <ProtectedRoute allowedRoles={['ADMIN', 'MANAGER']}>
+      <ClientsContent />
+    </ProtectedRoute>
+  );
+}
+
+function ClientsContent() {
   const [clients, setClients] = useState<any[]>([]);
   const [editingClient, setEditingClient] = useState<any>(null);
   const [isCreating, setIsCreating] = useState(false);
@@ -92,8 +101,8 @@ export default function ClientsPage() {
                 <button
                   onClick={() => handleToggle(client.id)}
                   className={`${client.isActive
-                      ? 'bg-success-100 text-success-700 dark:bg-success-900/30 dark:text-success-400'
-                      : 'bg-error-100 text-error-700 dark:bg-error-900/30 dark:text-error-400'
+                    ? 'bg-success-100 text-success-700 dark:bg-success-900/30 dark:text-success-400'
+                    : 'bg-error-100 text-error-700 dark:bg-error-900/30 dark:text-error-400'
                     } p-2 rounded-lg transition-all`}
                 >
                   {client.isActive ? <Power size={16} /> : <PowerOff size={16} />}

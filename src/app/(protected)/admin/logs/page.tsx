@@ -4,8 +4,17 @@ import { useState, useEffect } from 'react';
 import { getActivityLogs } from '@/app/admin/actions';
 import { Loader2, Shield, Activity, Calendar, User } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 
 export default function LogsPage() {
+    return (
+        <ProtectedRoute allowedRoles={['ADMIN']}>
+            <LogsContent />
+        </ProtectedRoute>
+    );
+}
+
+function LogsContent() {
     const [logs, setLogs] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
 

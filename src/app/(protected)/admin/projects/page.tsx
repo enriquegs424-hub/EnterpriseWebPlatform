@@ -5,8 +5,17 @@ import { getAllProjects, createProject, updateProject, toggleProjectStatus } fro
 import { getAllClients } from '@/app/(protected)/admin/clients/actions';
 import { Briefcase, Plus, Edit2, Power, PowerOff, Calendar, Building2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 
 export default function ProjectsPage() {
+    return (
+        <ProtectedRoute allowedRoles={['ADMIN', 'MANAGER']}>
+            <ProjectsContent />
+        </ProtectedRoute>
+    );
+}
+
+function ProjectsContent() {
     const [projects, setProjects] = useState<any[]>([]);
     const [clients, setClients] = useState<any[]>([]);
     const [editingProject, setEditingProject] = useState<any>(null);

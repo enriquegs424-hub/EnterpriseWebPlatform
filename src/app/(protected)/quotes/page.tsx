@@ -5,6 +5,7 @@ import { FileText, Plus, Eye, CheckCircle, XCircle, Clock } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import DataTable, { type Column } from '@/components/DataTable';
+import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 
 interface Quote {
     id: string;
@@ -54,6 +55,14 @@ const STATUS_ICONS = {
 };
 
 export default function QuotesPage() {
+    return (
+        <ProtectedRoute allowedRoles={['ADMIN', 'MANAGER']}>
+            <QuotesContent />
+        </ProtectedRoute>
+    );
+}
+
+function QuotesContent() {
     const router = useRouter();
     const [quotes, setQuotes] = useState<Quote[]>([]);
     const [loading, setLoading] = useState(true);

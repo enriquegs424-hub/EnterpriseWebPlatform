@@ -7,8 +7,17 @@ import {
     Search, Filter, Plus, ChevronLeft, ChevronRight, Loader2
 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 
 export default function UsersPage() {
+    return (
+        <ProtectedRoute allowedRoles={['ADMIN']}>
+            <UsersContent />
+        </ProtectedRoute>
+    );
+}
+
+function UsersContent() {
     const [users, setUsers] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [total, setTotal] = useState(0);

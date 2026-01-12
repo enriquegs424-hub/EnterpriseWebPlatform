@@ -1,7 +1,10 @@
 import { getCRMDashboardStats } from './actions';
 import { TrendingUp, Users, Wallet } from 'lucide-react';
+import { requireAccess } from '@/lib/route-access';
 
 export default async function CRMDashboardPage() {
+    // Server-side role check
+    await requireAccess('/crm');
     // Fetch data
     const stats = await getCRMDashboardStats();
 

@@ -5,6 +5,7 @@ import { FileText, Plus, Eye } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import DataTable, { type Column } from '@/components/DataTable';
+import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 
 interface Invoice {
     id: string;
@@ -49,6 +50,14 @@ const STATUS_LABELS = {
 };
 
 export default function InvoicesPage() {
+    return (
+        <ProtectedRoute allowedRoles={['ADMIN', 'MANAGER']}>
+            <InvoicesContent />
+        </ProtectedRoute>
+    );
+}
+
+function InvoicesContent() {
     const router = useRouter();
     const [invoices, setInvoices] = useState<Invoice[]>([]);
     const [loading, setLoading] = useState(true);
