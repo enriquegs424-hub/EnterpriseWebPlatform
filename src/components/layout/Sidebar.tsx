@@ -24,6 +24,7 @@ const navItems = [
         section: 'Gestión', items: [
             { label: 'CRM', href: '/crm', icon: TrendingUp, desc: 'Gestión de leads y clientes' },
             { label: 'Presupuestos', href: '/quotes', icon: FileCheck, desc: 'Gestión de presupuestos' },
+            { label: 'Facturas', href: '/invoices', icon: FileText, desc: 'Facturación y cobros' },
             { label: 'Proyectos', href: '/admin/projects', icon: Briefcase, desc: 'Códigos y clientes' },
             { label: 'Clientes', href: '/admin/clients', icon: Users, desc: 'Cartera de clientes' },
         ]

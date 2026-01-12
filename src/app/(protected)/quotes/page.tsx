@@ -120,7 +120,7 @@ export default function QuotesPage() {
                 <div>
                     <div className="font-medium">{quote.client.name}</div>
                     {quote.lead && (
-                        <div className="text-sm text-gray-500">
+                        <div className="text-sm text-gray-500 dark:text-gray-400">
                             Lead: {quote.lead.title}
                         </div>
                     )}
@@ -216,7 +216,7 @@ export default function QuotesPage() {
                     <div className="mt-2 text-2xl font-bold text-gray-900 dark:text-white">
                         €{Number(stats.totalAmount || 0).toLocaleString('es-ES', { minimumFractionDigits: 2 })}
                     </div>
-                    <div className="mt-1 text-xs text-gray-500">
+                    <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">
                         {stats.totalCount} presupuestos
                     </div>
                 </div>
@@ -228,7 +228,7 @@ export default function QuotesPage() {
                     <div className="mt-2 text-2xl font-bold text-gray-600 dark:text-gray-400">
                         {stats.draftCount}
                     </div>
-                    <div className="mt-1 text-xs text-gray-500">
+                    <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">
                         Pendientes de enviar
                     </div>
                 </div>
@@ -240,7 +240,7 @@ export default function QuotesPage() {
                     <div className="mt-2 text-2xl font-bold text-blue-600 dark:text-blue-400">
                         {stats.sentCount}
                     </div>
-                    <div className="mt-1 text-xs text-gray-500">
+                    <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">
                         Esperando respuesta
                     </div>
                 </div>
@@ -252,7 +252,7 @@ export default function QuotesPage() {
                     <div className="mt-2 text-2xl font-bold text-green-600 dark:text-green-400">
                         {stats.acceptedCount}
                     </div>
-                    <div className="mt-1 text-xs text-gray-500">
+                    <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">
                         Listos para convertir
                     </div>
                 </div>

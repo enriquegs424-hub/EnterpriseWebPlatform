@@ -17,6 +17,20 @@ import { LocaleProvider } from "@/providers/LocaleContext";
 import { ThemeProvider } from "@/providers/ThemeProvider";
 import { ToastProvider } from "@/components/ui/Toast";
 
+// Script to prevent flash of unstyled content
+const themeInitScript = `
+  (function() {
+    try {
+      const theme = localStorage.getItem('vite-ui-theme');
+      if (theme === 'dark' || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+    } catch (e) {}
+  })();
+`;
+
 export default async function RootLayout({
   children,
 }: Readonly<{
@@ -29,6 +43,9 @@ export default async function RootLayout({
 
   return (
     <html lang={language} suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+      </head>
       <body
         suppressHydrationWarning
         className={`${inter.variable} font-sans antialiased bg-neutral-50 text-neutral-900 dark:bg-neutral-950 dark:text-neutral-50`}
@@ -44,3 +61,4 @@ export default async function RootLayout({
     </html>
   );
 }
+

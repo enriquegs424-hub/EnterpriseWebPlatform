@@ -193,7 +193,7 @@ export default function NewQuotePage() {
                         {items.map((item, index) => (
                             <div key={index} className="grid grid-cols-12 gap-3 items-start p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
                                 <div className="col-span-12 md:col-span-4">
-                                    <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
+                                    <label className="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">
                                         Descripción
                                     </label>
                                     <input
@@ -206,7 +206,7 @@ export default function NewQuotePage() {
                                     />
                                 </div>
                                 <div className="col-span-4 md:col-span-2">
-                                    <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
+                                    <label className="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">
                                         Cantidad
                                     </label>
                                     <input
@@ -220,7 +220,7 @@ export default function NewQuotePage() {
                                     />
                                 </div>
                                 <div className="col-span-4 md:col-span-2">
-                                    <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
+                                    <label className="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">
                                         Precio Unitario
                                     </label>
                                     <input
@@ -234,7 +234,7 @@ export default function NewQuotePage() {
                                     />
                                 </div>
                                 <div className="col-span-4 md:col-span-2">
-                                    <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
+                                    <label className="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">
                                         IVA (%)
                                     </label>
                                     <input

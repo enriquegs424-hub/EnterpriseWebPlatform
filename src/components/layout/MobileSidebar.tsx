@@ -23,6 +23,7 @@ export default function MobileSidebar({ notificationCount = 0 }: MobileSidebarPr
         { icon: Clock, label: 'Horas', href: '/hours/daily' },
         { icon: FileText, label: 'Documentos', href: '/documents' },
         { icon: FileCheck, label: 'Presupuestos', href: '/quotes' },
+        { icon: FileText, label: 'Facturas', href: '/invoices' },
         { icon: Users, label: 'Clientes', href: '/clients' },
         { icon: Bell, label: 'Notificaciones', href: '/notifications', badge: notificationCount },
         { icon: Settings, label: 'Configuración', href: '/settings' },
