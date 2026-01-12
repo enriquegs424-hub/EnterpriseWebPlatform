@@ -6,6 +6,7 @@ import { revalidatePath } from 'next/cache';
 import { InvoiceStatus, PaymentMethod } from '@prisma/client';
 import { checkPermission, auditCrud } from '@/lib/permissions';
 import { InvoiceStateMachine } from '@/lib/state-machine';
+import { calculateLineTotal, calculateDocumentTotals, addDecimals, subtractDecimals, toNumber } from '@/lib/money';
 
 // ==========================================
 // INVOICE CRUD
@@ -86,28 +87,27 @@ export async function createInvoice(data: {
     // Check permission
     await checkPermission('invoices', 'create');
 
-    // Calculate items
+    // Calculate items using Decimal for precision
     const items = data.items.map((item, index) => {
-        const subtotal = item.quantity * item.unitPrice;
-        const taxAmount = subtotal * (item.taxRate / 100);
-        const total = subtotal + taxAmount;
+        const lineCalc = calculateLineTotal(item.quantity, item.unitPrice, item.taxRate);
 
         return {
             description: item.description,
-            quantity: item.quantity,
+            quantity: lineCalc.subtotal.div(item.unitPrice).toNumber(), // Store as number for Prisma
             unitPrice: item.unitPrice,
             taxRate: item.taxRate,
-            subtotal,
-            taxAmount,
-            total,
+            subtotal: lineCalc.subtotal.toNumber(),
+            taxAmount: lineCalc.taxAmount.toNumber(),
+            total: lineCalc.total.toNumber(),
             order: index,
         };
     });
 
-    // Calculate totals
-    const subtotal = items.reduce((sum, item) => sum + item.subtotal, 0);
-    const taxAmount = items.reduce((sum, item) => sum + item.taxAmount, 0);
-    const total = subtotal + taxAmount;
+    // Calculate document totals using Decimal
+    const totals = calculateDocumentTotals(data.items);
+    const subtotal = totals.subtotal.toNumber();
+    const taxAmount = totals.taxAmount.toNumber();
+    const total = totals.total.toNumber();
 
     // Generate invoice number
     const year = new Date().getFullYear();
@@ -254,11 +254,11 @@ export async function addPayment(data: {
 
     if (!invoice) throw new Error('Invoice not found');
 
-    // Validate payment amount
-    const totalPaid = invoice.payments.reduce((sum, p) => sum + p.amount, 0);
-    const newBalance = invoice.total - (totalPaid + data.amount);
+    // Validate payment amount using Decimal
+    const totalPaid = invoice.payments.reduce((sum, p) => sum + p.amount.toNumber(), 0);
+    const newBalanceDecimal = subtractDecimals(invoice.total, addDecimals(totalPaid, data.amount));
 
-    if (newBalance < -0.01) {
+    if (newBalanceDecimal.lessThan(-0.01)) {
         throw new Error('Payment amount exceeds invoice balance');
     }
 
@@ -275,14 +275,17 @@ export async function addPayment(data: {
         },
     });
 
-    // Update invoice
-    const updatedPaidAmount = invoice.paidAmount + data.amount;
-    const updatedBalance = invoice.total - updatedPaidAmount;
+    // Update invoice using Decimal calculations
+    const updatedPaidAmountDecimal = addDecimals(invoice.paidAmount, data.amount);
+    const updatedBalanceDecimal = subtractDecimals(invoice.total, updatedPaidAmountDecimal);
+
+    const updatedPaidAmount = updatedPaidAmountDecimal.toNumber();
+    const updatedBalance = updatedBalanceDecimal.toNumber();
 
     let newStatus = invoice.status;
-    if (updatedBalance <= 0.01) {
+    if (updatedBalanceDecimal.lessThanOrEqualTo(0.01)) {
         newStatus = 'PAID';
-    } else if (updatedPaidAmount > 0 && invoice.status === 'SENT') {
+    } else if (updatedPaidAmountDecimal.greaterThan(0) && invoice.status === 'SENT') {
         newStatus = 'PARTIAL';
     }
 

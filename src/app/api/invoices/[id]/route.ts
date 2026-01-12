@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getInvoice } from '../../(protected)/invoices/actions';
+import { getInvoice } from '@/app/(protected)/invoices/actions';
 
 export async function GET(
     request: Request,

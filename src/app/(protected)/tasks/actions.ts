@@ -4,10 +4,9 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
 import { revalidatePath } from "next/cache";
 import { createNotification } from "@/app/(protected)/notifications/actions";
-import { auditCrud } from "@/lib/permissions";
+import { auditCrud, checkPermission } from "@/lib/permissions";
 import { TaskStateMachine } from "@/lib/state-machine";
 
-// Obtener todas las tareas
 export async function getAllTasks(filters?: {
     status?: string;
     priority?: string;
@@ -16,6 +15,9 @@ export async function getAllTasks(filters?: {
 }) {
     const session = await auth();
     if (!session?.user?.id) return [];
+
+    // Check permission
+    await checkPermission('tasks', 'read');
 
     const where: any = {};
 
@@ -99,6 +101,9 @@ export async function createTask(data: {
     const session = await auth();
     if (!session?.user?.id) return { error: 'No autorizado' };
 
+    // Check permission
+    await checkPermission('tasks', 'create');
+
     try {
         const task = await prisma.task.create({
             data: {
@@ -156,6 +161,9 @@ export async function updateTask(taskId: string, data: {
         });
 
         if (!task) return { error: 'Tarea no encontrada' };
+
+        // Check permission with ownership
+        await checkPermission('tasks', 'update', task.createdById);
 
         // Solo el creador, asignado o admin pueden actualizar
         const canUpdate = session.user.role === 'ADMIN' ||
@@ -221,6 +229,9 @@ export async function deleteTask(taskId: string) {
         });
 
         if (!task) return { error: 'Tarea no encontrada' };
+
+        // Check permission with ownership (delete requires ownership or admin)
+        await checkPermission('tasks', 'delete', task.createdById);
 
         // Solo el creador o admin pueden eliminar
         if (session.user.role !== 'ADMIN' && task.createdById !== session.user.id) {

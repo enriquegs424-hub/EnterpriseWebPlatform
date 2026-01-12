@@ -3,6 +3,7 @@
 import { prisma } from '@/lib/prisma';
 import { auth } from '@/auth';
 import { revalidatePath } from 'next/cache';
+import { checkPermission } from '@/lib/permissions';
 
 // ============================================
 // DOCUMENTS
@@ -15,6 +16,9 @@ export async function getAllDocuments(filters?: {
 }) {
     const session = await auth();
     if (!session?.user?.email) throw new Error('No autenticado');
+
+    // Check permission
+    await checkPermission('documents', 'read');
 
     const where: any = {};
 
@@ -88,6 +92,9 @@ export async function createDocument(data: {
 }) {
     const session = await auth();
     if (!session?.user?.email) throw new Error('No autenticado');
+
+    // Check permission
+    await checkPermission('documents', 'create');
 
     const user = await prisma.user.findUnique({
         where: { email: session.user.email },

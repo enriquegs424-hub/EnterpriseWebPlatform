@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Menu, X, Home, FolderOpen, CheckSquare, Clock, Calendar, FileText, Bell, Settings, Users, MessageSquare } from 'lucide-react';
+import { Menu, X, Home, FolderOpen, CheckSquare, Clock, Calendar, FileText, FileCheck, Bell, Settings, Users, MessageSquare } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -22,6 +22,7 @@ export default function MobileSidebar({ notificationCount = 0 }: MobileSidebarPr
         { icon: CheckSquare, label: 'Tareas', href: '/tasks' },
         { icon: Clock, label: 'Horas', href: '/hours/daily' },
         { icon: FileText, label: 'Documentos', href: '/documents' },
+        { icon: FileCheck, label: 'Presupuestos', href: '/quotes' },
         { icon: Users, label: 'Clientes', href: '/clients' },
         { icon: Bell, label: 'Notificaciones', href: '/notifications', badge: notificationCount },
         { icon: Settings, label: 'Configuración', href: '/settings' },

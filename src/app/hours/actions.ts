@@ -4,6 +4,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
+import { checkPermission } from "@/lib/permissions";
 
 const TimeEntrySchema = z.object({
     projectId: z.string().min(1, "Project is required"),
@@ -17,6 +18,9 @@ export async function submitTimeEntry(prevState: any, formData: FormData) {
     if (!session?.user?.id) {
         return { error: "Unauthorized" };
     }
+
+    // Check permission
+    await checkPermission('timeentries', 'create');
 
     const rawData = {
         projectId: formData.get("projectId"),
@@ -91,6 +95,9 @@ export async function updateTimeEntry(id: string, data: any) {
     if (!entry) {
         return { error: "Entrada no encontrada" };
     }
+
+    // Check permission with ownership
+    await checkPermission('timeentries', 'update', entry.userId);
 
     // Check permission: Own entry + within 24h OR admin
     const isOwner = entry.userId === session.user.id;

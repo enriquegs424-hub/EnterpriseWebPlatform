@@ -94,8 +94,19 @@ export class RateLimiter {
 
 // Singleton instances for different rate limits
 export const apiLimiter = new RateLimiter(100, 60000); // 100 req/min for general APIs
-export const authLimiter = new RateLimiter(5, 300000); // 5 req/5min for auth endpoints
+export const authLimiter = new RateLimiter(5, 900000); // 5 req/15min for auth endpoints (increased from 5min)
 export const uploadLimiter = new RateLimiter(10, 60000); // 10 req/min for uploads
+
+/**
+ * Log rate limit blocks for security monitoring
+ */
+export function logRateLimitBlock(identifier: string, limiter: string = 'unknown'): void {
+    const timestamp = new Date().toISOString();
+    console.warn(`[RATE_LIMIT_BLOCK] Limiter: ${limiter}, Identifier: ${identifier}, Time: ${timestamp}`);
+
+    // TODO: In production, send to monitoring service
+    // (e.g., Sentry, DataDog, CloudWatch, Logtail)
+}
 
 /**
  * Helper to get client identifier (IP or userId)

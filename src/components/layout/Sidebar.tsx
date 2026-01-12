@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
     LayoutDashboard, Briefcase, Users, Settings,
-    Clock, FileText, BarChart, CheckSquare, FolderOpen, Calendar, Bell, MessageSquare, Activity, TrendingUp
+    Clock, FileText, FileCheck, BarChart, CheckSquare, FolderOpen, Calendar, Bell, MessageSquare, Activity, TrendingUp
 } from 'lucide-react';
 import Image from 'next/image';
 
@@ -23,6 +23,7 @@ const navItems = [
     {
         section: 'Gestión', items: [
             { label: 'CRM', href: '/crm', icon: TrendingUp, desc: 'Gestión de leads y clientes' },
+            { label: 'Presupuestos', href: '/quotes', icon: FileCheck, desc: 'Gestión de presupuestos' },
             { label: 'Proyectos', href: '/admin/projects', icon: Briefcase, desc: 'Códigos y clientes' },
             { label: 'Clientes', href: '/admin/clients', icon: Users, desc: 'Cartera de clientes' },
         ]

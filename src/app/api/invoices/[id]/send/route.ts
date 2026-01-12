@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { updateInvoiceStatus } from '../../../(protected)/invoices/actions';
+import { updateInvoiceStatus } from '@/app/(protected)/invoices/actions';
 
 export async function POST(
     request: Request,

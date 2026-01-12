@@ -12,30 +12,31 @@ datasource db {
 // ============================================
 
 model Company {
-  id          String   @id @default(cuid())
-  name        String
-  slug        String   @unique
-  logo        String?
-  address     String?
-  phone       String?
-  email       String?
-  website     String?
-  taxId       String?  // NIF/CIF
-  currency    String   @default("EUR")
-  timezone    String   @default("Europe/Madrid")
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  logo      String?
+  address   String?
+  phone     String?
+  email     String?
+  website   String?
+  taxId     String? // NIF/CIF
+  currency  String   @default("EUR")
+  timezone  String   @default("Europe/Madrid")
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Relations
-  users       User[]
-  projects    Project[]
-  clients     Client[]
-  leads       Lead[]
-  expenses    Expense[]
-  invoices    Invoice[]
-  products    Product[]
-  taxRates    TaxRate[]
+  users    User[]
+  projects Project[]
+  clients  Client[]
+  leads    Lead[]
+  expenses Expense[]
+  invoices Invoice[]
+  products Product[]
+  taxRates TaxRate[]
+  quotes   Quote[]
 
   @@index([slug])
 }
@@ -76,6 +77,7 @@ model User {
   createdInvoices   Invoice[]
   createdPayments   Payment[]
   savedFilters      SavedFilter[]
+  Quote             Quote[]
 
   @@index([companyId])
 }
@@ -105,67 +107,69 @@ model Project {
 }
 
 model Client {
-  id          String    @id @default(cuid())
-  name        String
-  email       String?
-  phone       String?
-  companyName String?   // Nombre de la empresa del cliente
-  companyId   String?   // Tenant owner
-  ownerCompany Company? @relation(fields: [companyId], references: [id])
-  address     String?
-  industry    String?
-  website     String?
-  notes       String?   @db.Text
-  status      ClientStatus @default(ACTIVE)
-  isActive    Boolean   @default(true)
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  projects    Project[]
-  contacts    ClientContact[]
-  leads       Lead[]
-  invoices    Invoice[]
+  id           String          @id @default(cuid())
+  name         String
+  email        String?
+  phone        String?
+  companyName  String? // Nombre de la empresa del cliente
+  companyId    String? // Tenant owner
+  ownerCompany Company?        @relation(fields: [companyId], references: [id])
+  address      String?
+  industry     String?
+  website      String?
+  notes        String?         @db.Text
+  status       ClientStatus    @default(ACTIVE)
+  isActive     Boolean         @default(true)
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+  projects     Project[]
+  contacts     ClientContact[]
+  leads        Lead[]
+  invoices     Invoice[]
+  Quote        Quote[]
 
   @@index([companyId])
 }
 
 model ClientContact {
-  id        String   @id @default(cuid())
-  clientId  String
-  client    Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
-  name      String
-  email     String?
-  phone     String?
-  position  String?
-  isPrimary Boolean  @default(false)
+  id         String   @id @default(cuid())
+  clientId   String
+  client     Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  name       String
+  email      String?
+  phone      String?
+  position   String?
+  isPrimary  Boolean  @default(false)
   accessCode String? // Added for portal access
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
   @@index([clientId])
 }
 
 model Lead {
-  id              String      @id @default(cuid())
-  title           String
-  description     String?     @db.Text
-  value           Float       @default(0)
-  currency        String      @default("EUR")
-  probability     Int         @default(0)
+  id                String    @id @default(cuid())
+  title             String
+  description       String?   @db.Text
+  value             Decimal   @default(0) @db.Decimal(12, 2)
+  currency          String    @default("EUR")
+  probability       Int       @default(0)
   expectedCloseDate DateTime?
-  stage           LeadStage   @default(NEW)
-  
-  companyId       String?
-  ownerCompany    Company?    @relation(fields: [companyId], references: [id])
-  
-  clientId        String?
-  client          Client?     @relation(fields: [clientId], references: [id])
-  
-  assignedToId    String?
-  assignedTo      User?       @relation(fields: [assignedToId], references: [id])
-    
-  createdAt       DateTime    @default(now())
-  updatedAt       DateTime    @updatedAt
-  
+  stage             LeadStage @default(NEW)
+
+  companyId    String
+  ownerCompany Company @relation(fields: [companyId], references: [id])
+
+  clientId String?
+  client   Client? @relation(fields: [clientId], references: [id])
+
+  assignedToId String?
+  assignedTo   User?   @relation(fields: [assignedToId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  Quote     Quote[]
+
   @@index([companyId])
   @@index([clientId])
   @@index([assignedToId])
@@ -526,28 +530,28 @@ enum ClientStatus {
 }
 
 model Expense {
-  id          String   @id @default(cuid())
+  id          String          @id @default(cuid())
   description String
-  amount      Float
-  currency    String   @default("EUR")
+  amount      Decimal         @db.Decimal(12, 2)
+  currency    String          @default("EUR")
   date        DateTime
   category    ExpenseCategory @default(OTHER)
-  
-  companyId   String?
+
+  companyId    String?
   ownerCompany Company? @relation(fields: [companyId], references: [id])
-  
-  projectId   String?
-  project     Project? @relation(fields: [projectId], references: [id])
-  
-  userId      String
-  user        User   @relation(fields: [userId], references: [id])
-  
-  receiptUrl  String?
-  status      ExpenseStatus @default(PENDING)
-  
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
+
+  projectId String?
+  project   Project? @relation(fields: [projectId], references: [id])
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  receiptUrl String?
+  status     ExpenseStatus @default(PENDING)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   @@index([companyId])
   @@index([projectId])
   @@index([userId])
@@ -570,8 +574,8 @@ enum ExpenseStatus {
 }
 
 model SystemSetting {
-  key   String @id
-  value String // JSON encoded value
+  key         String  @id
+  value       String // JSON encoded value
   description String?
 }
 
@@ -589,48 +593,48 @@ model Team {
 // ============================================
 
 model Invoice {
-  id            String        @id @default(cuid())
-  number        String        @unique // INV-2024-001
-  date          DateTime      @default(now())
-  dueDate       DateTime
-  status        InvoiceStatus @default(DRAFT)
-  
+  id      String        @id @default(cuid())
+  number  String        @unique // INV-2024-001
+  date    DateTime      @default(now())
+  dueDate DateTime
+  status  InvoiceStatus @default(DRAFT)
+
   // Multi-tenant
-  companyId     String?
-  company       Company?      @relation(fields: [companyId], references: [id])
-  
+  companyId String?
+  company   Company? @relation(fields: [companyId], references: [id])
+
   // Relations
-  clientId      String
-  client        Client        @relation(fields: [clientId], references: [id])
-  
-  projectId     String?
-  project       Project?      @relation(fields: [projectId], references: [id])
-  
-  // Amounts
-  subtotal      Float         @default(0)
-  taxAmount     Float         @default(0)
-  total         Float         @default(0)
-  currency      String        @default("EUR")
-  
+  clientId String
+  client   Client @relation(fields: [clientId], references: [id])
+
+  projectId String?
+  project   Project? @relation(fields: [projectId], references: [id])
+
+  // Amounts (Decimal for financial precision)
+  subtotal  Decimal @default(0) @db.Decimal(12, 2)
+  taxAmount Decimal @default(0) @db.Decimal(12, 2)
+  total     Decimal @default(0) @db.Decimal(12, 2)
+  currency  String  @default("EUR")
+
   // Payment tracking
-  paidAmount    Float         @default(0)
-  balance       Float         @default(0) // total - paidAmount
-  
+  paidAmount Decimal @default(0) @db.Decimal(12, 2)
+  balance    Decimal @default(0) @db.Decimal(12, 2) // total - paidAmount
+
   // Metadata
-  notes         String?       @db.Text
-  terms         String?       @db.Text
-  createdById   String
-  createdBy     User          @relation(fields: [createdById], references: [id])
-  
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
-  issuedAt      DateTime?     // When status changed to SENT
-  paidAt        DateTime?     // When fully paid
-  
+  notes       String? @db.Text
+  terms       String? @db.Text
+  createdById String
+  createdBy   User    @relation(fields: [createdById], references: [id])
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  issuedAt  DateTime? // When status changed to SENT
+  paidAt    DateTime? // When fully paid
+
   // Relations
-  items         InvoiceItem[]
-  payments      Payment[]
-  
+  items    InvoiceItem[]
+  payments Payment[]
+
   @@index([companyId])
   @@index([clientId])
   @@index([projectId])
@@ -640,53 +644,53 @@ model Invoice {
 }
 
 model InvoiceItem {
-  id          String  @id @default(cuid())
-  invoiceId   String
-  invoice     Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
-  
+  id        String  @id @default(cuid())
+  invoiceId String
+  invoice   Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
   description String
-  quantity    Float   @default(1)
-  unitPrice   Float
-  taxRate     Float   @default(0) // Percentage (21 = 21%)
-  
-  // Calculated fields
-  subtotal    Float   // quantity * unitPrice
-  taxAmount   Float   // subtotal * (taxRate / 100)
-  total       Float   // subtotal + taxAmount
-  
-  order       Int     @default(0) // Display order
-  
+  quantity    Decimal @default(1) @db.Decimal(10, 2)
+  unitPrice   Decimal @db.Decimal(12, 2)
+  taxRate     Decimal @default(0) @db.Decimal(5, 2) // Percentage (21 = 21%)
+
+  // Calculated fields (Decimal for precision)
+  subtotal  Decimal @db.Decimal(12, 2) // quantity * unitPrice
+  taxAmount Decimal @db.Decimal(12, 2) // subtotal * (taxRate / 100)
+  total     Decimal @db.Decimal(12, 2) // subtotal + taxAmount
+
+  order Int @default(0) // Display order
+
   @@index([invoiceId])
 }
 
 model Payment {
-  id          String        @id @default(cuid())
-  amount      Float
-  date        DateTime      @default(now())
-  method      PaymentMethod @default(TRANSFER)
-  reference   String?       // Transaction reference
-  notes       String?
-  
-  invoiceId   String
-  invoice     Invoice       @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
-  
+  id        String        @id @default(cuid())
+  amount    Decimal       @db.Decimal(12, 2)
+  date      DateTime      @default(now())
+  method    PaymentMethod @default(TRANSFER)
+  reference String? // Transaction reference
+  notes     String?
+
+  invoiceId String
+  invoice   Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
   createdById String
-  createdBy   User          @relation(fields: [createdById], references: [id])
-  
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
-  
+  createdBy   User   @relation(fields: [createdById], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   @@index([invoiceId])
   @@index([date])
 }
 
 enum InvoiceStatus {
-  DRAFT       // Being created
-  SENT        // Sent to client
-  OVERDUE     // Past due date
-  PAID        // Fully paid
-  CANCELLED   // Cancelled
-  PARTIAL     // Partially paid
+  DRAFT // Being created
+  SENT // Sent to client
+  OVERDUE // Past due date
+  PAID // Fully paid
+  CANCELLED // Cancelled
+  PARTIAL // Partially paid
 }
 
 enum PaymentMethod {
@@ -702,26 +706,26 @@ enum PaymentMethod {
 // ============================================
 
 model Product {
-  id          String      @id @default(cuid())
-  companyId   String
-  company     Company     @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  
+  id        String  @id @default(cuid())
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
   name        String
   description String?
-  sku         String?     // Product code/SKU
+  sku         String? // Product code/SKU
   type        ProductType @default(SERVICE)
-  category    String?     // Custom category
-  
-  price       Float       @default(0)
-  cost        Float?      // Cost price (for margin calculation)
-  taxRate     Float       @default(21) // Default IVA %
-  unit        String      @default("unidad") // unit, hour, kg, etc.
-  
-  isActive    Boolean     @default(true)
-  
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
-  
+  category    String? // Custom category
+
+  price   Decimal  @default(0) @db.Decimal(12, 2)
+  cost    Decimal? @db.Decimal(12, 2) // Cost price (for margin calculation)
+  taxRate Decimal  @default(21) @db.Decimal(5, 2) // Default IVA %
+  unit    String   @default("unidad") // unit, hour, kg, etc.
+
+  isActive Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   @@index([companyId])
   @@index([sku])
   @@index([type])
@@ -738,21 +742,95 @@ enum ProductType {
 // ============================================
 
 model TaxRate {
-  id          String   @id @default(cuid())
-  companyId   String
-  company     Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  
-  name        String   // "IVA 21%", "IVA Reducido", etc.
-  rate        Float    // 21, 10, 4, 0
+  id        String  @id @default(cuid())
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  name        String // "IVA 21%", "IVA Reducido", etc.
+  rate        Decimal @db.Decimal(5, 2) // 21, 10, 4, 0
   description String?
-  isDefault   Boolean  @default(false)
-  isActive    Boolean  @default(true)
-  
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
+  isDefault   Boolean @default(false)
+  isActive    Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   @@index([companyId])
   @@index([isDefault])
+}
+
+// ============================================
+// QUOTES & QUOTE ITEMS (Commercial Flow)
+// ============================================
+
+model Quote {
+  id         String      @id @default(cuid())
+  number     String      @unique
+  status     QuoteStatus @default(DRAFT)
+  validUntil DateTime
+
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id])
+
+  clientId String
+  client   Client @relation(fields: [clientId], references: [id])
+
+  leadId String?
+  lead   Lead?   @relation(fields: [leadId], references: [id])
+
+  // Financial fields (Decimal for precision)
+  subtotal  Decimal @default(0) @db.Decimal(12, 2)
+  taxAmount Decimal @default(0) @db.Decimal(12, 2)
+  total     Decimal @default(0) @db.Decimal(12, 2)
+
+  notes String? @db.Text
+  terms String? @db.Text
+
+  items QuoteItem[]
+
+  createdById String
+  createdBy   User   @relation(fields: [createdById], references: [id])
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  sentAt      DateTime?
+  acceptedAt  DateTime?
+  rejectedAt  DateTime?
+  convertedAt DateTime?
+
+  @@index([companyId])
+  @@index([clientId])
+  @@index([leadId])
+  @@index([status])
+  @@index([number])
+}
+
+model QuoteItem {
+  id      String @id @default(cuid())
+  quoteId String
+  quote   Quote  @relation(fields: [quoteId], references: [id], onDelete: Cascade)
+
+  description String
+  quantity    Decimal @default(1) @db.Decimal(10, 2)
+  unitPrice   Decimal @db.Decimal(12, 2)
+  taxRate     Decimal @default(0) @db.Decimal(5, 2)
+
+  subtotal  Decimal @db.Decimal(12, 2)
+  taxAmount Decimal @db.Decimal(12, 2)
+  total     Decimal @db.Decimal(12, 2)
+
+  order Int @default(0)
+
+  @@index([quoteId])
+}
+
+enum QuoteStatus {
+  DRAFT
+  SENT
+  ACCEPTED
+  REJECTED
+  EXPIRED
+  CONVERTED
 }
 
 // ============================================
@@ -760,18 +838,18 @@ model TaxRate {
 // ============================================
 
 model SavedFilter {
-  id          String   @id @default(cuid())
-  userId      String
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  page        String   // "invoices", "tasks", "expenses", etc.
-  name        String   // "Mis tareas pendientes"
-  filters     Json     // { status: "PENDING", assignedTo: "me" }
-  isDefault   Boolean  @default(false)
-  
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  page      String // "invoices", "tasks", "expenses", etc.
+  name      String // "Mis tareas pendientes"
+  filters   Json // { status: "PENDING", assignedTo: "me" }
+  isDefault Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   @@index([userId])
   @@index([page])
 }

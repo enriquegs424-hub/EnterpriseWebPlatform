@@ -1,737 +1,584 @@
-# BACKLOG ERP - Tareas Ejecutables
+# MEP Projects - Backlog Ejecutable (Auditoría Brutal)
 
-> **Basado en**: Auditoría real del código (2026-01-09)  
-> **Fuente de verdad**: Repositorio actual after 5.5h development session
+> **Priorización**: P0 = BLOQUEANTE, P1 = Hace usable, P2 = Mejora  
+> **Modo**: SINGLE-COMPANY (multiempresa-ready)
 
 ---
 
-## EPIC 0: Base del Proyecto y DX
+# 🔴 BLOQUEANTES P0 (RESOLVER PRIMERO)
 
-### [P0] Consolidar documentación duplicada
-- **Tipo**: Refactor / Docs
+---
+
+## EPIC 0: Base / CI / Tests
+
+---
+
+### [P0] Migrar Float a Decimal en Schema
+
+- **Tipo**: BLOQUEANTE / Refactor
+- **Dependencias**: Ninguna (BLOQUEA TODO)
+- **Qué hay ahora**:
+  - `Invoice.subtotal Float` (línea 610)
+  - `Invoice.taxAmount Float` (línea 611)
+  - `Invoice.total Float` (línea 612)
+  - `Invoice.paidAmount Float` (línea 616)
+  - `Invoice.balance Float` (línea 617)
+  - `InvoiceItem.quantity Float` (línea 648)
+  - `InvoiceItem.unitPrice Float` (línea 649)
+  - `InvoiceItem.taxRate Float` (línea 650)
+  - `InvoiceItem.subtotal Float` (línea 653)
+  - `InvoiceItem.taxAmount Float` (línea 654)
+  - `InvoiceItem.total Float` (línea 655)
+  - `Payment.amount Float` (línea 664)
+  - `Expense.amount Float` (línea 531)
+  - `Lead.value Float` (línea 151)
+  - `Product.price Float` (línea 715)
+  - `Product.cost Float` (línea 716)
+  - `TaxRate.rate Float` (línea 746)
+- **Qué falta**:
+  - Cambiar TODOS a `Decimal @db.Decimal(12, 2)`
+  - `taxRate` y similar a `Decimal @db.Decimal(5, 2)` (para %)
+  - Actualizar cálculos en actions para usar Decimal
+- **Criterios de aceptación**:
+  - [ ] 0 campos Float para dinero en schema
+  - [ ] Cálculos deterministas (sin errores de redondeo)
+  - [ ] Migración sin pérdida de datos
+- **DoD**:
+  - [ ] `npx prisma db push` exitoso
+  - [ ] Tests de cálculo pasan con casos edge
+  - [ ] 99.99 + 0.01 = 100.00 exacto
+- **Cómo verificar**:
+  ```bash
+  grep -c "Float" prisma/schema.prisma  # Debe ser 0 para campos de dinero
+  npm test -- --grep "calculation"
+  ```
+- **Archivos**:
+  - `prisma/schema.prisma`
+  - `src/app/(protected)/invoices/actions.ts`
+  - `src/app/(protected)/expenses/actions.ts`
+  - `src/app/(protected)/admin/products/actions.ts`
+
+---
+
+### [P0] Crear CI Pipeline (GitHub Actions)
+
+- **Tipo**: DevOps / BLOQUEANTE
 - **Dependencias**: Ninguna
-- **Qué hay ahora**: 40+ archivos .md con info duplicada/contradictoria
-- **Qué falta**: Estructura clara: 1 README, 1 ROADMAP, 1 CHANGELOG, 1 CONTRIBUTING, 1 ARCHITECTURE
+- **Qué hay ahora**: `.github/` NO EXISTE
+- **Qué falta**: Pipeline de CI con lint, typecheck, test, build
 - **Criterios de aceptación**:
-  - Máximo 5 archivos MD en root
-  - Mover documentos legacy a `_legacy/docs/`
-  - README principal con links a docs específicas
-  - No duplicar información entre archivos
+  - [ ] `.github/workflows/ci.yml` creado
+  - [ ] Jobs: lint, typecheck, test, build
+  - [ ] Triggers: push main, pull_request
+  - [ ] Falla si algún job falla
 - **DoD**:
-  - [ ] Solo existen: README.md, ROADMAP_TRACKING.md, CHANGELOG.md, CONTRIBUTING.md, ARCHITECTURE.md
-  - [ ] Todos los demás .md movidos a `_legacy/docs/`
-  - [ ] README actualizado con TOC y links
-- **Cómo verificar**: `ls *.md | wc -l` devuelve ≤ 5
-- **Archivos implicados**: Root .md files → `_legacy/docs/`
+  - [ ] Push a main ejecuta pipeline
+  - [ ] PR bloqueado si tests fallan
+  - [ ] Badge verde en README
+- **Cómo verificar**:
+  ```bash
+  git push origin main
+  # Ver Actions tab en GitHub
+  ```
+- **Archivos**:
+  - `.github/workflows/ci.yml` (NUEVO)
+  - `README.md` (agregar badge)
 
-### [P0] ESLint + Prettier estrictos
-- **Tipo**: DevOps / DX
+**Contenido mínimo de ci.yml:**
+```yaml
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+      - run: npm ci
+      - run: npm run lint
+      - run: npx tsc --noEmit
+      - run: npm test -- --run
+      - run: npm run build
+```
+
+---
+
+### [P0] Implementar Rate Limiting en Auth
+
+- **Tipo**: Security / BLOQUEANTE
 - **Dependencias**: Ninguna
-- **Qué hay ahora**: `eslint.config.mjs` básico, Prettier no configurado
-- **Qué falta**: Rules estrictas, Prettier con auto-format, pre-commit hook
+- **Qué hay ahora**: Auth sin protección de fuerza bruta
+- **Qué falta**: Límite de intentos fallidos
 - **Criterios de aceptación**:
-  - ESLint con rules estrictas (no unused vars, no any, etc.)
-  - Prettier configurado (.prettierrc)
-  - Husky + lint-staged en pre-commit
-  - `npm run lint` pasa sin warnings
+  - [ ] Max 5 intentos por IP/email en 15 min
+  - [ ] Bloqueo temporal tras exceder
+  - [ ] Log de intentos bloqueados
+  - [ ] Mensaje user-friendly
 - **DoD**:
-  - [ ] `.eslintrc` con reglas estrictas
-  - [ ] `.prettierrc` creado
-  - [ ] Husky instalado y configurado
-  - [ ] `npm run lint:fix` formatea todo
-- **Cómo verificar**: `npm run lint` no muestra warnings
-- **Archivos implicados**: `.eslintrc`, `.prettierrc`, `package.json`, `.husky/`
+  - [ ] 6 logins fallidos = 429 Too Many Requests
+  - [ ] Desbloqueo automático tras 15 min
+- **Cómo verificar**:
+  ```bash
+  # Script de prueba
+  for i in {1..6}; do
+    curl -X POST localhost:3000/api/auth/callback/credentials \
+      -d "email=test@test.com&password=wrong"
+  done
+  # El 6º debe retornar 429
+  ```
+- **Archivos**:
+  - `src/middleware.ts`
+  - `src/lib/rate-limit.ts` (NUEVO)
 
-### [P1] CI/CD pipeline (GitHub Actions)
-- **Tipo**: DevOps
-- **Dependencias**: ESLint + Prettier estrictos
-- **Qué hay ahora**: No existe
-- **Qué falta**: Pipeline básico: lint → type-check → test → build
-- **Criterios de aceptación**:
-  - Workflow `.github/workflows/ci.yml`
-  - Runs on: push to main, pull requests
-  - Steps: install → lint → type-check → vitest → build
-  - Fail pipeline si algún step falla
-- **DoD**:
-  - [ ] `.github/workflows/ci.yml` existe
-  - [ ] Pipeline corre en PRs
-  - [ ] Badge en README mostrando status
-- **Cómo verificar**: Push to branch, ver Actions tab en GitHub
-- **Archivos implicados**: `.github/workflows/ci.yml`, `README.md` (badge)
+---
 
-### [P2] Pre-commit hooks completos
-- **Tipo**: DevOps / DX
-- **Dependencias**: ESLint + Prettier
-- **Qué hay ahora**: No existen
-- **Qué falta**: Lint-staged en pre-commit
+### [P0] Escribir Tests Reales de Permissions
+
+- **Tipo**: Test / BLOQUEANTE
+- **Dependencias**: Ninguna
+- **Qué hay ahora**: `tests/permissions.test.ts` contiene tests de STATE MACHINE, no de permissions
+- **Qué falta**: Tests para `hasPermission()` y `checkPermission()`
 - **Criterios de aceptación**:
-  - Husky instalado
-  - Pre-commit: lint-staged → eslint + prettier
-  - Pre-push: type-check + tests
+  - [ ] Tests para cada rol × cada recurso × cada acción
+  - [ ] Tests para "own" permissions
+  - [ ] Tests para permission denied logging
 - **DoD**:
-  - [ ] `.husky/pre-commit` corre lint-staged
-  - [ ] `.husky/pre-push` corre tsc + vitest
-  - [ ] Commits bloqueados si lint falla
-- **Cómo verificar**: Intentar commit con error de lint, debe fallar
-- **Archivos implicados**: `.husky/`, `package.json`
+  - [ ] 40+ test cases para permissions
+  - [ ] Coverage >80% de permissions.ts
+- **Cómo verificar**:
+  ```bash
+  npm test -- --grep "permissions" --coverage
+  ```
+- **Archivos**:
+  - `tests/permissions.test.ts` (REESCRIBIR)
+
+---
+
+### [P0] Crear Test de Integración Invoice Flow
+
+- **Tipo**: Test / BLOQUEANTE
+- **Dependencias**: Decimal migration
+- **Qué hay ahora**: 0 tests de integración
+- **Qué falta**: Test que verifica flujo completo
+- **Criterios de aceptación**:
+  - [ ] Test: Create invoice → agregar items → totales correctos
+  - [ ] Test: DRAFT → SENT → add payment → PARTIAL → full payment → PAID
+  - [ ] Test: Cálculos de impuestos correctos
+  - [ ] Usa database de test (no producción)
+- **DoD**:
+  - [ ] 4+ tests de integración
+  - [ ] Pasan con `npm test`
+- **Cómo verificar**:
+  ```bash
+  npm test -- --grep "invoice flow"
+  ```
+- **Archivos**:
+  - `tests/integration/invoice-flow.test.ts` (NUEVO)
+  - `tests/setup.ts` (configurar DB de test)
 
 ---
 
 ## EPIC 1: Core ERP
 
-### [P1] Permission model en DB (opcional)
-- **Tipo**: Feature / Refactor
-- **Dependencias**: Ninguna (actual sistema funciona)
-- **Qué hay ahora**: RBAC hardcoded en `permissions.ts`
-- **Qué falta**: Modelo en Prisma para permisos configurables
-- **Criterios de aceptación**:
-  - Models: `Role`, `Resource`, `Permission` (role + resource + action)
-  - Seed con permisos actuales
-  - Migración suave: fallback a código si DB está vacía
-  - UI admin para editar permisos
-- **DoD**:
-  - [ ] Schema actualizado con Permission model
-  - [ ] `checkPermission()` lee de DB
-  - [ ] Seed pobla permisos actuales
-  - [ ] 0 breaking changes en código existente
-- **Cómo verificar**: Cambiar permiso en DB, validar que `checkPermission()` respeta cambio
-- **Archivos implicados**: `schema.prisma`, `seed.ts`, `permissions.ts`, `admin/roles/`
+---
 
-### [P1] Session tracking multi-device
-- **Tipo**: Feature (Security)
+### [P0] Hacer companyId NOT NULL
+
+- **Tipo**: Refactor / BLOQUEANTE para multiempresa
 - **Dependencias**: Ninguna
-- **Qué hay ahora**: NextAuth básico, no trackea sesiones
-- **Qué falta**: Tabla `Session` con device info, IP, last activity
+- **Qué hay ahora**: `companyId String?` (nullable) en Invoice, Expense, Lead
+- **Qué falta**: Cambiar a `companyId String` (NOT NULL)
 - **Criterios de aceptación**:
-  - Model `UserSession` (userId, device, IP, lastActivity, status)
-  - Al login: crear sesión
-  - Settings page: ver sesiones activas, revocar
+  - [ ] Todos los companyId son NOT NULL
+  - [ ] Company por defecto en seed
+  - [ ] Migración asigna company existente a huérfanos
 - **DoD**:
-  - [ ] Model `UserSession` en schema
-  - [ ] Login crea sesión con device info
-  - [ ] Settings page lista sesiones
-  - [ ] Botón "Revoke" funciona
-- **Cómo verificar**: Login desde 2 devices, ver ambas en settings
-- **Archivos implicados**: `schema.prisma`, `auth.ts`, `settings/sessions/`
-
-### [P2] 2FA implementation
-- **Tipo**: Feature (Security)
-- **Dependencias**: Session tracking
-- **Qué hay ahora**: No existe
-- **Qué falta**: TOTP-based 2FA (Google Authenticator
-
-)
-- **Criterios de aceptación**:
-  - User puede habilitar 2FA en settings
-  - Genera QR code para TOTP app
-  - Requiere 6-digit code al login
-  - Recovery codes generados al habilitar
-- **DoD**:
-  - [ ] Library TOTP instalada (`otplib`)
-  - [ ] UI para setup 2FA (QR + recovery codes)
-  - [ ] Login flow valida TOTP si está habilitado
-  - [ ] Recovery codes permiten bypass
-- **Cómo verificar**: Habilitar 2FA, intentar login sin code → falla
-- **Archivos implicados**: `schema.prisma`, `settings/security/`, `login flow`
+  - [ ] `prisma db push` sin errores
+  - [ ] 0 registros con companyId = null
+- **Archivos**:
+  - `prisma/schema.prisma`
+  - `prisma/seed.ts`
 
 ---
 
-## EPIC 2: Modelo de Datos
+### [P1] Implementar RBAC en Tasks
 
-### [P1] Products/Services catalog
-- **Tipo**: Feature
+- **Tipo**: Security / Fix
 - **Dependencias**: Ninguna
-- **Qué hay ahora**: No existe
-- **Qué falta**: Model `Product` (nombre, SKU, precio, tipo: product/service)
+- **Qué hay ahora**: `tasks/actions.ts` SIN `checkPermission()`
+- **Qué falta**: Agregar verificación de permisos
 - **Criterios de aceptación**:
-  - Model `Product` (companyId, name, sku, price, type, taxRate, active)
-  - CRUD en `admin/products/`
-  - companyId filter obligatorio
-  - Usar en invoice items (opcional)
+  - [ ] `checkPermission("tasks", "read")` en getTasks
+  - [ ] `checkPermission("tasks", "create")` en createTask
+  - [ ] `checkPermission("tasks", "update", ownerId)` en updateTask
+  - [ ] `checkPermission("tasks", "delete", ownerId)` en deleteTask
 - **DoD**:
-  - [ ] Schema con `Product` model
-  - [ ] CRUD actions (`products/actions.ts`)
-  - [ ] Admin UI (`admin/products/page.tsx`)
-  - [ ] Lista filtrable por tipo
-- **Cómo verificar**: Crear producto, usarlo en invoice (opcional)
-- **Archivos implicados**: `schema.prisma`, `admin/products/`, `invoices/actions.ts`
-
-### [P2] Suppliers model
-- **Tipo**: Feature
-- **Dependencias**: Products catalog
-- **Qué hay ahora**: No existe
-- **Qué falta**: Model `Supplier` (como Client pero para compras)
-- **Criterios de aceptación**:
-  - Model `Supplier` (companyId, name, taxId, email, phone)
-  - Relación Supplier → Expense (opcional)
-  - CRUD en `admin/suppliers/`
-- **DoD**:
-  - [ ] Schema con `Supplier` model
-  - [ ] CRUD actions (`suppliers/actions.ts`)
-  - [ ] Admin UI
-- **Cómo verificar**: Crear supplier, asociar a expense
-- **Archivos implicados**: `schema.prisma`, `admin/suppliers/`, `expenses/`
-
-### [P2] Contracts model
-- **Tipo**: Feature
-- **Dependencias**: Clients model
-- **Qué hay ahora**: No existe
-- **Qué falta**: Model `Contract` (client, start, end, terms)
-- **Criterios de aceptación**:
-  - Model `Contract` (clientId, projectId, startDate, endDate, value, terms)
-  - States: DRAFT → ACTIVE → EXPIRED
-  - Link a Project (opcional)
-- **DoD**:
-  - [ ] Schema con `Contract` model
-  - [ ] State machine para Contract
-  - [ ] CRUD UI
-- **Cómo verificar**: Crear contrato, vincular a proyecto
-- **Archivos implicados**: `schema.prisma`, `state-machine.ts`, `contracts/`
+  - [ ] WORKER no puede borrar tarea de otro
+  - [ ] CLIENT solo ve tareas de sus proyectos
+- **Archivos**:
+  - `src/app/(protected)/tasks/actions.ts`
 
 ---
 
-## EPIC 3: Flujos de Negocio
+### [P1] Implementar RBAC en Hours
 
-### [P1] TimeEntry approval flow aplicar
-- **Tipo**: Fix / Feature
-- **Dependencias**: Ninguna (estados ya definidos)
-- **Qué hay ahora**: Estados definidos en `state-machine.ts`, no aplicados
-- **Qué falta**: Actions usan state validation, UI muestra estados
-- **Criterios de aceptación**:
-  - `hours/actions.ts` valida transiciones con TimeEntryStateMachine
-  - UI muestra badge de estado
-  - Manager puede aprobar/rechazar
-  - Audit trail logea cambios de estado
+- **Tipo**: Security / Fix
+- **Dependencias**: Ninguna
+- **Qué hay ahora**: `hours/actions.ts` SIN `checkPermission()`
+- **Qué falta**: Agregar verificación de permisos
 - **DoD**:
-  - [ ] Actions usan `TimeEntryStateMachine.transition()`
-  - [ ] UI muestra estado actual
-  - [ ] Botones approve/reject funcionan
-  - [ ] Audit log registra cambios
-- **Cómo verificar**: Crear entry DRAFT → Submit → Manager approve
-- **Archivos implicados**: `hours/actions.ts`, `hours/page.tsx`, `hours/daily/`
-
-### [P2] Purchase Order workflow
-- **Tipo**: Feature
-- **Dependencias**: Suppliers model
-- **Qué hay ahora**: No existe
-- **Qué falta**: Model `PurchaseOrder` con states y approval
-- **Criterios de aceptación**:
-  - Model `PurchaseOrder` (supplierId, items, total, status)
-  - States: DRAFT → SENT → APPROVED → RECEIVED
-  - Approval flow: MANAGER+ can approve
-- **DoD**:
-  - [ ] Schema con `PurchaseOrder` model
-  - [ ] State machine para PO
-  - [ ] RBAC permissions
-  - [ ] UI para crear y aprobar
-- **Cómo verificar**: Crear PO, enviar a supplier, aprobar, marcar received
-- **Archivos implicados**: `schema.prisma`, `state-machine.ts`, `purchases/`
+  - [ ] WORKER solo ve sus propias horas
+  - [ ] MANAGER ve horas de su equipo
+- **Archivos**:
+  - `src/app/(protected)/hours/actions.ts`
+  - `src/app/hours/actions.ts`
 
 ---
 
-## EPIC 4: Finanzas
+### [P1] Implementar RBAC en Documents
 
-### [P0] Invoice creation form
-- **Tipo**: Feature (Frontend)
-- **Dependencias**: Ninguna (backend listo)
-- **Qué hay ahora**: Backend completo, UI solo lista/detalle
-- **Qué falta**: Form para crear invoice con líneas dinámicas
-- **Criterios de aceptación**:
-  - Form en `/invoices/new`
-  - Select client + project
-  - Líneas editables (add/remove)
-  - Calcula subtotal + IVA en real-time
-  - Botón "Save as DRAFT" / "Send"
-  - Validation: min 1 item, client required
-- **DoD**:
-  - [ ] `/invoices/new` página creada
-  - [ ] Form con líneas dinámicas funciona
-  - [ ] Cálculos automáticos correctos
-  - [ ] Guarda draft, puede enviar directo
-- **Cómo verificar**: Crear invoice con 3 items, guardar draft, editar, enviar
-- **Archivos implicados**: `invoices/new/page.tsx`, validar con `zod`
-
-### [P0] Invoice PDF generation
-- **Tipo**: Feature
-- **Dependencias**: Invoice UI
-- **Qué hay ahora**: jsPDF instalado, no implementado
-- **Qué falta**: Botón "Download PDF" genera factura
-- **Criterios de aceptación**:
-  - Botón "Download PDF" en invoice detail
-  - PDF con header, logo, líneas, totales
-  - Formato profesional
-  - Filename: `INV-2026-001.pdf`
-- **DoD**:
-  - [ ] Función `generateInvoicePDF(invoice)` implementada
-  - [ ] Botón en detail page funciona
-  - [ ] PDF descarga con nombre correcto
-  - [ ] Incluye logo company (opcional)
-- **Cómo verificar**: Abrir invoice, click "Download PDF", abrir archivo
-- **Archivos implicados**: `invoices/[id]/page.tsx`, `lib/pdf-generator.ts`
-
-### [P1] Payment registration modal
-- **Tipo**: Feature (Frontend)
-- **Dependencias**: Invoice UI
-- **Qué hay ahora**: Backend `addPayment()` exists, no UI
-- **Qué falta**: Modal para registrar pago
-- **Criterios de aceptación**:
-  - Modal en invoice detail
-  - Campos: amount, method, reference, date
-  - No permite exceder balance
-  - Botón "Register Payment"
-  - Auto-refresh tras guardar
-- **DoD**:
-  - [ ] Modal component creado
-  - [ ] Validación de balance
-  - [ ] Registra pago correctamente
-  - [ ] Balance se actualiza en UI
-- **Cómo verificar**: Register payment de 100€ en invoice de 200€, balance = 100€
-- **Archivos implicados**: `invoices/[id]/page.tsx`, components modal
-
-### [P1] Tax management UI
-- **Tipo**: Feature
+- **Tipo**: Security / Fix
 - **Dependencias**: Ninguna
-- **Qué hay ahora**: Tax rate hardcoded 21%
-- **Qué falta**: Model `TaxRate`, CRUD UI
-- **Criterios de aceptación**:
-  - Model `TaxRate` (name, rate, country, active)
-  - Admin UI para crear rates
-  - Invoice items usan taxRateId
-- **DoD**:
-  - [ ] Schema con `TaxRate` model
-  - [ ] CRUD UI en admin
-  - [ ] InvoiceItem usa taxRateId
-  - [ ] Seed con 21% IVA España
-- **Cómo verificar**: Crear tax 10%, usar en invoice, cálculo correcto
-- **Archivos implicados**: `schema.prisma`, `admin/taxes/`, `invoices/`
-
-### [P2] Basic plan contable (Chart of Accounts)
-- **Tipo**: Feature
-- **Dependencias**: Tax management
-- **Qué hay ahora**: No existe
-- **Qué falta**: Model `Account` (código, nombre, tipo)
-- **Criterios de aceptación**:
-  - Model `Account` (code, name, type: asset/liability/equity/revenue/expense)
-  - Accounts predefinidos en seed
-  - Link expenses/invoices a accounts (opcional phase 2)
-- **DoD**:
-  - [ ] Schema con `Account` model
-  - [ ] Seed con plan contable básico España
-  - [ ] Admin UI para ver/editar
-- **Cómo verificar**: Ver plan contable en admin, códigos 100-999
-- **Archivos implicados**: `schema.prisma`, `seed.ts`, `admin/accounting/`
-
-### [P2] Financial reports básicos
-- **Tipo**: Feature
-- **Dependencias**: Plan contable
-- **Qué hay ahora**: No existen
-- **Qué falta**: Reports: P&L (Profit & Loss), Balance Sheet
-- **Criterios de aceptación**:
-  - Page `/admin/reports/`
-  - P&L: Ingresos - Gastos = Beneficio (por mes)
-  - Balance Sheet: Assets vs Liabilities
-  - Export to Excel
-- **DoD**:
-  - [ ] `/admin/reports/pl` muestra P&L por mes
-  - [ ] `/admin/reports/balance` muestra balance
-  - [ ] Export a Excel funciona
-- **Cómo verificar**: Ver P&L del mes actual, verificar números con DB
-- **Archivos implicados**: `admin/reports/`, export helper
+- **Qué hay ahora**: `documents/` SIN `checkPermission()`
+- **Qué falta**: Permisos en todas las operaciones
+- **Archivos**:
+  - `src/app/(protected)/documents/actions.ts`
 
 ---
 
-## EPIC 5: Automatizaciones
-
-### [P2] EventBus básico
-- **Tipo**: Feature (Architecture)
-- **Dependencias**: Ninguna
-- **Qué hay ahora**: No existe
-- **Qué falta**: Sistema pub/sub para eventos internos
-- **Criterios de aceptación**:
-  - Class `EventBus` con `publish()` / `subscribe()`
-  - Eventos: `invoice.created`, `expense.approved`, `task.completed`
-  - Handlers registrados en startup
-  - Async processing (Promise.all)
-- **DoD**:
-  - [ ] `lib/event-bus.ts` implementado
-  - [ ] Al menos 3 eventos emitidos
-  - [ ] Ejemplo: crear notificación al evento
-- **Cómo verificar**: Crear invoice, ver evento en logs
-- **Archivos implicados**: `lib/event-bus.ts`, actions files
-
-### [P2] Notification rules engine
-- **Tipo**: Feature
-- **Dependencias**: EventBus
-- **Qué hay ahora**: Notificaciones manuales
-- **Qué falta**: Reglas automáticas (ej: notificar al asignar task)
-- **Criterios de aceptación**:
-  - Model `NotificationRule` (event, condition, target)
-  - Event handlers crean notificaciones auto
-  - Ejemplos: task.assigned → notify assignee, invoice.overdue → notify manager
-- **DoD**:
-  - [ ] Schema con `NotificationRule`
-  - [ ] Handlers en EventBus
-  - [ ] Al menos 2 reglas activas
-- **Cómo verificar**: Asignar task a user, ver notificación creada
-- **Archivos implicados**: `schema.prisma`, `lib/event-bus.ts`, `notifications/`
-
-### [P2] Scheduled jobs (Cron)
-- **Tipo**: Feature / DevOps
-- **Dependencias**: Ninguna
-- **Qué hay ahora**: No existen
-- **Qué falta**: Cron jobs para tareas periódicas
-- **Criterios de aceptación**:
-  - Library `node-cron` instalada
-  - Jobs: marcar invoices OVERDUE (daily), cleanup logs (weekly)
-  - Logs de ejecución
-- **DoD**:
-  - [ ] `lib/cron-jobs.ts` creado
-  - [ ] Job daily marca invoices overdue
-  - [ ] Logs indican última ejecución
-- **Cómo verificar**: Esperar 24h, ver invoice overdue marcada
-- **Archivos implicados**: `lib/cron-jobs.ts`, server startup
-
-### [P2] Email automation (Resend/SendGrid)
-- **Tipo**: Feature
-- **Dependencias**: Notification rules
-- **Qué hay ahora**: No existe
-- **Qué falta**: Enviar emails automáticos
-- **Criterios de aceptación**:
-  - Provider (Resend) configurado
-  - Templates HTML para: invoice sent, task assigned, expense approved
-  - Queue para procesar async (opcional)
-- **DoD**:
-  - [ ] Resend SDK instalado
-  - [ ] 3 templates HTML creados
-  - [ ] Función `sendEmail(to, template, data)` funciona
-  - [ ] Evento triggers email
-- **Cómo verificar**: Enviar invoice, verificar email en inbox
-- **Archivos implicados**: `lib/email.ts`, `lib/email-templates/`
+## EPIC 2: Seguridad / Auditoría
 
 ---
 
-## EPIC 6: Seguridad y Auditoría
+### [P1] Crear Activity Timeline UI Component
 
-### [P1] Aplicar RBAC a módulos restantes
-- **Tipo**: Fix / Refactor
-- **Dependencias**: Ninguna (RBAC existe)
-- **Qué hay ahora**: RBAC aplicado a: Tasks, Expenses, Leads, Clients, Invoices
-- **Qué falta**: Projects, Documents, Hours, Settings actions necesitan `checkPermission()`
-- **Criterios de aceptación**:
-  - Todos los CRUD actions en `projects/`, `documents/`, `hours/` usan `checkPermission()`
-  - Ownership checks donde aplica (worker solo own)
-  - Audit trail en todas las mutations
-- **DoD**:
-  - [ ] `projects/actions.ts` con RBAC completo
-  - [ ] `documents/actions.ts` con RBAC
-  - [ ] `hours/actions.ts` con RBAC
-  - [ ] Audit logs todas las acciones
-- **Cómo verificar**: Login as WORKER, intentar delete project → forbidden
-- **Archivos implicados**: `projects/actions.ts`, `documents/actions.ts`, `hours/actions.ts`
-
-### [P1] Centralizar queries con companyId filter
-- **Tipo**: Refactor
+- **Tipo**: UI
 - **Dependencias**: Ninguna
-- **Qué hay ahora**: Queries manuales con `where: { companyId }`
-- **Qué falta**: Helper `prisma.client.findManyInCompany()` auto-filtra
+- **Qué hay ahora**: ActivityLog en DB pero sin UI
+- **Qué falta**: Componente visual de timeline
 - **Criterios de aceptación**:
-  - Helper `withCompanyFilter()` en `lib/prisma-helpers.ts`
-  - Todas las queries usan helper
-  - Test: query sin companyId → error
+  - [ ] Lista cronológica de eventos
+  - [ ] Iconos por tipo de acción (CREATE, UPDATE, DELETE)
+  - [ ] Avatar + nombre de usuario
+  - [ ] Timestamp relativo ("hace 2 horas")
+  - [ ] Detalles expandibles (before/after)
 - **DoD**:
-  - [ ] `withCompanyFilter()` implementado
-  - [ ] 80%+ queries refactorizadas
-  - [ ] No leaks cross-company
-- **Cómo verificar**: Query desde company A, no ve data de company B
-- **Archivos implicados**: `lib/prisma-helpers.ts`, all actions files
-
-### [P1] Migrar in-memory a Redis rate limiter
-- **Tipo**: Refactor
-- **Dependencias**: Ninguna (mejora producción)
-- **Qué hay ahora**: In-memory `rate-limit.ts`, no escala multi-server
-- **Qué falta**: Redis adapter para rate limiter
-- **Criterios de aceptación**:
-  - Detectar Redis disponible (env var)
-  - Si existe: usar Redis adapter
-  - Si no: fallback a in-memory
-  - Same API, transparent switch
-- **DoD**:
-  - [ ] `lib/rate-limit-redis.ts` implementado
-  - [ ] Env var `REDIS_URL` configurable
-  - [ ] Auto-detect y switch
-  - [ ] Tests confirman rate limit persiste en Redis
-- **Cómo verificar**: Setup Redis, hacer 200 requests, ver 429 tras 100
-- **Archivos implicados**: `lib/rate-limit.ts`, `lib/rate-limit-redis.ts`, `.env`
-
-### [P2] Structured logging (Winston/Pino)
-- **Tipo**: Refactor
-- **Dependencias**: Ninguna
-- **Qué hay ahora**: `console.log()` everywhere
-- **Qué falta**: Logger centralizado con levels, structured JSON
-- **Criterios de aceptación**:
-  - Library `winston` instalada
-  - Logger en `lib/logger.ts`
-  - Levels: error, warn, info, debug
-  - Transport to file (opcional)
-  - Reemplazar console.log por logger
-- **DoD**:
-  - [ ] `lib/logger.ts` creado
-  - [ ] 80%+ console.log migrados
-  - [ ] Logs en JSON format
-  - [ ] File transport configurado
-- **Cómo verificar**: Trigger error, ver en logs/error.log con stack trace
-- **Archivos implicados**: `lib/logger.ts`, all files with `console.log`
+  - [ ] `<ActivityTimeline entityId="xxx" entityType="Invoice" />`
+  - [ ] Muestra todos los eventos de la entidad
+- **Archivos**:
+  - `src/components/ui/ActivityTimeline.tsx` (NUEVO)
 
 ---
 
-## EPIC 7: UX ERP
+### [P1] Agregar Timeline a Invoice Detail
 
-### [P0] DataTable component genérico
-- **Tipo**: Refactor
+- **Tipo**: UI
+- **Dependencias**: ActivityTimeline component
+- **Qué hay ahora**: Invoice detail sin timeline
+- **Qué falta**: Tab "Actividad" con timeline
+- **Archivos**:
+  - `src/app/(protected)/invoices/[id]/page.tsx`
+
+---
+
+## EPIC 3: UX Backoffice
+
+---
+
+### [P1] Crear Componente Tabs
+
+- **Tipo**: UI
 - **Dependencias**: Ninguna
-- **Qué hay ahora**: Cada página tiene su propia tabla custom
-- **Qué falta**: Component `<DataTable>` reutilizable con sort, filter, pagination
+- **Qué hay ahora**: Detail pages sin tabs
+- **Qué falta**: Componente reutilizable
 - **Criterios de aceptación**:
-  - Component acepta: columns, data, onSort, onFilter, pagination
-  - Sort por columna (asc/desc)
-  - Filtros básicos (text search)
-  - Pagination (10/25/50 per page)
-  - Loading state
-  - Empty state
+  - [ ] `<Tabs>` con `<Tab label="..." />` children
+  - [ ] Estado controlado (activeTab)
+  - [ ] URL persistence (?tab=activity)
+  - [ ] Animación suave
+  - [ ] Dark mode
 - **DoD**:
-  - [ ] `components/DataTable.tsx` implementado
-  - [ ] Al menos 3 páginas migradas (tasks, expenses, invoices)
-  - [ ] Funciona sort/filter/pagination
-- **Cómo verificar**: Abrir /tasks, sort por fecha, filter por nombre
-- **Archivos implicados**: `components/DataTable.tsx`, páginas de listas
+  - [ ] Componente en `src/components/ui/Tabs.tsx`
+  - [ ] Usado en invoice detail
+- **Archivos**:
+  - `src/components/ui/Tabs.tsx` (NUEVO)
 
-### [P1] Filtros guardables
-- **Tipo**: Feature
-- **Dependencias**: DataTable genérico
-- **Qué hay ahora**: Filtros temporales, se pierden al navegar
-- **Qué falta**: Guardar filtros en DB para cada usuario
-- **Criterios de aceptación**:
-  - Model `SavedFilter` (userId, page, filters JSON)
-  - Botón "Save filter"
-  - Dropdown para seleccionar filter guardado
-  - Aplicar automáticamente last used filter
-- **DoD**:
-  - [ ] Schema con `SavedFilter`
-  - [ ] UI para save/load filters
-  - [ ] Auto-load último filter usado
-- **Cómo verificar**: Guardar filter "Mis tareas", salir, volver, filter aplicado
-- **Archivos implicados**: `schema.prisma`, `components/DataTable.tsx`
+---
 
-### [P1] Acciones masivas en tablas
-- **Tipo**: Feature
-- **Dependencias**: DataTable genérico
-- **Qué hay ahora**: No existen
-- **Qué falta**: Checkbox multi-select, acciones bulk
-- **Criterios de aceptación**:
-  - Checkbox "Select all" en header
-  - Checkboxes en cada fila
-  - Acciones: Delete selected, Change status, Assign
-  - Confirmation modal antes de bulk action
-- **DoD**:
-  - [ ] Checkbox multi-select funciona
-  - [ ] Al menos 2 acciones bulk implementadas
-  - [ ] Confirmation modal antes de ejecutar
-- **Cómo verificar**: Seleccionar 3 tasks, "Delete selected", confirmar, eliminadas
-- **Archivos implicados**: `components/DataTable.tsx`, actions files
+### [P1] Implementar Export CSV en DataTable
 
-### [P1] Dashboard configurable
 - **Tipo**: Feature
-- **Dependencias**: Ninguna
-- **Qué hay ahora**: Dashboard fijo
-- **Qué falta**: Widgets movibles, personalizados por usuario
+- **Dependencias**: DataTable existe
+- **Qué hay ahora**: Solo visualización
+- **Qué falta**: Botón "Exportar CSV"
 - **Criterios de aceptación**:
-  - Model `DashboardWidget` (userId, type, position, config)
-  - Drag & drop para reordenar
-  - Widgets: Tasks, Expenses, Revenue, Hours
-  - Botón "Add widget"
-- **DoD**:
-  - [ ] Schema con `DashboardWidget`
-  - [ ] Drag & drop funciona
-  - [ ] 4+ widgets disponibles
-  - [ ] Config persiste en DB
-- **Cómo verificar**: Mover widget, refresh, layout guardado
-- **Archivos implicados**: `schema.prisma`, `dashboard/page.tsx`, widget components
-
-### [P2] Export global PDF/Excel
-- **Tipo**: Feature
-- **Dependencias**: Ninguna
-- **Qué hay ahora**: jsPDF instalado, no hay export global
-- **Qué falta**: Botón "Export" en cada tabla
-- **Criterios de aceptación**:
-  - Botón "Export" en DataTable
-  - Opciones: PDF, Excel (CSV)
-  - Exporta data visible (con filtros aplicados)
-  - Filename: `tasks-2026-01-09.pdf`
-- **DoD**:
-  - [ ] Botón "Export" en DataTable
-  - [ ] Export PDF funciona
-  - [ ] Export Excel (CSV) funciona
+  - [ ] Botón en toolbar DataTable
+  - [ ] Exporta columnas visibles
   - [ ] Respeta filtros actuales
-- **Cómo verificar**: Filter tasks "completed", export, file solo tiene completed
-- **Archivos implicados**: `components/DataTable.tsx`, `lib/export-helpers.ts`
-
-### [P2] Kanban drag & drop persistence
-- **Tipo**: Feature
-- **Dependencias**: Ninguna
-- **Qué hay ahora**: Kanban UI existe, drag no persiste
-- **Qué falta**: Al drag task, guardar cambio de estado
-- **Criterios de aceptación**:
-  - Drag task de columna → auto-save new status
-  - Validar transition con state machine
-  - Optimistic update en UI
+  - [ ] Nombre descriptivo del archivo
 - **DoD**:
-  - [ ] Drag task cambia estado en DB
-  - [ ] State machine valida transition
-  - [ ] UI actualizada inmediatamente
-- **Cómo verificar**: Drag task "PENDING" → "IN_PROGRESS", refresh, sigue ahí
-- **Archivos implicados**: `tasks/kanban/page.tsx`, `tasks/actions.ts`
+  - [ ] Click → descarga .csv
+  - [ ] Abre correctamente en Excel
+- **Archivos**:
+  - `src/components/DataTable.tsx`
 
 ---
 
-## EPIC 8: Extensibilidad
+### [P2] Implementar Import CSV
 
-### [P2] Module system básico
-- **Tipo**: Architecture / Refactor
-- **Dependencias**: Ninguna
-- **Qué hay ahora**: Todo acoplado
-- **Qué falta**: Estructura de módulos con clear boundaries
-- **Criterios de aceptación**:
-  - Módulos en `src/modules/` (invoices, tasks, crm, etc.)
-  - Cada módulo: models, actions, pages, components
-  - Registry de módulos
-  - Enable/disable módulos per company
-- **DoD**:
-  - [ ] 3+ módulos migrados a `src/modules/`
-  - [ ] Registry funcional
-  - [ ] Puede disable module (oculta UI)
-- **Cómo verificar**: Disable "invoices" module, menu item desaparece
-- **Archivos implicados**: `src/modules/`, module registry
-
-### [P2] Webhooks outbound
 - **Tipo**: Feature
-- **Dependencias**: EventBus
-- **Qué hay ahora**: No existen
-- **Qué falta**: Configurar webhooks para eventos
-- **Criterios de aceptación**:
-  - Model `Webhook` (companyId, url, events, secret)
-  - Al evento: POST to webhook URL
-  - Retry logic (3 attempts)
-  - Logs de delivery
+- **Dependencias**: Export CSV
+- **Qué falta**: Modal de import con mapeo
 - **DoD**:
-  - [ ] Schema con `Webhook` model
-  - [ ] Admin UI para crear webhooks
-  - [ ] Delivery funciona + retry
-  - [ ] Logs de attempts
-- **Cómo verificar**: Crear webhook, trigger evento, ver POST en logs
-- **Archivos implicados**: `schema.prisma`, `admin/webhooks/`, `lib/webhook-delivery.ts`
-
-### [P2] REST API pública v1
-- **Tipo**: Feature
-- **Dependencias**: Ninguna
-- **Qué hay ahora**: Solo internal Next.js APIs
-- **Qué falta**: REST API versionada + auth con API keys
-- **Criterios de aceptación**:
-  - Routes `/api/v1/tasks`, `/api/v1/invoices`, etc.
-  - Auth via `Authorization: Bearer <api_key>`
-  - Rate limiting más estricto (60 req/min)
-  - Docs en `/api/docs` (Swagger)
-- **DoD**:
-  - [ ] 5+ endpoints REST v1
-  - [ ] API key auth funciona
-  - [ ] Swagger docs generados
-  - [ ] Rate limit aplicado
-- **Cómo verificar**: `curl -H "Authorization: Bearer key" /api/v1/tasks`
-- **Archivos implicados**: `src/app/api/v1/`, `lib/api-auth.ts`, swagger config
+  - [ ] Puede importar 100 productos desde CSV
+- **Archivos**:
+  - `src/components/CSVImporter.tsx` (NUEVO)
 
 ---
 
-## RESUMEN EJECUTIVO
+### [P2] Implementar Acciones Masivas
 
-### Top 10 Tareas P0 Imprescindibles
+- **Tipo**: Feature
+- **Dependencias**: DataTable
+- **Qué falta**: Checkbox + bulk actions
+- **DoD**:
+  - [ ] Puede archivar 10 tareas a la vez
+- **Archivos**:
+  - `src/components/DataTable.tsx`
 
-1. **Consolidar documentación** - 40+ .md duplicados → clarity
-2. **Invoice creation form** - Backend listo, falta UI crítica
-3. **Invoice PDF generation** - jsPDF ya instalado
-4. **ESLint + Prettier estrictos** - Code quality baseline
-5. **Aplicar RBAC a Projects/Documents/Hours** - Security gaps
-6. **TimeEntry approval flow aplicar** - Estados definidos, no usados
-7. **Aplicar audit logging sistemático** - Falta en algunos módulos
-8. **DataTable genérico** - DRY principal, tables everywhere
-9. **Centralizar companyId queries** - Prevenir leaks
-10. **CI/CD pipeline** - Deployments con confianza
+---
 
-### Top 10 Mejoras de Arquitectura (Refactor)
+## EPIC 4: Quotes + Flow Comercial
 
-1. **Migrar rate limiting a Redis** - Producción multi-server
-2. **RBAC en DB opcional** - Flexibilidad vs hardcode
-3. **Structured logging Winston** - Debugging profesional
-4. **DataTable component** - Reutilización UI
-5. **Error boundaries** - No crashes inesperados
-6. **Module system** - Desacoplar código
-7. **Centralizar validaciones Zod** - DRY schemas
-8. **API versioning /v1/** - Stable API contracts
-9. **Consolidar docs** - Menos confusión
-10. **Centralizar companyId filters** - Seguridad garantizada
+---
 
-### Camino Crítico (Qué Desbloquea Qué)
+### [P1] Crear Modelo Quote
+
+- **Tipo**: Feature
+- **Dependencias**: Decimal migration (P0)
+- **Qué hay ahora**: NO EXISTE
+- **Qué falta**: Modelo completo
+- **Criterios de aceptación**:
+  ```prisma
+  model Quote {
+    id            String      @id @default(cuid())
+    number        String      @unique
+    status        QuoteStatus @default(DRAFT)
+    validUntil    DateTime
+    
+    companyId     String
+    company       Company     @relation(...)
+    
+    clientId      String
+    client        Client      @relation(...)
+    
+    leadId        String?
+    lead          Lead?       @relation(...)
+    
+    subtotal      Decimal     @db.Decimal(12, 2)
+    taxAmount     Decimal     @db.Decimal(12, 2)
+    total         Decimal     @db.Decimal(12, 2)
+    
+    notes         String?     @db.Text
+    terms         String?     @db.Text
+    
+    items         QuoteItem[]
+    
+    createdById   String
+    createdBy     User        @relation(...)
+    
+    createdAt     DateTime    @default(now())
+    updatedAt     DateTime    @updatedAt
+  }
+
+  model QuoteItem {
+    id          String  @id @default(cuid())
+    quoteId     String
+    quote       Quote   @relation(...)
+    
+    description String
+    quantity    Decimal @db.Decimal(10, 2)
+    unitPrice   Decimal @db.Decimal(12, 2)
+    taxRate     Decimal @db.Decimal(5, 2)
+    
+    subtotal    Decimal @db.Decimal(12, 2)
+    taxAmount   Decimal @db.Decimal(12, 2)
+    total       Decimal @db.Decimal(12, 2)
+    
+    order       Int     @default(0)
+  }
+
+  enum QuoteStatus {
+    DRAFT
+    SENT
+    ACCEPTED
+    REJECTED
+    EXPIRED
+    CONVERTED
+  }
+  ```
+- **DoD**:
+  - [ ] `prisma db push` exitoso
+  - [ ] Tipos generados
+- **Archivos**:
+  - `prisma/schema.prisma`
+
+---
+
+### [P1] Crear Quote CRUD Actions
+
+- **Tipo**: Feature
+- **Dependencias**: Quote model
+- **Qué falta**: Server actions completas
+- **Criterios de aceptación**:
+  - [ ] `getQuotes()` con filtros y paginación
+  - [ ] `getQuote(id)` con items
+  - [ ] `createQuote()` con items y cálculos
+  - [ ] `updateQuote()` con validación de estado
+  - [ ] `changeQuoteStatus()` con state machine
+  - [ ] `convertQuoteToInvoice()` con copia de datos
+  - [ ] Numeración automática QUO-YYYY-XXX
+- **DoD**:
+  - [ ] RBAC aplicado (checkPermission)
+  - [ ] Audit logging
+  - [ ] State machine validation
+- **Archivos**:
+  - `src/app/(protected)/quotes/actions.ts` (NUEVO)
+  - `src/lib/state-machine.ts` (agregar Quote)
+
+---
+
+### [P1] Crear Quote List Page
+
+- **Tipo**: UI
+- **Dependencias**: Quote actions
+- **Qué falta**: Página de lista
+- **Criterios de aceptación**:
+  - [ ] DataTable con columnas: número, cliente, total, estado, validez
+  - [ ] Filtros: estado, cliente, fecha
+  - [ ] Stats cards
+  - [ ] Botón "Nuevo Presupuesto"
+- **DoD**:
+  - [ ] Navegación desde sidebar
+  - [ ] Responsive
+- **Archivos**:
+  - `src/app/(protected)/quotes/page.tsx` (NUEVO)
+
+---
+
+### [P1] Crear Quote Form Page
+
+- **Tipo**: UI
+- **Dependencias**: Quote List
+- **Qué falta**: Formulario con productos
+- **DoD**:
+  - [ ] Quote creada con items y totales
+- **Archivos**:
+  - `src/app/(protected)/quotes/new/page.tsx` (NUEVO)
+
+---
+
+### [P1] Implementar Lead → Quote Conversion
+
+- **Tipo**: Feature
+- **Dependencias**: Quote CRUD
+- **Qué falta**: Botón en Lead detail
+- **DoD**:
+  - [ ] Lead CLOSED_WON → Quote con datos pre-llenados
+- **Archivos**:
+  - `src/app/(protected)/crm/[id]/page.tsx`
+  - `quotes/actions.ts`
+
+---
+
+### [P1] Implementar Quote → Invoice Conversion
+
+- **Tipo**: Feature
+- **Dependencias**: Quote CRUD
+- **Qué falta**: Botón en Quote ACCEPTED
+- **DoD**:
+  - [ ] Quote ACCEPTED → Invoice DRAFT con mismos items
+  - [ ] Quote cambia a CONVERTED
+- **Archivos**:
+  - `quotes/actions.ts`
+  - `invoices/actions.ts`
+
+---
+
+## EPIC 5: Reporting Mínimo
+
+---
+
+### [P2] Crear Dashboard Comercial
+
+- **Tipo**: Feature
+- **Dependencias**: Quote module
+- **Qué falta**: KPIs de ventas
+- **DoD**:
+  - [ ] Pipeline de quotes (funnel)
+  - [ ] Conversion rate
+  - [ ] Revenue forecast
+- **Archivos**:
+  - `src/app/(protected)/analytics/sales/page.tsx` (NUEVO)
+
+---
+
+# ═══════════════════════════════════════════════════════════════
+# RESUMEN FINAL
+# ═══════════════════════════════════════════════════════════════
+
+## TOP P0 BLOQUEANTES (Orden de Ejecución)
+
+| # | Tarea | Bloquea |
+|---|-------|---------|
+| 1 | Migrar Float a Decimal | Todo desarrollo de finanzas |
+| 2 | Crear CI Pipeline | Cualquier merge a main |
+| 3 | Rate Limiting Auth | Deploy a producción |
+| 4 | Tests de Permissions | Seguridad verificable |
+| 5 | Test integración Invoice | Refactoring seguro |
+| 6 | companyId NOT NULL | Multiempresa futuro |
+
+## CAMINO CRÍTICO
 
 ```
-P0 Docs consolidation
-  └─> P0 ESLint/Prettier strict
-      └─> P1 CI/CD pipeline
-          └─> P2 Pre-commit hooks
-
-P0 Invoice form
-  └─> P0 PDF generation
-      └─> P1 Payment modal
-          └─> P1 Tax management
-              └─> P2 Financial reports
-
-P1 RBAC to remaining modules
-  └─> P1 Centralize companyId queries
-      └─> P2 Permission model in DB
-
-P0 DataTable generic
-  └─> P1 Filtros guardables
-      └─> P1 Acciones masivas
-          └─> P2 Export global PDF/Excel
-
-P1 TimeEntry approval flow
-  └─> P2 Purchase Order workflow
-      └─> P2 Contracts workflow
-
-P2 EventBus
-  └─> P2 Notification rules
-      └─> P2 Email automation
-          └─> P2 Webhooks outbound
+[P0] Float → Decimal
+        ↓
+[P0] CI Pipeline + Tests
+        ↓
+[P0] Rate Limiting
+        ↓
+[P1] Quote Model
+        ↓
+[P1] RBAC completo (tasks, hours, docs)
+        ↓
+[P1] UI Components (Tabs, Timeline)
+        ↓
+[P1] Quote Flow completo
+        ↓
+[P2] Export/Import + Bulk Actions
 ```
 
-### Lista de "Cosas que NO Debo Hacer Todavía"
+## "NO HACER AÚN" (Distracciones)
 
-**Features que distraen** (hasta completar P0/P1):
-- Advanced analytics (business intelligence)
-- Mobile app (React Native)
-- Real-time collaboration (WebSockets)
-- i18n multi-language
-- Theme customization per company
-- Advanced caching (Redis query cache)
-- Microservices architecture
-- GraphQL API
-- Advanced reporting engine
-- Inventory management
-- HR/Payroll módulos
-- Time tracking with screenshots
-- Integrations (Stripe, Zoom, Slack)
-
-**Esperar hasta** fase de extensibilidad (Epic 8).
+- ❌ Multi-currency (solo EUR por ahora)
+- ❌ Recurring invoices (después de Quote)
+- ❌ Purchase Orders (después de Quote funcional)
+- ❌ Helpdesk/Tickets (no prioritario)
+- ❌ Webhooks (después de CI estable)
+- ❌ API Keys (después de Webhooks)
+- ❌ PDF editor (después de flujos completos)
+- ❌ Mobile app (web first)
+- ❌ AI features (distracción)
 
 ---
 
-**Fecha**: 2026-01-09  
-**Revisión**: v1 (post 5.5h development session)  
-**Próxima actualización**: Tras completar 5+ tareas P0
+**⚠️ HASTA RESOLVER LOS 6 BLOQUEANTES P0, EL SISTEMA NO DEBE USARSE CON DATOS REALES.**

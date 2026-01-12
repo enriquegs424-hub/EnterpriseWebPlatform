@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getInvoices } from '../(protected)/invoices/actions';
+import { getInvoices } from '@/app/(protected)/invoices/actions';
 
 export async function GET() {
     try {
