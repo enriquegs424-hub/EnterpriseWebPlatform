@@ -5,7 +5,7 @@ import { getAllDocuments, getAllFolders, deleteDocument, getDocumentStats, uploa
 import {
     FileText, Upload, Folder, Grid, List, Search, Filter,
     Download, Share2, Trash2, Eye, MoreVertical, Plus,
-    File, FileSpreadsheet, Image as ImageIcon, FileCode
+    File, FileSpreadsheet, Image as ImageIcon, FileCode, PanelRight, X
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
@@ -34,8 +34,40 @@ export default function DocumentsView({ projectId }: DocumentsViewProps) {
     const [selectedFolder, setSelectedFolder] = useState<string | null>(null);
     const [showUploadModal, setShowUploadModal] = useState(false);
     const [filterType, setFilterType] = useState<string>('all');
-    const [previewDoc, setPreviewDoc] = useState<any | null>(null);
+    const [previewDoc, setPreviewDoc] = useState<any | null>(null); // For Sidebar
+    const [fullScreenDoc, setFullScreenDoc] = useState<any | null>(null); // For Modal
     const [isFilterOpen, setIsFilterOpen] = useState(false);
+    const [showPreviewPanel, setShowPreviewPanel] = useState(true);
+    const [panelWidth, setPanelWidth] = useState(400);
+    const [isResizing, setIsResizing] = useState(false);
+
+    // Handle resizing of the sidebar
+    useEffect(() => {
+        const handleMouseMove = (e: MouseEvent) => {
+            if (!isResizing) return;
+            const newWidth = window.innerWidth - e.clientX;
+            // Limit width between 300px and 800px
+            if (newWidth >= 300 && newWidth <= 800) {
+                setPanelWidth(newWidth);
+            }
+        };
+
+        const handleMouseUp = () => {
+            setIsResizing(false);
+            document.body.style.cursor = 'default';
+        };
+
+        if (isResizing) {
+            window.addEventListener('mousemove', handleMouseMove);
+            window.addEventListener('mouseup', handleMouseUp);
+            document.body.style.cursor = 'col-resize';
+        }
+
+        return () => {
+            window.removeEventListener('mousemove', handleMouseMove);
+            window.removeEventListener('mouseup', handleMouseUp);
+        };
+    }, [isResizing]);
 
     const handleFileUpload = async (file: File) => {
         setUploading(true);
@@ -94,8 +126,20 @@ export default function DocumentsView({ projectId }: DocumentsViewProps) {
     };
 
     const handleView = (doc: any) => {
-        // Open preview modal for all file types
-        setPreviewDoc(doc);
+        // Open preview modal (Eye icon action)
+        setFullScreenDoc(doc);
+    };
+
+    const handleSelectDoc = (doc: any) => {
+        // Open sidebar preview (Row/Thumbnail click action)
+        if (showPreviewPanel) {
+            setPreviewDoc(doc);
+        } else {
+            // If panel is hidden, clicking might optionally open modal or toggle panel
+            // For now, let's auto-open the panel
+            setShowPreviewPanel(true);
+            setPreviewDoc(doc);
+        }
     };
 
     const handleShare = (doc: any) => {
@@ -147,7 +191,10 @@ export default function DocumentsView({ projectId }: DocumentsViewProps) {
     }, [documents, searchQuery, filterType]);
 
     return (
-        <div className="space-y-6">
+        <div
+            className="space-y-6 transition-all duration-75"
+            style={{ marginRight: showPreviewPanel && previewDoc ? `${panelWidth}px` : '0px' }}
+        >
             {/* Header */}
             <div className="flex justify-between items-center">
                 <div>
@@ -175,6 +222,15 @@ export default function DocumentsView({ projectId }: DocumentsViewProps) {
                             <List size={20} className={viewMode === 'list' ? 'text-olive-600' : 'text-neutral-600 dark:text-neutral-400'} />
                         </button>
                     </div>
+
+                    {/* Preview Panel Toggle */}
+                    <button
+                        onClick={() => setShowPreviewPanel(!showPreviewPanel)}
+                        className={`p-2 rounded-lg transition-all ${showPreviewPanel ? 'bg-olive-100 dark:bg-olive-900/30 text-olive-600' : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400'}`}
+                        title={showPreviewPanel ? 'Ocultar panel de vista previa' : 'Mostrar panel de vista previa'}
+                    >
+                        <PanelRight size={20} />
+                    </button>
 
                     {/* Upload Button */}
                     <button
@@ -337,11 +393,12 @@ export default function DocumentsView({ projectId }: DocumentsViewProps) {
                             {filteredDocuments.map((doc) => (
                                 <div
                                     key={doc.id}
-                                    className={`rounded-2xl border-2 overflow-hidden hover:shadow-lg transition-shadow ${getFileColor(doc.fileType)}`}
+                                    onClick={() => handleSelectDoc(doc)}
+                                    className={`rounded-2xl border-2 overflow-hidden hover:shadow-lg transition-shadow cursor-pointer ${getFileColor(doc.fileType)} ${previewDoc?.id === doc.id ? 'ring-2 ring-olive-500' : ''}`}
                                 >
                                     {/* Thumbnail/Preview Area - clickable */}
                                     <div
-                                        onClick={() => handleView(doc)}
+                                        onClick={() => handleSelectDoc(doc)}
                                         className="h-32 flex items-center justify-center cursor-pointer bg-white/30 dark:bg-black/20 relative overflow-hidden"
                                     >
                                         {doc.fileType.includes('image') ? (
@@ -366,28 +423,28 @@ export default function DocumentsView({ projectId }: DocumentsViewProps) {
                                         <p className="text-xs opacity-70 mb-3">{formatFileSize(doc.fileSize)}</p>
                                         <div className="flex items-center space-x-2">
                                             <button
-                                                onClick={() => handleView(doc)}
+                                                onClick={(e) => { e.stopPropagation(); handleView(doc); }}
                                                 className="flex-1 p-2 bg-white/50 hover:bg-white dark:bg-black/20 dark:hover:bg-black/40 rounded-lg"
                                                 title="Ver"
                                             >
                                                 <Eye size={16} className="mx-auto" />
                                             </button>
                                             <button
-                                                onClick={() => handleDownload(doc)}
+                                                onClick={(e) => { e.stopPropagation(); handleDownload(doc); }}
                                                 className="flex-1 p-2 bg-white/50 hover:bg-white dark:bg-black/20 dark:hover:bg-black/40 rounded-lg"
                                                 title="Descargar"
                                             >
                                                 <Download size={16} className="mx-auto" />
                                             </button>
                                             <button
-                                                onClick={() => handleShare(doc)}
+                                                onClick={(e) => { e.stopPropagation(); handleShare(doc); }}
                                                 className="flex-1 p-2 bg-white/50 hover:bg-white dark:bg-black/20 dark:hover:bg-black/40 rounded-lg"
                                                 title="Compartir"
                                             >
                                                 <Share2 size={16} className="mx-auto" />
                                             </button>
                                             <button
-                                                onClick={() => handleDelete(doc.id)}
+                                                onClick={(e) => { e.stopPropagation(); handleDelete(doc.id); }}
                                                 className="flex-1 p-2 bg-white/50 hover:bg-white dark:bg-black/20 dark:hover:bg-black/40 rounded-lg"
                                                 title="Eliminar"
                                             >
@@ -403,7 +460,8 @@ export default function DocumentsView({ projectId }: DocumentsViewProps) {
                             {filteredDocuments.map((doc) => (
                                 <div
                                     key={doc.id}
-                                    className="bg-white dark:bg-neutral-800 rounded-xl p-4 border border-neutral-200 dark:border-neutral-700 hover:shadow-md transition-all flex items-center justify-between"
+                                    onClick={() => handleSelectDoc(doc)}
+                                    className={`bg-white dark:bg-neutral-800 rounded-xl p-4 border border-neutral-200 dark:border-neutral-700 hover:shadow-md transition-all flex items-center justify-between cursor-pointer ${previewDoc?.id === doc.id ? 'ring-2 ring-olive-500' : ''}`}
                                 >
                                     <div className="flex items-center space-x-4 flex-1">
                                         <div className={`p-3 rounded-xl ${getFileColor(doc.fileType)}`}>
@@ -418,28 +476,28 @@ export default function DocumentsView({ projectId }: DocumentsViewProps) {
                                     </div>
                                     <div className="flex items-center space-x-2">
                                         <button
-                                            onClick={() => handleView(doc)}
+                                            onClick={(e) => { e.stopPropagation(); handleView(doc); }}
                                             className="p-2 hover:bg-neutral-50 dark:hover:bg-neutral-700 rounded-lg transition-all"
                                             title="Ver"
                                         >
                                             <Eye size={20} />
                                         </button>
                                         <button
-                                            onClick={() => handleDownload(doc)}
+                                            onClick={(e) => { e.stopPropagation(); handleDownload(doc); }}
                                             className="p-2 hover:bg-neutral-50 dark:hover:bg-neutral-700 rounded-lg transition-all"
                                             title="Descargar"
                                         >
                                             <Download size={20} />
                                         </button>
                                         <button
-                                            onClick={() => handleShare(doc)}
+                                            onClick={(e) => { e.stopPropagation(); handleShare(doc); }}
                                             className="p-2 hover:bg-neutral-50 dark:hover:bg-neutral-700 rounded-lg transition-all"
                                             title="Compartir"
                                         >
                                             <Share2 size={20} />
                                         </button>
                                         <button
-                                            onClick={() => handleDelete(doc.id)}
+                                            onClick={(e) => { e.stopPropagation(); handleDelete(doc.id); }}
                                             className="p-2 hover:bg-error-50 text-error-600 rounded-lg transition-all"
                                             title="Eliminar"
                                         >
@@ -450,6 +508,81 @@ export default function DocumentsView({ projectId }: DocumentsViewProps) {
                             ))}
                         </div>
                     )}
+                </div>
+            )}
+
+            {/* Inline Preview Panel */}
+            {showPreviewPanel && previewDoc && (
+                <div
+                    className="fixed right-0 top-0 h-full bg-white dark:bg-neutral-800 border-l border-neutral-200 dark:border-neutral-700 shadow-xl z-40 flex flex-col"
+                    style={{ width: `${panelWidth}px` }}
+                >
+                    {/* Resize Handle */}
+                    <div
+                        onMouseDown={() => setIsResizing(true)}
+                        className="absolute left-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-olive-500 active:bg-olive-600 z-50 transition-colors"
+                    />
+
+                    {/* Panel Header */}
+                    <div className="flex items-center justify-between p-4 border-b border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-900">
+                        <h3 className="font-bold text-neutral-900 dark:text-white truncate flex-1 mr-2 text-sm">{previewDoc.name}</h3>
+                        <div className="flex items-center space-x-1">
+                            <button
+                                onClick={() => handleDownload(previewDoc)}
+                                className="p-2 hover:bg-neutral-200 dark:hover:bg-neutral-700 rounded-lg"
+                                title="Descargar"
+                            >
+                                <Download size={18} />
+                            </button>
+                            <button
+                                onClick={() => setPreviewDoc(null)}
+                                className="p-2 hover:bg-neutral-200 dark:hover:bg-neutral-700 rounded-lg"
+                            >
+                                <X size={18} />
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Preview Content */}
+                    <div className="flex-1 overflow-auto bg-neutral-100 dark:bg-neutral-950 flex items-center justify-center">
+                        {previewDoc.fileType.includes('image') && (
+                            <img
+                                src={previewDoc.filePath}
+                                alt={previewDoc.name}
+                                className="max-w-full max-h-full object-contain p-4"
+                            />
+                        )}
+
+                        {previewDoc.fileType.includes('pdf') && (
+                            <iframe
+                                src={previewDoc.filePath}
+                                className="w-full h-full border-0"
+                                title={previewDoc.name}
+                            />
+                        )}
+
+                        {!previewDoc.fileType.includes('image') && !previewDoc.fileType.includes('pdf') && (
+                            <div className="text-center p-8">
+                                <File className="w-16 h-16 mx-auto text-neutral-400 mb-4" />
+                                <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-4">
+                                    Vista previa no disponible
+                                </p>
+                                <button
+                                    onClick={() => handleDownload(previewDoc)}
+                                    className="px-4 py-2 bg-olive-600 text-white rounded-lg text-sm font-bold hover:bg-olive-700"
+                                >
+                                    Descargar
+                                </button>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* File Info */}
+                    <div className="p-4 border-t border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-900 text-xs text-neutral-600 dark:text-neutral-400 space-y-1">
+                        <p><span className="font-semibold">Tamaño:</span> {formatFileSize(previewDoc.fileSize)}</p>
+                        <p><span className="font-semibold">Tipo:</span> {previewDoc.fileType}</p>
+                        <p><span className="font-semibold">Subido:</span> {new Date(previewDoc.createdAt).toLocaleDateString('es-ES')}</p>
+                    </div>
                 </div>
             )}
 
@@ -502,14 +635,21 @@ export default function DocumentsView({ projectId }: DocumentsViewProps) {
                     </div>
                 </div>
             )}
-            {/* Document Preview Modal */}
+            {/* Modal Preview (Eye Icon) */}
             <DocumentPreviewModal
-                isOpen={!!previewDoc}
-                onClose={() => setPreviewDoc(null)}
-                fileUrl={previewDoc?.filePath || ''}
-                fileName={previewDoc?.name || ''}
-                fileType={previewDoc?.fileType || ''}
+                isOpen={!!fullScreenDoc}
+                onClose={() => setFullScreenDoc(null)}
+                fileUrl={fullScreenDoc?.filePath || ''}
+                fileName={fullScreenDoc?.name || ''}
+                fileType={fullScreenDoc?.fileType || ''}
             />
+            {/* Resize Overlay - prevents iframe event capture during resize */}
+            {isResizing && (
+                <div
+                    className="fixed inset-0 z-[60] cursor-col-resize"
+                    style={{ userSelect: 'none' }}
+                />
+            )}
         </div>
     );
 }
