@@ -10,7 +10,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import { format } from 'date-fns';
-import ImagePreviewModal from './ImagePreviewModal';
+import DocumentPreviewModal from './DocumentPreviewModal';
 import { useToast } from '@/components/ui/Toast';
 import Spinner from '@/components/ui/Spinner';
 import { DocumentGridSkeleton } from '@/components/ui/Skeleton';
@@ -94,15 +94,8 @@ export default function DocumentsView({ projectId }: DocumentsViewProps) {
     };
 
     const handleView = (doc: any) => {
-        // Open file in new window for preview
-        if (doc.fileType.includes('image')) {
-            setPreviewDoc({ ...doc, fileUrl: doc.filePath });
-        } else if (doc.fileType.includes('pdf')) {
-            window.open(doc.filePath, '_blank');
-        } else {
-            // For other file types, trigger download
-            handleDownload(doc);
-        }
+        // Open preview modal for all file types
+        setPreviewDoc(doc);
     };
 
     const handleShare = (doc: any) => {
@@ -509,12 +502,13 @@ export default function DocumentsView({ projectId }: DocumentsViewProps) {
                     </div>
                 </div>
             )}
-            {/* Image Preview Modal */}
-            <ImagePreviewModal
+            {/* Document Preview Modal */}
+            <DocumentPreviewModal
                 isOpen={!!previewDoc}
                 onClose={() => setPreviewDoc(null)}
-                imageUrl={previewDoc?.fileUrl || ''}
-                title={previewDoc?.name || ''}
+                fileUrl={previewDoc?.filePath || ''}
+                fileName={previewDoc?.name || ''}
+                fileType={previewDoc?.fileType || ''}
             />
         </div>
     );
