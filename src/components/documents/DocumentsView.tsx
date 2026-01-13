@@ -1,7 +1,10 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
+import { useSession } from 'next-auth/react';
 import { getAllDocuments, getAllFolders, deleteDocument, getDocumentStats, uploadDocument } from '@/app/(protected)/documents/actions';
+import * as XLSX from 'xlsx';
+import { renderAsync } from 'docx-preview';
 import {
     FileText, Upload, Folder, Grid, List, Search, Filter,
     Download, Share2, Trash2, Eye, MoreVertical, Plus,
@@ -40,6 +43,9 @@ export default function DocumentsView({ projectId }: DocumentsViewProps) {
     const [showPreviewPanel, setShowPreviewPanel] = useState(true);
     const [panelWidth, setPanelWidth] = useState(400);
     const [isResizing, setIsResizing] = useState(false);
+    const [fileContent, setFileContent] = useState<string | null>(null);
+    const [loadingPreview, setLoadingPreview] = useState(false);
+    const { data: session } = useSession();
 
     // Handle resizing of the sidebar
     useEffect(() => {
@@ -91,6 +97,67 @@ export default function DocumentsView({ projectId }: DocumentsViewProps) {
     useEffect(() => {
         fetchData();
     }, [selectedFolder, projectId]);
+
+    // Load preview content for Office files
+    useEffect(() => {
+        if (!previewDoc) {
+            setFileContent(null);
+            return;
+        }
+
+        const loadContent = async () => {
+            const isOffice = previewDoc.fileType.includes('sheet') || previewDoc.fileType.includes('excel') ||
+                previewDoc.fileType.includes('word') || previewDoc.fileType.includes('document');
+
+            if (isOffice) {
+                setLoadingPreview(true);
+                setFileContent(null);
+                try {
+                    const response = await fetch(previewDoc.filePath);
+                    const arrayBuffer = await response.arrayBuffer();
+
+                    if (previewDoc.fileType.includes('sheet') || previewDoc.fileType.includes('excel')) {
+                        const workbook = XLSX.read(arrayBuffer);
+                        const firstSheetName = workbook.SheetNames[0];
+                        const worksheet = workbook.Sheets[firstSheetName];
+                        // Generate HTML with valid structure for styling
+                        const html = XLSX.utils.sheet_to_html(worksheet, { id: 'excel-preview', editable: false });
+                        setFileContent(html);
+                    } else if (previewDoc.fileType.includes('word') || previewDoc.fileType.includes('document')) {
+                        // For Word we don't set fileContent string, we render to a div ref
+                        // This is handled in the render phase with a specific container ID or ref
+                        // But since we are using React state for content, let's use a workaround for docx-preview
+                        // We will trigger the render inside a separate useEffect when the container matches
+                        // For now let's just mark it as 'ready'
+                        setFileContent('docx-ready');
+                    }
+                } catch (error) {
+                    console.error('Error loading preview', error);
+                    setFileContent(null);
+                } finally {
+                    setLoadingPreview(false);
+                }
+            } else {
+                setFileContent(null);
+            }
+        };
+
+        loadContent();
+    }, [previewDoc]);
+
+    // Separate effect for DOCX rendering
+    useEffect(() => {
+        if (fileContent === 'docx-ready' && previewDoc && (previewDoc.fileType.includes('word') || previewDoc.fileType.includes('document'))) {
+            const container = document.getElementById('docx-container');
+            if (container) {
+                container.innerHTML = ''; // Clear previous
+                fetch(previewDoc.filePath)
+                    .then(res => res.blob())
+                    .then(blob => renderAsync(blob, container, container, { inWrapper: false, ignoreWidth: false }))
+                    .catch(err => console.error(err));
+            }
+        }
+    }, [fileContent, previewDoc]);
 
     const fetchData = async () => {
         setLoading(true);
@@ -389,7 +456,10 @@ export default function DocumentsView({ projectId }: DocumentsViewProps) {
                             <p className="text-neutral-400 dark:text-neutral-500">Sube el primer archivo para empezar</p>
                         </div>
                     ) : viewMode === 'grid' ? (
-                        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                        <div className={`grid gap-4 transition-all duration-300 ${showPreviewPanel && previewDoc
+                            ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4'
+                            : 'grid-cols-1 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5'
+                            }`}>
                             {filteredDocuments.map((doc) => (
                                 <div
                                     key={doc.id}
@@ -544,44 +614,91 @@ export default function DocumentsView({ projectId }: DocumentsViewProps) {
                     </div>
 
                     {/* Preview Content */}
-                    <div className="flex-1 overflow-auto bg-neutral-100 dark:bg-neutral-950 flex items-center justify-center">
-                        {previewDoc.fileType.includes('image') && (
-                            <img
-                                src={previewDoc.filePath}
-                                alt={previewDoc.name}
-                                className="max-w-full max-h-full object-contain p-4"
-                            />
-                        )}
-
-                        {previewDoc.fileType.includes('pdf') && (
-                            <iframe
-                                src={previewDoc.filePath}
-                                className="w-full h-full border-0"
-                                title={previewDoc.name}
-                            />
-                        )}
-
-                        {!previewDoc.fileType.includes('image') && !previewDoc.fileType.includes('pdf') && (
+                    <div className="flex-1 overflow-auto bg-neutral-100 dark:bg-neutral-950 flex items-center justify-center relative">
+                        {loadingPreview ? (
                             <div className="text-center p-8">
-                                <File className="w-16 h-16 mx-auto text-neutral-400 mb-4" />
-                                <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-4">
-                                    Vista previa no disponible
-                                </p>
-                                <button
-                                    onClick={() => handleDownload(previewDoc)}
-                                    className="px-4 py-2 bg-olive-600 text-white rounded-lg text-sm font-bold hover:bg-olive-700"
-                                >
-                                    Descargar
-                                </button>
+                                <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-olive-600 border-t-transparent mb-2"></div>
+                                <p className="text-sm text-neutral-500 font-medium">Generando vista previa...</p>
                             </div>
+                        ) : (
+                            <>
+                                {previewDoc.fileType.includes('image') && (
+                                    <img
+                                        src={previewDoc.filePath}
+                                        alt={previewDoc.name}
+                                        className="max-w-full max-h-full object-contain p-4"
+                                    />
+                                )}
+
+                                {previewDoc.fileType.includes('pdf') && (
+                                    <iframe
+                                        src={previewDoc.filePath}
+                                        className="w-full h-full border-0"
+                                        title={previewDoc.name}
+                                    />
+                                )}
+
+                                {/* Excel Preview */}
+                                {(previewDoc.fileType.includes('sheet') || previewDoc.fileType.includes('excel')) && fileContent && (
+                                    <div
+                                        className="w-full h-full overflow-auto bg-white p-4 text-xs [&>table]:w-full [&>table]:border-collapse [&>table]:border [&>table]:border-neutral-300 [&_td]:border [&_td]:border-neutral-200 [&_td]:p-1 [&_td]:text-center"
+                                        dangerouslySetInnerHTML={{ __html: fileContent }}
+                                    />
+                                )}
+
+                                {/* Word Preview */}
+                                {(previewDoc.fileType.includes('word') || previewDoc.fileType.includes('document')) && fileContent === 'docx-ready' && (
+                                    <div
+                                        id="docx-container"
+                                        className="w-full h-full overflow-auto bg-white p-8 prose prose-sm max-w-none shadow-sm"
+                                    />
+                                )}
+
+                                {!previewDoc.fileType.includes('image') &&
+                                    !previewDoc.fileType.includes('pdf') &&
+                                    !fileContent && (
+                                        <div className="text-center p-8">
+                                            <File className="w-16 h-16 mx-auto text-neutral-400 mb-4" />
+                                            <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-4">
+                                                Vista previa no disponible
+                                            </p>
+                                            <button
+                                                onClick={() => handleDownload(previewDoc)}
+                                                className="px-4 py-2 bg-olive-600 text-white rounded-lg text-sm font-bold hover:bg-olive-700"
+                                            >
+                                                Descargar
+                                            </button>
+                                        </div>
+                                    )}
+                            </>
                         )}
                     </div>
 
-                    {/* File Info */}
-                    <div className="p-4 border-t border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-900 text-xs text-neutral-600 dark:text-neutral-400 space-y-1">
-                        <p><span className="font-semibold">Tamaño:</span> {formatFileSize(previewDoc.fileSize)}</p>
-                        <p><span className="font-semibold">Tipo:</span> {previewDoc.fileType}</p>
-                        <p><span className="font-semibold">Subido:</span> {new Date(previewDoc.createdAt).toLocaleDateString('es-ES')}</p>
+                    {/* File Info - Grid 2x2 */}
+                    <div className="p-4 border-t border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-900 border-b-2">
+                        <div className="grid grid-cols-2 gap-4 text-xs text-neutral-600 dark:text-neutral-400">
+                            <div>
+                                <span className="block font-bold mb-1 text-neutral-400 uppercase tracking-wider text-[10px]">Tamaño</span>
+                                <span className="font-semibold text-neutral-900 dark:text-neutral-200">{formatFileSize(previewDoc.fileSize)}</span>
+                            </div>
+                            <div>
+                                <span className="block font-bold mb-1 text-neutral-400 uppercase tracking-wider text-[10px]">Tipo</span>
+                                <span className="font-semibold text-neutral-900 dark:text-neutral-200 truncate block" title={previewDoc.fileType}>
+                                    {previewDoc.fileType.split('/')[1]?.toUpperCase() || 'ARCHIVO'}
+                                </span>
+                            </div>
+                            <div>
+                                <span className="block font-bold mb-1 text-neutral-400 uppercase tracking-wider text-[10px]">Subido</span>
+                                <span className="font-semibold text-neutral-900 dark:text-neutral-200">{new Date(previewDoc.createdAt).toLocaleDateString()}</span>
+                            </div>
+                            {/* @ts-ignore */}
+                            {session?.user?.role === 'ADMIN' && (
+                                <div>
+                                    <span className="block font-bold mb-1 text-neutral-400 uppercase tracking-wider text-[10px]">Por</span>
+                                    <span className="font-semibold text-olive-600 dark:text-olive-400 truncate block">{previewDoc.uploadedBy?.name || '...'}</span>
+                                </div>
+                            )}
+                        </div>
                     </div>
                 </div>
             )}
