@@ -16,7 +16,7 @@ const navItems = [
             { label: 'Chat', href: '/chat', icon: MessageSquare, desc: 'Mensajes y comunicación' },
             { label: 'Mis Tareas', href: '/tasks', icon: CheckSquare, desc: 'Gestionar tareas asignadas' },
             { label: 'Documentos', href: '/documents', icon: FolderOpen, desc: 'Gestión de archivos' },
-            { label: 'Registro Diario', href: '/hours/daily', icon: Clock, desc: 'Registrar horas del día' },
+            { label: 'Registro Diario', href: '/hours', icon: Clock, desc: 'Registrar y ver mis horas' },
             { label: 'Notificaciones', href: '/notifications', icon: Bell, desc: 'Centro de avisos' },
         ]
     },

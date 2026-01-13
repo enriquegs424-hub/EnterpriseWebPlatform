@@ -20,7 +20,7 @@ export default function MobileSidebar({ notificationCount = 0 }: MobileSidebarPr
         { icon: MessageSquare, label: 'Chat', href: '/chat' },
         { icon: FolderOpen, label: 'Proyectos', href: '/projects' },
         { icon: CheckSquare, label: 'Tareas', href: '/tasks' },
-        { icon: Clock, label: 'Horas', href: '/hours/daily' },
+        { icon: Clock, label: 'Horas', href: '/hours' },
         { icon: FileText, label: 'Documentos', href: '/documents' },
         { icon: FileCheck, label: 'Presupuestos', href: '/quotes' },
         { icon: FileText, label: 'Facturas', href: '/invoices' },

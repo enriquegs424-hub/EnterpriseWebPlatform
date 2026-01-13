@@ -117,6 +117,9 @@ export async function uploadDocument(formData: FormData) {
     const session = await auth();
     if (!session?.user?.email) return { error: 'No autenticado' };
 
+    // Check permission
+    await checkPermission('documents', 'create');
+
     const file = formData.get('file') as File;
     const projectId = formData.get('projectId') as string | null;
     const folderId = formData.get('folderId') as string | null;
@@ -164,6 +167,12 @@ export async function updateDocument(id: string, data: {
     description?: string;
     isPublic?: boolean;
 }) {
+    const session = await auth();
+    if (!session?.user?.email) throw new Error('No autenticado');
+
+    // Check permission
+    await checkPermission('documents', 'update');
+
     await prisma.document.update({
         where: { id },
         data,
@@ -174,6 +183,12 @@ export async function updateDocument(id: string, data: {
 }
 
 export async function deleteDocument(id: string) {
+    const session = await auth();
+    if (!session?.user?.email) throw new Error('No autenticado');
+
+    // Check permission
+    await checkPermission('documents', 'delete');
+
     await prisma.document.delete({
         where: { id },
     });
@@ -187,6 +202,12 @@ export async function deleteDocument(id: string) {
 // ============================================
 
 export async function getAllFolders(projectId?: string) {
+    const session = await auth();
+    if (!session?.user?.email) throw new Error('No autenticado');
+
+    // Check permission
+    await checkPermission('documents', 'read');
+
     const where: any = {};
     if (projectId) where.projectId = projectId;
 
@@ -226,6 +247,9 @@ export async function createFolder(data: {
     const session = await auth();
     if (!session?.user?.email) throw new Error('No autenticado');
 
+    // Check permission
+    await checkPermission('documents', 'create');
+
     const user = await prisma.user.findUnique({
         where: { email: session.user.email },
     });
@@ -244,6 +268,12 @@ export async function createFolder(data: {
 }
 
 export async function deleteFolder(id: string) {
+    const session = await auth();
+    if (!session?.user?.email) throw new Error('No autenticado');
+
+    // Check permission
+    await checkPermission('documents', 'delete');
+
     await prisma.folder.delete({
         where: { id },
     });
