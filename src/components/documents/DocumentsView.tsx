@@ -83,24 +83,33 @@ export default function DocumentsView({ projectId }: DocumentsViewProps) {
     };
 
     const handleDownload = (doc: any) => {
-        // En un entorno real, esto usaría doc.fileUrl
-        toast.info('Descargando documento', `Iniciando descarga de ${doc.name}`);
-        // window.open(doc.fileUrl, '_blank');
+        // Use filePath to download the file
+        const link = document.createElement('a');
+        link.href = doc.filePath;
+        link.download = doc.name;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        toast.success('Descarga iniciada', `Descargando ${doc.name}`);
     };
 
     const handleView = (doc: any) => {
+        // Open file in new window for preview
         if (doc.fileType.includes('image')) {
-            setPreviewDoc(doc);
+            setPreviewDoc({ ...doc, fileUrl: doc.filePath });
+        } else if (doc.fileType.includes('pdf')) {
+            window.open(doc.filePath, '_blank');
         } else {
-            toast.info('Vista previa', `Abriendo visor para ${doc.name}`);
-            // window.open(doc.fileUrl, '_blank');
+            // For other file types, trigger download
+            handleDownload(doc);
         }
     };
 
     const handleShare = (doc: any) => {
-        // Simular copiado al portapapeles
-        navigator.clipboard.writeText(`${window.location.origin}/documents/${doc.id}`);
-        toast.success('Enlace copiado', 'El enlace se ha copiado al portapapeles');
+        // Copy direct download link to clipboard
+        const directLink = `${window.location.origin}${doc.filePath}`;
+        navigator.clipboard.writeText(directLink);
+        toast.success('Enlace copiado', 'Enlace directo al archivo copiado al portapapeles');
     };
 
     const getFileIcon = (fileType: string) => {
@@ -333,51 +342,67 @@ export default function DocumentsView({ projectId }: DocumentsViewProps) {
                     ) : viewMode === 'grid' ? (
                         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
                             {filteredDocuments.map((doc) => (
-                                <motion.div
+                                <div
                                     key={doc.id}
-                                    initial={{ opacity: 0, scale: 0.9 }}
-                                    animate={{ opacity: 1, scale: 1 }}
-                                    className={`rounded-2xl p-6 border-2 transition-all hover:shadow-lg ${getFileColor(doc.fileType)}`}
+                                    className={`rounded-2xl border-2 overflow-hidden hover:shadow-lg transition-shadow ${getFileColor(doc.fileType)}`}
                                 >
-                                    <div className="flex justify-between items-start mb-4">
-                                        {getFileIcon(doc.fileType)}
-                                        <button className="p-1 hover:bg-white/50 rounded-lg">
-                                            <MoreVertical size={16} />
-                                        </button>
+                                    {/* Thumbnail/Preview Area - clickable */}
+                                    <div
+                                        onClick={() => handleView(doc)}
+                                        className="h-32 flex items-center justify-center cursor-pointer bg-white/30 dark:bg-black/20 relative overflow-hidden"
+                                    >
+                                        {doc.fileType.includes('image') ? (
+                                            <img
+                                                src={doc.filePath}
+                                                alt={doc.name}
+                                                className="w-full h-full object-cover"
+                                            />
+                                        ) : (
+                                            <div className="flex flex-col items-center justify-center">
+                                                {getFileIcon(doc.fileType)}
+                                                <span className="text-xs mt-2 opacity-70 uppercase font-bold">
+                                                    {doc.fileType.split('/')[1]?.substring(0, 10) || 'Archivo'}
+                                                </span>
+                                            </div>
+                                        )}
                                     </div>
-                                    <h4 className="font-bold text-sm mb-1 truncate">{doc.name}</h4>
-                                    <p className="text-xs opacity-70 mb-3">{formatFileSize(doc.fileSize)}</p>
-                                    <div className="flex items-center space-x-2">
-                                        <button
-                                            onClick={() => handleView(doc)}
-                                            className="flex-1 p-2 bg-white/50 hover:bg-white rounded-lg transition-all"
-                                            title="Ver"
-                                        >
-                                            <Eye size={16} className="mx-auto" />
-                                        </button>
-                                        <button
-                                            onClick={() => handleDownload(doc)}
-                                            className="flex-1 p-2 bg-white/50 hover:bg-white rounded-lg transition-all"
-                                            title="Descargar"
-                                        >
-                                            <Download size={16} className="mx-auto" />
-                                        </button>
-                                        <button
-                                            onClick={() => handleShare(doc)}
-                                            className="flex-1 p-2 bg-white/50 hover:bg-white rounded-lg transition-all"
-                                            title="Compartir"
-                                        >
-                                            <Share2 size={16} className="mx-auto" />
-                                        </button>
-                                        <button
-                                            onClick={() => handleDelete(doc.id)}
-                                            className="flex-1 p-2 bg-white/50 hover:bg-white rounded-lg transition-all"
-                                            title="Eliminar"
-                                        >
-                                            <Trash2 size={16} className="mx-auto" />
-                                        </button>
+
+                                    {/* Info */}
+                                    <div className="p-4">
+                                        <h4 className="font-bold text-sm mb-1 truncate" title={doc.name}>{doc.name}</h4>
+                                        <p className="text-xs opacity-70 mb-3">{formatFileSize(doc.fileSize)}</p>
+                                        <div className="flex items-center space-x-2">
+                                            <button
+                                                onClick={() => handleView(doc)}
+                                                className="flex-1 p-2 bg-white/50 hover:bg-white dark:bg-black/20 dark:hover:bg-black/40 rounded-lg"
+                                                title="Ver"
+                                            >
+                                                <Eye size={16} className="mx-auto" />
+                                            </button>
+                                            <button
+                                                onClick={() => handleDownload(doc)}
+                                                className="flex-1 p-2 bg-white/50 hover:bg-white dark:bg-black/20 dark:hover:bg-black/40 rounded-lg"
+                                                title="Descargar"
+                                            >
+                                                <Download size={16} className="mx-auto" />
+                                            </button>
+                                            <button
+                                                onClick={() => handleShare(doc)}
+                                                className="flex-1 p-2 bg-white/50 hover:bg-white dark:bg-black/20 dark:hover:bg-black/40 rounded-lg"
+                                                title="Compartir"
+                                            >
+                                                <Share2 size={16} className="mx-auto" />
+                                            </button>
+                                            <button
+                                                onClick={() => handleDelete(doc.id)}
+                                                className="flex-1 p-2 bg-white/50 hover:bg-white dark:bg-black/20 dark:hover:bg-black/40 rounded-lg"
+                                                title="Eliminar"
+                                            >
+                                                <Trash2 size={16} className="mx-auto" />
+                                            </button>
+                                        </div>
                                     </div>
-                                </motion.div>
+                                </div>
                             ))}
                         </div>
                     ) : (

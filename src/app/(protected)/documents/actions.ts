@@ -135,17 +135,40 @@ export async function uploadDocument(formData: FormData) {
 
         if (!user) return { error: 'Usuario no encontrado' };
 
-        // SIMULATED UPLOAD: In a real app, you would upload to S3/Blob Storage here.
-        // For now, we simulate a path and store the metadata in the DB.
-        const fakePath = `/uploads/${crypto.randomUUID()}-${file.name}`;
+        // Generate unique filename to prevent collisions
+        const uniqueId = crypto.randomUUID();
+        const safeFileName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
+        const fileName = `${uniqueId}-${safeFileName}`;
+        const filePath = `/uploads/${fileName}`;
 
+        // Convert File to Buffer and save to disk
+        const fs = await import('fs/promises');
+        const path = await import('path');
+
+        const uploadsDir = path.join(process.cwd(), 'public', 'uploads');
+
+        // Ensure uploads directory exists
+        try {
+            await fs.access(uploadsDir);
+        } catch {
+            await fs.mkdir(uploadsDir, { recursive: true });
+        }
+
+        // Read file as ArrayBuffer and convert to Buffer
+        const arrayBuffer = await file.arrayBuffer();
+        const buffer = Buffer.from(arrayBuffer);
+
+        // Write file to disk
+        await fs.writeFile(path.join(uploadsDir, fileName), buffer);
+
+        // Create document record in database
         const document = await prisma.document.create({
             data: {
                 name: file.name,
-                fileName: file.name,
+                fileName: fileName,
                 fileSize: file.size,
                 fileType: file.type,
-                filePath: fakePath,
+                filePath: filePath,
                 uploadedById: user.id,
                 projectId: projectId || undefined,
                 folderId: folderId || undefined,
