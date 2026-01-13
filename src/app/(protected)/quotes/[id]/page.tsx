@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { use, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { FileCheck, ArrowLeft, Send, Trash2, CheckCircle, XCircle, RefreshCw, Calendar, User, Building } from 'lucide-react';
 import Link from 'next/link';
@@ -63,7 +63,8 @@ const STATUS_LABELS = {
     CONVERTED: 'Convertido',
 };
 
-export default function QuoteDetailPage({ params }: { params: { id: string } }) {
+export default function QuoteDetailPage({ params }: { params: Promise<{ id: string }> }) {
+    const { id } = use(params);
     const router = useRouter();
     const [quote, setQuote] = useState<Quote | null>(null);
     const [loading, setLoading] = useState(true);
@@ -71,13 +72,13 @@ export default function QuoteDetailPage({ params }: { params: { id: string } }) 
 
     useEffect(() => {
         loadQuote();
-    }, [params.id]);
+    }, [id]);
 
     async function loadQuote() {
         setLoading(true);
         try {
             const { getQuote } = await import('../actions');
-            const data = await getQuote(params.id);
+            const data = await getQuote(id);
             setQuote(data as any);
         } catch (error) {
             console.error('Error loading quote:', error);
@@ -91,7 +92,7 @@ export default function QuoteDetailPage({ params }: { params: { id: string } }) 
 
         try {
             const { updateQuoteStatus } = await import('../actions');
-            await updateQuoteStatus(params.id, newStatus as any);
+            await updateQuoteStatus(id, newStatus as any);
             await loadQuote();
         } catch (error: any) {
             console.error('Error updating status:', error);
@@ -108,7 +109,7 @@ export default function QuoteDetailPage({ params }: { params: { id: string } }) 
             dueDate.setDate(dueDate.getDate() + 30);
 
             const { convertQuoteToInvoice } = await import('../actions');
-            const invoice = await convertQuoteToInvoice(params.id, dueDate);
+            const invoice = await convertQuoteToInvoice(id, dueDate);
 
             router.push(`/invoices/${invoice.id}`);
         } catch (error: any) {
@@ -124,7 +125,7 @@ export default function QuoteDetailPage({ params }: { params: { id: string } }) 
 
         try {
             const { deleteQuote } = await import('../actions');
-            await deleteQuote(params.id);
+            await deleteQuote(id);
             router.push('/quotes');
         } catch (error: any) {
             console.error('Error deleting:', error);

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { use, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { FileText, ArrowLeft, Send, Trash2, Plus, Check, Calendar, User, Building, Euro, Download } from 'lucide-react';
 import Link from 'next/link';
@@ -17,6 +17,7 @@ interface Invoice {
         name: string;
         email: string | null;
         companyName: string | null;
+        address: string | null;
     };
     project: {
         id: string;
@@ -74,7 +75,8 @@ const STATUS_LABELS = {
     CANCELLED: 'Cancelada',
 };
 
-export default function InvoiceDetailPage({ params }: { params: { id: string } }) {
+export default function InvoiceDetailPage({ params }: { params: Promise<{ id: string }> }) {
+    const { id } = use(params);
     const router = useRouter();
     const [invoice, setInvoice] = useState<Invoice | null>(null);
     const [loading, setLoading] = useState(true);
@@ -82,12 +84,12 @@ export default function InvoiceDetailPage({ params }: { params: { id: string } }
 
     useEffect(() => {
         loadInvoice();
-    }, [params.id]);
+    }, [id]);
 
     async function loadInvoice() {
         setLoading(true);
         try {
-            const response = await fetch(`/api/invoices/${params.id}`);
+            const response = await fetch(`/api/invoices/${id}`);
             if (!response.ok) throw new Error('Failed to load invoice');
             const data = await response.json();
             setInvoice(data);
@@ -102,7 +104,7 @@ export default function InvoiceDetailPage({ params }: { params: { id: string } }
         if (!confirm('¿Enviar factura al cliente?')) return;
 
         try {
-            const response = await fetch(`/api/invoices/${params.id}/send`, {
+            const response = await fetch(`/api/invoices/${id}/send`, {
                 method: 'POST',
             });
             if (!response.ok) throw new Error('Failed to send');
@@ -117,7 +119,7 @@ export default function InvoiceDetailPage({ params }: { params: { id: string } }
         if (!confirm('¿Eliminar esta factura? Esta acción no se puede deshacer.')) return;
 
         try {
-            const response = await fetch(`/api/invoices/${params.id}`, {
+            const response = await fetch(`/api/invoices/${id}`, {
                 method: 'DELETE',
             });
             if (!response.ok) throw new Error('Failed to delete');
@@ -140,7 +142,7 @@ export default function InvoiceDetailPage({ params }: { params: { id: string } }
                 name: invoice.client.name,
                 email: invoice.client.email || '',
                 taxId: invoice.client.companyName || undefined,
-                address: undefined, // TODO: Add client address to model
+                address: invoice.client.address || undefined,
             },
             company: {
                 name: 'MEP Projects S.L.',
@@ -151,16 +153,16 @@ export default function InvoiceDetailPage({ params }: { params: { id: string } }
             },
             items: invoice.items.map((item) => ({
                 description: item.description,
-                quantity: item.quantity,
-                unitPrice: item.unitPrice,
-                taxRate: item.taxRate,
-                subtotal: item.subtotal,
-                taxAmount: item.taxAmount,
-                total: item.total,
+                quantity: Number(item.quantity),
+                unitPrice: Number(item.unitPrice),
+                taxRate: Number(item.taxRate),
+                subtotal: Number(item.subtotal),
+                taxAmount: Number(item.taxAmount),
+                total: Number(item.total),
             })),
-            subtotal: invoice.subtotal,
-            taxTotal: invoice.taxAmount,
-            total: invoice.total,
+            subtotal: Number(invoice.subtotal),
+            taxTotal: Number(invoice.taxAmount),
+            total: Number(invoice.total),
             notes: invoice.notes || undefined,
             terms: invoice.terms || undefined,
         };
@@ -268,7 +270,7 @@ export default function InvoiceDetailPage({ params }: { params: { id: string } }
                 <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
                     <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">Total</p>
                     <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                        {invoice.total.toLocaleString('es-ES', {
+                        {Number(invoice.total).toLocaleString('es-ES', {
                             style: 'currency',
                             currency: 'EUR',
                         })}
@@ -278,7 +280,7 @@ export default function InvoiceDetailPage({ params }: { params: { id: string } }
                 <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
                     <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">Pagado</p>
                     <p className="text-2xl font-bold text-green-600 dark:text-green-400">
-                        {invoice.paidAmount.toLocaleString('es-ES', {
+                        {Number(invoice.paidAmount).toLocaleString('es-ES', {
                             style: 'currency',
                             currency: 'EUR',
                         })}
@@ -288,7 +290,7 @@ export default function InvoiceDetailPage({ params }: { params: { id: string } }
                 <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
                     <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">Pendiente</p>
                     <p className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">
-                        {invoice.balance.toLocaleString('es-ES', {
+                        {Number(invoice.balance).toLocaleString('es-ES', {
                             style: 'currency',
                             currency: 'EUR',
                         })}
@@ -396,7 +398,7 @@ export default function InvoiceDetailPage({ params }: { params: { id: string } }
                                         {item.quantity}
                                     </td>
                                     <td className="px-6 py-4 text-sm text-right text-gray-900 dark:text-white">
-                                        {item.unitPrice.toLocaleString('es-ES', {
+                                        {Number(item.unitPrice).toLocaleString('es-ES', {
                                             style: 'currency',
                                             currency: 'EUR',
                                         })}
@@ -405,7 +407,7 @@ export default function InvoiceDetailPage({ params }: { params: { id: string } }
                                         {item.taxRate}%
                                     </td>
                                     <td className="px-6 py-4 text-sm text-right font-medium text-gray-900 dark:text-white">
-                                        {item.total.toLocaleString('es-ES', {
+                                        {Number(item.total).toLocaleString('es-ES', {
                                             style: 'currency',
                                             currency: 'EUR',
                                         })}
@@ -419,7 +421,7 @@ export default function InvoiceDetailPage({ params }: { params: { id: string } }
                                     Subtotal:
                                 </td>
                                 <td className="px-6 py-3 text-right text-sm font-medium text-gray-900 dark:text-white">
-                                    {invoice.subtotal.toLocaleString('es-ES', {
+                                    {Number(invoice.subtotal).toLocaleString('es-ES', {
                                         style: 'currency',
                                         currency: 'EUR',
                                     })}
@@ -430,7 +432,7 @@ export default function InvoiceDetailPage({ params }: { params: { id: string } }
                                     IVA:
                                 </td>
                                 <td className="px-6 py-3 text-right text-sm font-medium text-gray-900 dark:text-white">
-                                    {invoice.taxAmount.toLocaleString('es-ES', {
+                                    {Number(invoice.taxAmount).toLocaleString('es-ES', {
                                         style: 'currency',
                                         currency: 'EUR',
                                     })}
@@ -441,7 +443,7 @@ export default function InvoiceDetailPage({ params }: { params: { id: string } }
                                     TOTAL:
                                 </td>
                                 <td className="px-6 py-3 text-right text-base font-bold text-gray-900 dark:text-white">
-                                    {invoice.total.toLocaleString('es-ES', {
+                                    {Number(invoice.total).toLocaleString('es-ES', {
                                         style: 'currency',
                                         currency: 'EUR',
                                     })}

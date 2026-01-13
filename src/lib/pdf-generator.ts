@@ -93,12 +93,12 @@ export function generateInvoicePDF(invoice: InvoicePDFData): void {
         head: [["Descripción", "Cantidad", "Precio Unit.", "IVA %", "Subtotal", "IVA", "Total"]],
         body: invoice.items.map((item) => [
             item.description,
-            item.quantity.toFixed(2),
-            formatCurrency(item.unitPrice),
-            item.taxRate + "%",
-            formatCurrency(item.subtotal),
-            formatCurrency(item.taxAmount),
-            formatCurrency(item.total),
+            Number(item.quantity).toFixed(2),
+            formatCurrency(Number(item.unitPrice)),
+            Number(item.taxRate) + "%",
+            formatCurrency(Number(item.subtotal)),
+            formatCurrency(Number(item.taxAmount)),
+            formatCurrency(Number(item.total)),
         ]),
         theme: "striped",
         headStyles: {

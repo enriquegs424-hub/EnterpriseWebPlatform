@@ -16,8 +16,8 @@ export default async function ExpensesPage() {
         getProjectOptions()
     ]);
 
-    const formatCurrency = (amount: number) =>
-        new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(amount);
+    const formatCurrency = (amount: number | any) =>
+        new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(Number(amount) || 0);
 
     return (
         <div className="space-y-6">

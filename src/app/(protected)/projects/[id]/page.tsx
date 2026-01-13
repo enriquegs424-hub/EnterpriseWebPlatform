@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { use, useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import {
     Briefcase, Calendar, Clock, FileText, CheckSquare,
@@ -13,7 +13,8 @@ import Link from 'next/link';
 import { useAppLocale } from '@/providers/LocaleContext';
 import ProjectChat from '@/components/chat/ProjectChat';
 
-export default function ProjectDetailsPage({ params }: { params: { id: string } }) {
+export default function ProjectDetailsPage({ params }: { params: Promise<{ id: string }> }) {
+    const { id } = use(params);
     const { locale } = useAppLocale();
     const [project, setProject] = useState<any>(null);
     const [stats, setStats] = useState<any>(null);
@@ -24,9 +25,9 @@ export default function ProjectDetailsPage({ params }: { params: { id: string } 
         const fetchData = async () => {
             try {
                 const [projData, statsData, teamData] = await Promise.all([
-                    getProjectDetails(params.id),
-                    getProjectStats(params.id),
-                    getProjectTeam(params.id)
+                    getProjectDetails(id),
+                    getProjectStats(id),
+                    getProjectTeam(id)
                 ]);
                 setProject(projData);
                 setStats(statsData);
@@ -38,7 +39,7 @@ export default function ProjectDetailsPage({ params }: { params: { id: string } 
             }
         };
         fetchData();
-    }, [params.id]);
+    }, [id]);
 
     if (loading) {
         return (

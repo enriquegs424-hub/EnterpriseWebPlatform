@@ -27,9 +27,17 @@ export async function getInvoices() {
     return prisma.invoice.findMany({
         where,
         include: {
-            client: { select: { id: true, name: true } },
+            client: {
+                select: {
+                    id: true,
+                    name: true,
+                    email: true,
+                    address: true,
+                    companyName: true
+                }
+            },
             project: { select: { id: true, code: true, name: true } },
-            items: true,
+            items: { orderBy: { order: 'asc' } },
             payments: true,
             _count: { select: { items: true, payments: true } },
         },

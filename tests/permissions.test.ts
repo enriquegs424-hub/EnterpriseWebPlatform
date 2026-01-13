@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from "vitest";
-import { hasPermission, checkPermission, requireAuth } from "../src/lib/permissions";
+import { hasPermission, checkPermission, canDo } from "../src/lib/permissions";
 import type { Resource, Action } from "../src/lib/permissions";
 
 // Mock auth for testing

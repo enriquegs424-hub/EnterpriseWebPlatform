@@ -8,8 +8,8 @@ export default async function CRMDashboardPage() {
     // Fetch data
     const stats = await getCRMDashboardStats();
 
-    const formatCurrency = (amount: number) => {
-        return new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(amount);
+    const formatCurrency = (amount: number | any) => {
+        return new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(Number(amount) || 0);
     };
 
     return (

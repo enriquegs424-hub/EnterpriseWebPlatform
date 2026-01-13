@@ -132,7 +132,9 @@ export async function createLead(data: {
             clientId: data.clientId,
             stage: data.stage || 'NEW',
             assignedToId: data.assignedToId || session.user.id,
-            expectedCloseDate: data.expectedCloseDate
+            expectedCloseDate: data.expectedCloseDate,
+            // @ts-ignore - companyId from session
+            companyId: (session.user as any).companyId,
         }
     });
 
