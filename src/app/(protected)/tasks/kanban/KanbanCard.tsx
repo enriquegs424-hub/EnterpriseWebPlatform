@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useSession } from 'next-auth/react';
 import { motion } from 'framer-motion';
 import { Clock, Flag, User, MessageSquare, Calendar, MoreVertical, Trash2, Edit2 } from 'lucide-react';
 
@@ -30,15 +31,18 @@ interface KanbanCardProps {
 }
 
 export default function KanbanCard({ task, onDragStart, onEdit, onDelete }: KanbanCardProps) {
+    const { data: session } = useSession();
     const [showMenu, setShowMenu] = useState(false);
 
+    const isAssignedToMe = task.assignedTo?.id === session?.user?.id;
+
     const getPriorityColor = (priority: string) => {
+        // Only return bg color, borders handled by main div
         switch (priority) {
-            case 'URGENT': return 'border-l-4 border-l-error-600 bg-error-50/30 dark:bg-error-900/10';
-            case 'HIGH': return 'border-l-4 border-l-orange-600 bg-orange-50/30 dark:bg-orange-900/10';
-            case 'MEDIUM': return 'border-l-4 border-l-info-600 bg-info-50/30 dark:bg-info-900/10';
-            case 'LOW': return 'border-l-4 border-l-neutral-400 bg-white dark:bg-neutral-800';
-            default: return 'border-l-4 border-l-neutral-400';
+            case 'URGENT': return 'bg-error-50/30 dark:bg-error-900/10';
+            case 'HIGH': return 'bg-orange-50/30 dark:bg-orange-900/10';
+            case 'MEDIUM': return 'bg-info-50/30 dark:bg-info-900/10';
+            default: return 'bg-white dark:bg-neutral-800';
         }
     };
 
@@ -52,6 +56,8 @@ export default function KanbanCard({ task, onDragStart, onEdit, onDelete }: Kanb
         }
     };
 
+    // ... (rest of helper functions)
+
     const isOverdue = task.dueDate && new Date(task.dueDate) < new Date();
 
     return (
@@ -63,7 +69,10 @@ export default function KanbanCard({ task, onDragStart, onEdit, onDelete }: Kanb
             draggable
             onDragStart={(e) => onDragStart(e as any, task.id)}
             onClick={() => onEdit && onEdit(task)}
-            className={`bg-white dark:bg-neutral-800 rounded-xl p-4 shadow-sm hover:shadow-md transition-all cursor-pointer ${getPriorityColor(task.priority)} relative group`}
+            className={`rounded-xl p-4 shadow-sm hover:shadow-md transition-all cursor-pointer relative group border-l-[6px] ${isAssignedToMe
+                ? 'border-l-olive-600 dark:border-l-olive-500' // My Tasks
+                : 'border-l-neutral-300 dark:border-l-neutral-600 border-l-dashed' // Delegated
+                } ${getPriorityColor(task.priority)}`}
         >
             {/* Menu Button */}
             <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">

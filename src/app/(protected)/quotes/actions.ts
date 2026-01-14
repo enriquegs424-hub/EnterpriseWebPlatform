@@ -218,7 +218,7 @@ export async function deleteQuote(id: string) {
     if (!quote) return;
 
     // Check permission (ownership)
-    await checkPermission('leads', 'delete', quote.createdById);
+    await checkPermission('leads', 'delete', { ownerId: quote.createdById });
 
     // Can only delete DRAFT quotes
     if (quote.status !== 'DRAFT') {

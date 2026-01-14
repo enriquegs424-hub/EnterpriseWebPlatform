@@ -163,7 +163,7 @@ export async function updateTask(taskId: string, data: {
         if (!task) return { error: 'Tarea no encontrada' };
 
         // Check permission with ownership
-        await checkPermission('tasks', 'update', task.createdById);
+        await checkPermission('tasks', 'update', { ownerId: task.createdById });
 
         // Solo el creador, asignado o admin pueden actualizar
         const canUpdate = session.user.role === 'ADMIN' ||
@@ -231,7 +231,7 @@ export async function deleteTask(taskId: string) {
         if (!task) return { error: 'Tarea no encontrada' };
 
         // Check permission with ownership (delete requires ownership or admin)
-        await checkPermission('tasks', 'delete', task.createdById);
+        await checkPermission('tasks', 'delete', { ownerId: task.createdById });
 
         // Solo el creador o admin pueden eliminar
         if (session.user.role !== 'ADMIN' && task.createdById !== session.user.id) {
@@ -340,4 +340,32 @@ export async function getTaskStats(projectId?: string) {
     ]);
 
     return { total, pending, inProgress, completed, overdue };
+}
+
+// Obtener usuarios para asignar tareas (versión ligera sin permisos de admin)
+export async function getUsersForAssignment() {
+    const session = await auth();
+    if (!session?.user?.id) return [];
+
+    // Solo requiere estar autenticado y en la misma empresa
+    // No requiere "users:read" permiso estricto
+
+    const users = await prisma.user.findMany({
+        where: {
+            companyId: (session.user as any).companyId as string,
+            isActive: true,
+        },
+        select: {
+            id: true,
+            name: true,
+            email: true,
+            role: true,
+            department: true
+        },
+        orderBy: {
+            name: 'asc'
+        }
+    });
+
+    return users;
 }

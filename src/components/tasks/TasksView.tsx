@@ -1,13 +1,13 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { getAllTasks, createTask, updateTask, deleteTask, getTaskStats } from '@/app/(protected)/tasks/actions';
-import { getUsers } from '@/app/(protected)/admin/users/actions';
+import { useSession } from 'next-auth/react';
+import { getAllTasks, createTask, updateTask, deleteTask, getTaskStats, getUsersForAssignment } from '@/app/(protected)/tasks/actions';
 import { getProjects } from '@/app/(protected)/projects/actions';
 import {
     CheckSquare, Plus, Filter, Calendar, User, Flag,
     Clock, MessageSquare, Trash2, Edit2, X, AlertCircle,
-    LayoutList, LayoutGrid
+    LayoutList, LayoutGrid, ArrowDownLeft, ArrowUpRight
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
@@ -22,7 +22,9 @@ interface TasksViewProps {
 }
 
 export default function TasksView({ projectId }: TasksViewProps) {
+    const { data: session } = useSession();
     const [viewMode, setViewMode] = useState<ViewMode>('list');
+    const [filterType, setFilterType] = useState<'all' | 'assigned_to_me' | 'assigned_by_me'>('all'); // New Filter State
     const [tasks, setTasks] = useState<any[]>([]);
     const [users, setUsers] = useState<any[]>([]);
     const [projects, setProjects] = useState<any[]>([]);
@@ -35,6 +37,23 @@ export default function TasksView({ projectId }: TasksViewProps) {
         priority: '',
         assignedToId: '',
         projectId: projectId || ''
+    });
+
+    // Filter tasks based on the selected filter pill
+    const filteredTasks = tasks.filter(task => {
+        if (filterType === 'all') return true;
+
+        const isAssignedToMe = task.assignedToId === session?.user?.id;
+
+        if (filterType === 'assigned_to_me') {
+            return isAssignedToMe;
+        }
+
+        if (filterType === 'assigned_by_me') {
+            return task.createdById === session?.user?.id && task.assignedToId !== session?.user?.id;
+        }
+
+        return true;
     });
 
     const [newTask, setNewTask] = useState({
@@ -58,12 +77,12 @@ export default function TasksView({ projectId }: TasksViewProps) {
 
         const [tasksData, usersData, projectsData, statsData] = await Promise.all([
             getAllTasks(activeFilters),
-            getUsers({ limit: 100 }),
+            getUsersForAssignment(),
             getProjects(),
             getTaskStats(projectId)
         ]);
         setTasks(tasksData);
-        setUsers(usersData.users);
+        setUsers(usersData);
         setProjects(projectsData);
         setStats(statsData);
         setLoading(false);
@@ -265,85 +284,94 @@ export default function TasksView({ projectId }: TasksViewProps) {
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: -20 }}
                             transition={{ duration: 0.2 }}
-                            className="space-y-4"
+                            className="space-y-3"
                         >
-                            {tasks.length === 0 ? (
+                            {filteredTasks.length === 0 ? (
                                 <div className="bg-neutral-50 dark:bg-neutral-800 rounded-3xl p-20 text-center border-2 border-dashed border-neutral-200 dark:border-neutral-700">
                                     <CheckSquare size={64} className="mx-auto text-neutral-200 dark:text-neutral-600 mb-4" />
                                     <h3 className="text-xl font-bold text-neutral-400 dark:text-neutral-500 mb-2">Sin tareas</h3>
-                                    <p className="text-neutral-400 dark:text-neutral-500">Crea la primera tarea para empezar</p>
+                                    <p className="text-neutral-400 dark:text-neutral-500">No hay tareas que coincidan con el filtro</p>
                                 </div>
                             ) : (
-                                tasks.map((task) => (
+                                filteredTasks.map((task) => (
                                     <motion.div
                                         key={task.id}
+                                        layout
                                         initial={{ opacity: 0, y: 10 }}
                                         animate={{ opacity: 1, y: 0 }}
-                                        className="bg-white dark:bg-neutral-900 rounded-2xl p-6 border border-neutral-200 dark:border-neutral-800 shadow-sm hover:shadow-md transition-all"
+                                        onClick={() => {
+                                            setSelectedTask(task);
+                                            // setIsDetailsOpen(true);
+                                        }}
+                                        className={`group bg-white dark:bg-neutral-900 rounded-xl p-4 shadow-sm hover:shadow-md transition-all cursor-pointer border border-neutral-200 dark:border-neutral-800 relative overflow-hidden ${task.assignedToId === session?.user?.id
+                                                ? 'border-l-[6px] border-l-olive-600 dark:border-l-olive-500'
+                                                : 'border-l-[6px] border-l-neutral-300 dark:border-l-neutral-600 border-l-dashed'
+                                            }`}
                                     >
-                                        <div className="flex items-start justify-between">
-                                            <div className="flex-1">
-                                                <div className="flex items-center space-x-3 mb-3">
-                                                    <h3 className="text-lg font-bold text-neutral-900 dark:text-neutral-100">{task.title}</h3>
-                                                    <span className={`px-3 py-1 rounded-full text-xs font-bold border ${getPriorityColor(task.priority)}`}>
-                                                        {task.priority}
+                                        <div className="flex flex-col md:flex-row md:items-center gap-4">
+                                            {/* Left: Status & Info - SIMPLIFIED */}
+                                            <div className="flex-1 min-w-0">
+                                                <div className="flex items-center gap-2 mb-1">
+                                                    {/* Minimized Status Badge */}
+                                                    <div className={`w-2 h-2 rounded-full ${task.status === 'COMPLETED' ? 'bg-green-500' :
+                                                            task.status === 'IN_PROGRESS' ? 'bg-blue-500' :
+                                                                'bg-neutral-400'
+                                                        }`} />
+                                                    <span className="text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wide">
+                                                        {task.status === 'IN_PROGRESS' ? 'En Curso' : task.status}
                                                     </span>
-                                                    <span className={`px-3 py-1 rounded-full text-xs font-bold ${getStatusColor(task.status)}`}>
-                                                        {task.status}
-                                                    </span>
+
+                                                    {/* My Task Badge (only if assigned to me) */}
+                                                    {task.assignedToId === session?.user?.id && (
+                                                        <span className="bg-olive-100 text-olive-700 dark:bg-olive-900/30 dark:text-olive-400 text-[10px] font-bold px-1.5 py-0.5 rounded ml-2">
+                                                            PARA MÍ
+                                                        </span>
+                                                    )}
                                                 </div>
-                                                {task.description && (
-                                                    <p className="text-neutral-600 dark:text-neutral-400 mb-4">{task.description}</p>
+
+                                                <h3 className="font-bold text-neutral-900 dark:text-neutral-100 truncate text-base leading-tight">
+                                                    {task.title}
+                                                </h3>
+
+                                                {task.project && (
+                                                    <p className="text-xs text-neutral-400 mt-1 font-medium">
+                                                        {task.project.code} • {task.project.name}
+                                                    </p>
                                                 )}
-                                                <div className="flex flex-wrap items-center gap-4 text-sm text-neutral-500 dark:text-neutral-400">
-                                                    <div className="flex items-center space-x-2">
-                                                        <User size={16} className="text-neutral-400" />
-                                                        <span>{task.assignedTo.name}</span>
-                                                    </div>
-                                                    {task.project && (
-                                                        <div className="flex items-center space-x-2">
-                                                            <Flag size={16} className="text-neutral-400" />
-                                                            <span>{task.project.code}</span>
-                                                        </div>
-                                                    )}
-                                                    {task.dueDate && (
-                                                        <div className="flex items-center space-x-2">
-                                                            <Calendar size={16} className="text-neutral-400" />
-                                                            <span>{new Date(task.dueDate).toLocaleDateString()}</span>
-                                                        </div>
-                                                    )}
-                                                    {task.comments.length > 0 && (
-                                                        <div className="flex items-center space-x-2">
-                                                            <MessageSquare size={16} className="text-neutral-400" />
-                                                            <span>{task.comments.length} comentarios</span>
-                                                        </div>
-                                                    )}
-                                                </div>
                                             </div>
-                                            <div className="flex items-center space-x-2 ml-4">
-                                                {task.status !== 'COMPLETED' && (
-                                                    <button
-                                                        onClick={() => handleUpdateStatus(task.id, task.status === 'PENDING' ? 'IN_PROGRESS' : 'COMPLETED')}
-                                                        className="p-2 text-success-600 hover:bg-success-50 dark:hover:bg-success-900/20 rounded-lg transition-all"
-                                                        title={task.status === 'PENDING' ? 'Iniciar' : 'Completar'}
-                                                    >
-                                                        <CheckSquare size={20} />
-                                                    </button>
+
+                                            {/* Right: User Info & Meta - SIMPLIFIED */}
+                                            <div className="flex items-center gap-5 text-sm">
+                                                {/* Priority Dot */}
+                                                <div className="flex items-center gap-1.5" title={`Prioridad: ${task.priority}`}>
+                                                    <div className={`w-2 h-2 rounded-full ${task.priority === 'URGENT' ? 'bg-red-500' :
+                                                            task.priority === 'HIGH' ? 'bg-orange-500' :
+                                                                task.priority === 'MEDIUM' ? 'bg-blue-500' :
+                                                                    'bg-neutral-300'
+                                                        }`} />
+                                                </div>
+
+                                                {task.dueDate && (
+                                                    <div className={`flex items-center gap-1.5 text-xs ${new Date(task.dueDate) < new Date() ? 'text-error-600 font-bold' : 'text-neutral-500'
+                                                        }`}>
+                                                        <Calendar size={14} />
+                                                        <span>{new Date(task.dueDate).toLocaleDateString(undefined, { day: 'numeric', month: 'short' })}</span>
+                                                    </div>
                                                 )}
-                                                <button
-                                                    onClick={() => setSelectedTask(task)}
-                                                    className="p-2 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-800 rounded-lg transition-all"
-                                                    title="Ver detalles"
-                                                >
-                                                    <Edit2 size={20} />
-                                                </button>
-                                                <button
-                                                    onClick={() => handleDeleteTask(task.id)}
-                                                    className="p-2 text-error-600 hover:bg-error-50 dark:hover:bg-error-900/20 rounded-lg transition-all"
-                                                    title="Eliminar"
-                                                >
-                                                    <Trash2 size={20} />
-                                                </button>
+
+                                                <div className="flex items-center gap-2 pl-4 border-l border-neutral-100 dark:border-neutral-800">
+                                                    <div className="text-right hidden sm:block">
+                                                        <p className="text-[10px] font-bold uppercase tracking-wide opacity-50">
+                                                            {task.assignedToId === session?.user?.id ? 'De' : 'Para'}
+                                                        </p>
+                                                        <p className="text-xs font-bold text-neutral-700 dark:text-neutral-300 truncate max-w-[80px]">
+                                                            {task.assignedToId === session?.user?.id ? task.createdBy.name.split(' ')[0] : task.assignedTo.name.split(' ')[0]}
+                                                        </p>
+                                                    </div>
+                                                    <div className="w-8 h-8 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-xs font-bold text-neutral-600 dark:text-neutral-300 ring-2 ring-white dark:ring-neutral-700 shadow-sm">
+                                                        {(task.assignedToId === session?.user?.id ? task.createdBy.name : task.assignedTo.name)?.charAt(0)}
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
                                     </motion.div>

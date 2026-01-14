@@ -1,12 +1,12 @@
 'use client';
 
 import { useState } from 'react';
+import { useSession } from 'next-auth/react';
 import { motion } from 'framer-motion';
 import { X, Calendar, User, Flag, AlignLeft, Trash2, Edit2, Save, CheckSquare, MessageSquare } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { deleteTask, updateTask } from '@/app/(protected)/tasks/actions';
-import { getUsers } from '@/app/(protected)/admin/users/actions';
+import { deleteTask, updateTask, getUsersForAssignment } from '@/app/(protected)/tasks/actions';
 import { useToast } from '@/components/ui/Toast';
 
 interface TaskDetailsModalProps {
@@ -17,6 +17,7 @@ interface TaskDetailsModalProps {
 }
 
 export default function TaskDetailsModal({ task, isOpen, onClose, onUpdate }: TaskDetailsModalProps) {
+    const { data: session } = useSession();
     const toast = useToast();
     const [isEditing, setIsEditing] = useState(false);
     const [loading, setLoading] = useState(false);
@@ -35,7 +36,7 @@ export default function TaskDetailsModal({ task, isOpen, onClose, onUpdate }: Ta
 
         // Fetch users for assignment dropdown if needed
         if (users.length === 0) {
-            const { users: fetchedUsers } = await getUsers({ limit: 100 });
+            const fetchedUsers = await getUsersForAssignment();
             setUsers(fetchedUsers);
         }
 
@@ -208,17 +209,31 @@ export default function TaskDetailsModal({ task, isOpen, onClose, onUpdate }: Ta
                             </div>
                         </div>
 
-                        {/* Assignee */}
+                        {/* Assignee / Creator */}
                         <div className="flex items-start space-x-3">
                             <User className="text-theme-muted mt-1" size={20} />
                             <div className="flex-1">
-                                <h4 className="text-sm font-bold text-theme-primary mb-1">Asignado a</h4>
-                                <div className="flex items-center space-x-2">
-                                    <div className="w-6 h-6 rounded-full surface-tertiary text-theme-secondary flex items-center justify-center text-xs font-bold">
-                                        {task.assignedTo?.name?.charAt(0) || '?'}
-                                    </div>
-                                    <span className="text-theme-secondary">{task.assignedTo?.name || 'Sin asignar'}</span>
-                                </div>
+                                {task.assignedTo?.id === session?.user?.id ? (
+                                    <>
+                                        <h4 className="text-sm font-bold text-theme-primary mb-1">Asignado por</h4>
+                                        <div className="flex items-center space-x-2">
+                                            <div className="w-6 h-6 rounded-full surface-tertiary text-theme-secondary flex items-center justify-center text-xs font-bold">
+                                                {task.createdBy?.name?.charAt(0) || '?'}
+                                            </div>
+                                            <span className="text-theme-secondary">{task.createdBy?.name || 'Desconocido'}</span>
+                                        </div>
+                                    </>
+                                ) : (
+                                    <>
+                                        <h4 className="text-sm font-bold text-theme-primary mb-1">Asignado a</h4>
+                                        <div className="flex items-center space-x-2">
+                                            <div className="w-6 h-6 rounded-full surface-tertiary text-theme-secondary flex items-center justify-center text-xs font-bold">
+                                                {task.assignedTo?.name?.charAt(0) || '?'}
+                                            </div>
+                                            <span className="text-theme-secondary">{task.assignedTo?.name || 'Sin asignar'}</span>
+                                        </div>
+                                    </>
+                                )}
                             </div>
                         </div>
 
