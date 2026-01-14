@@ -68,21 +68,27 @@ export default function MessageComposer({
         };
     }, [message, chatId]);
 
-    // Mention autocomplete
-    const {
-        showSuggestions,
-        suggestions,
-        selectedIndex,
-        handleKeyDown: handleMentionKeyDown,
-        selectSuggestion
-    } = useMentionAutocomplete({
-        textareaRef,
-        onSelectMention: (username) => {
-            // Optional: track mentions for analytics
-            console.log('Mentioned:', username);
-        },
-        onTextChange: setMessage
-    });
+    // TEMPORARILY DISABLED - Investigating onChange blocking issue
+    // const {
+    //     showSuggestions,
+    //     suggestions,
+    //     selectedIndex,
+    //     handleKeyDown: handleMentionKeyDown,
+    //     selectSuggestion
+    // } = useMentionAutocomplete({
+    //     textareaRef,
+    //     onSelectMention: (username) => {
+    //         console.log('Mentioned:', username);
+    //     },
+    //     onTextChange: setMessage
+    // });
+
+    // Temporary dummy values while hook is disabled
+    const showSuggestions = false;
+    const suggestions: any[] = [];
+    const selectedIndex = 0;
+    const handleMentionKeyDown = (e: any) => false;
+    const selectSuggestion = (index: number) => { };
 
     // Auto-resize textarea
     useEffect(() => {
@@ -262,12 +268,24 @@ export default function MessageComposer({
                     <textarea
                         ref={textareaRef}
                         value={message}
-                        onChange={(e) => setMessage(e.target.value)}
-                        onKeyDown={handleKeyDown}
+                        onChange={(e) => {
+                            console.log('[CHAT DEBUG] onChange fired, value:', e.target.value);
+                            setMessage(e.target.value);
+                        }}
+                        onKeyDown={(e) => {
+                            console.log('[CHAT DEBUG] onKeyDown fired, key:', e.key);
+                            handleKeyDown(e);
+                        }}
+                        onInput={(e) => {
+                            console.log('[CHAT DEBUG] onInput fired');
+                        }}
                         placeholder={placeholder}
-                        className="w-full px-4 py-3 border-2 input-base min-h-[44px] max-h-[150px] text-[13.5px] leading-relaxed resize-none"
+                        className="w-full px-4 py-3 border-2 border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 rounded-xl min-h-[44px] max-h-[150px] text-[13.5px] leading-relaxed resize-none focus:border-olive-500 focus:ring-2 focus:ring-olive-500/20 outline-none"
                         rows={1}
                         aria-label="Campo de mensaje"
+                        autoComplete="off"
+                        autoCorrect="off"
+                        spellCheck={true}
                     />
 
                     {/* Mention Autocomplete Dropdown */}

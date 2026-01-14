@@ -62,18 +62,18 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
                     // Reset rate limit on successful auth
                     authLimiter.reset(`auth:${email}`);
 
-                    // Log login activity for online status tracking
-                    try {
-                        await prisma.activityLog.create({
-                            data: {
-                                userId: user.id,
-                                action: 'LOGIN',
-                                details: JSON.stringify({ ip: request.headers?.get?.('x-forwarded-for') || 'unknown' })
-                            }
-                        });
-                    } catch (logError) {
-                        console.error('Failed to log login activity:', logError);
-                    }
+                    // Log login activity for online status tracking (fire and forget)
+                    prisma.activityLog.create({
+                        data: {
+                            userId: user.id,
+                            action: 'LOGIN',
+                            details: JSON.stringify({ timestamp: new Date().toISOString() })
+                        }
+                    }).then(() => {
+                        console.log(`[AUTH] Login activity logged for ${email}`);
+                    }).catch(err => {
+                        console.error('[AUTH] Failed to log login activity:', err);
+                    });
 
                     return user;
                 }
