@@ -183,45 +183,44 @@ export default function ChatList({
                                         <button
                                             key={chat.id}
                                             onClick={() => onSelectChat(chat.id)}
-                                            className={`w-full px-4 py-3 text-left hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors border-l-4 ${isSelected
-                                                ? 'bg-olive-50 dark:bg-olive-900/20 border-olive-600'
-                                                : 'border-transparent'
+                                            className={`w-full px-4 py-3 text-left hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors ${isSelected
+                                                ? 'bg-olive-50 dark:bg-olive-900/20 border-l-4 border-olive-600'
+                                                : ''
                                                 }`}
                                         >
-                                            <div className="flex items-start justify-between gap-2 mb-1">
-                                                <div className="flex-1 min-w-0">
-                                                    <h3 className={`font-bold text-sm truncate ${isSelected ? 'text-olive-900 dark:text-olive-300' : 'text-neutral-900 dark:text-neutral-100'
-                                                        }`}>
-                                                        {displayName}
-                                                    </h3>
-                                                    <p className="text-xs text-neutral-500 dark:text-neutral-400 truncate">
-                                                        {subtitle}
-                                                    </p>
+                                            <div className="flex items-center gap-3">
+                                                {/* Avatar with presence indicator */}
+                                                <div className="relative flex-shrink-0">
+                                                    <div className="w-10 h-10 rounded-full bg-olive-600 flex items-center justify-center text-white font-semibold text-sm">
+                                                        {displayName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
+                                                    </div>
+                                                    {/* Presence indicator */}
+                                                    <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white dark:border-neutral-900 rounded-full"></span>
                                                 </div>
-                                                {chat.unreadCount && chat.unreadCount > 0 && (
-                                                    <Badge variant="error" size="sm">
-                                                        {chat.unreadCount > 9 ? '9+' : chat.unreadCount}
-                                                    </Badge>
-                                                )}
-                                            </div>
 
-                                            {/* Last Message */}
-                                            {chat.lastMessage && (
-                                                <div className="flex items-baseline gap-2 mt-1">
-                                                    <p className="text-xs text-neutral-600 dark:text-neutral-400 truncate flex-1">
-                                                        <span className="font-semibold text-neutral-700 dark:text-neutral-300">
-                                                            {chat.lastMessage.author.name}:
-                                                        </span>{' '}
-                                                        {chat.lastMessage.content}
-                                                    </p>
-                                                    <span className="text-xs text-neutral-400 dark:text-neutral-500 flex-shrink-0">
-                                                        {formatDistanceToNow(new Date(chat.lastMessage.createdAt), {
-                                                            addSuffix: false,
-                                                            locale: es
-                                                        })}
-                                                    </span>
+                                                <div className="flex-1 min-w-0">
+                                                    <div className="flex items-center justify-between gap-2">
+                                                        <h3 className={`font-semibold text-sm truncate ${isSelected ? 'text-olive-900 dark:text-olive-300' : 'text-neutral-900 dark:text-neutral-100'}`}>
+                                                            {displayName}
+                                                        </h3>
+                                                        {chat.unreadCount && chat.unreadCount > 0 && (
+                                                            <Badge variant="error" size="sm">
+                                                                {chat.unreadCount > 9 ? '9+' : chat.unreadCount}
+                                                            </Badge>
+                                                        )}
+                                                    </div>
+                                                    {/* Last message preview */}
+                                                    {chat.lastMessage ? (
+                                                        <p className="text-xs text-neutral-500 dark:text-neutral-400 truncate mt-0.5">
+                                                            {chat.lastMessage.content}
+                                                        </p>
+                                                    ) : (
+                                                        <p className="text-xs text-neutral-400 dark:text-neutral-500 truncate mt-0.5">
+                                                            {subtitle}
+                                                        </p>
+                                                    )}
                                                 </div>
-                                            )}
+                                            </div>
                                         </button>
                                     );
                                 })}
@@ -241,21 +240,21 @@ export default function ChatList({
                                     <button
                                         key={user.id}
                                         onClick={() => onSelectUser(user.id)}
-                                        className="w-full px-4 py-3 text-left hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors border-l-4 border-transparent hover:border-olive-300"
+                                        className="w-full px-4 py-3 text-left hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
                                     >
-                                        <div className="flex items-start gap-3">
-                                            <div className="w-10 h-10 rounded-full bg-olive-100 dark:bg-olive-900/30 flex items-center justify-center text-olive-700 dark:text-olive-400 font-bold text-sm flex-shrink-0">
-                                                {user.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
+                                        <div className="flex items-center gap-3">
+                                            <div className="relative flex-shrink-0">
+                                                <div className="w-10 h-10 rounded-full bg-olive-100 dark:bg-olive-900/30 flex items-center justify-center text-olive-700 dark:text-olive-400 font-bold text-sm">
+                                                    {user.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
+                                                </div>
+                                                <span className="absolute bottom-0 right-0 w-3 h-3 bg-neutral-400 border-2 border-white dark:border-neutral-900 rounded-full"></span>
                                             </div>
                                             <div className="flex-1 min-w-0">
-                                                <h3 className="font-bold text-sm text-neutral-900 dark:text-neutral-100 truncate">
+                                                <h3 className="font-semibold text-sm text-neutral-900 dark:text-neutral-100 truncate">
                                                     {user.name}
                                                 </h3>
                                                 <p className="text-xs text-neutral-500 dark:text-neutral-400 truncate">
                                                     {user.email}
-                                                </p>
-                                                <p className="text-xs text-neutral-400 dark:text-neutral-500 mt-0.5">
-                                                    {user.department} • {user.role}
                                                 </p>
                                             </div>
                                         </div>

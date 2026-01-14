@@ -78,7 +78,7 @@ export default function Message({
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.15 }}
             className={`group flex gap-3 px-6 py-2.5 hover:bg-neutral-50/70 dark:hover:bg-neutral-800/50 transition-colors relative ${isDeleted ? 'opacity-50' : ''
-                }`}
+                } ${isOwnMessage ? 'flex-row-reverse' : ''}`}
             onMouseEnter={() => setShowActions(true)}
             onMouseLeave={() => setShowActions(false)}
         >
@@ -92,9 +92,9 @@ export default function Message({
                 {initials}
             </div>
 
-            <div className="flex-1 min-w-0">
+            <div className={`flex-1 min-w-0 flex flex-col ${isOwnMessage ? 'items-end' : ''}`}>
                 {/* Header */}
-                <div className="flex items-baseline gap-2.5 mb-0.5">
+                <div className={`flex items-baseline gap-2.5 mb-0.5 ${isOwnMessage ? 'flex-row-reverse justify-start' : ''}`}>
                     <span className={`font-bold text-sm ${isOwnMessage ? 'text-olive-700 dark:text-olive-400' : 'text-neutral-900 dark:text-neutral-100'
                         }`}>
                         {author.name}

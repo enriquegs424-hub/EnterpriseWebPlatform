@@ -315,7 +315,7 @@ export default function MessageComposer({
                                                 }`}
                                         >
                                             <div className="w-8 h-8 rounded-full bg-olive-100 flex items-center justify-center text-olive-700 font-bold text-xs flex-shrink-0">
-                                                {user.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
+                                                {user.name.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2)}
                                             </div>
                                             <div className="flex-1 min-w-0">
                                                 <div className="font-bold text-sm text-neutral-900 truncate">
@@ -352,24 +352,6 @@ export default function MessageComposer({
                 >
                     <Send className={`w-5 h-5 transition-transform ${message.trim() ? 'translate-x-0.5' : ''}`} />
                 </button>
-            </div>
-
-            {/* Hint */}
-            <div className="px-5 pb-3 text-[11px] text-theme-muted flex items-center gap-3">
-                <span className="flex items-center gap-1">
-                    <kbd className="px-1.5 py-0.5 surface-tertiary rounded text-[10px] font-mono text-theme-secondary">@</kbd>
-                    <span>mencionar</span>
-                </span>
-                <span className="text-theme-muted">•</span>
-                <span className="flex items-center gap-1">
-                    <kbd className="px-1.5 py-0.5 surface-tertiary rounded text-[10px] font-mono text-theme-secondary">Enter</kbd>
-                    <span>enviar</span>
-                </span>
-                <span className="text-theme-muted">•</span>
-                <span className="flex items-center gap-1">
-                    <kbd className="px-1.5 py-0.5 surface-tertiary rounded text-[10px] font-mono text-theme-secondary">Ctrl+Enter</kbd>
-                    <span>salto</span>
-                </span>
             </div>
         </div>
     );

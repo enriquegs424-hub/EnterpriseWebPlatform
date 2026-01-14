@@ -149,11 +149,38 @@ export default function ChatWindow({
     }
 
     return (
-        <div className="flex-1 flex flex-col h-full bg-neutral-50/30 dark:bg-neutral-900">
-            {/* Header */}
+        <div className="flex-1 flex flex-col h-full bg-white dark:bg-neutral-900">
+            {/* Teams-like Header */}
             {chatName && (
-                <div className="px-6 py-4 border-b border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-sm transition-colors">
-                    <h2 className="font-bold text-base text-neutral-900 dark:text-neutral-100">{chatName}</h2>
+                <div className="px-4 py-3 border-b border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900">
+                    <div className="flex items-center gap-3">
+                        {/* Avatar with presence indicator */}
+                        <div className="relative">
+                            <div className="w-10 h-10 rounded-full bg-olive-600 flex items-center justify-center text-white font-bold text-sm">
+                                {chatName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
+                            </div>
+                            {/* Presence indicator - green dot */}
+                            <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white dark:border-neutral-900 rounded-full"></span>
+                        </div>
+
+                        {/* Name and tabs */}
+                        <div className="flex-1">
+                            <div className="flex items-center gap-4">
+                                <h2 className="font-semibold text-base text-neutral-900 dark:text-neutral-100">{chatName}</h2>
+                            </div>
+                            {/* Tabs like Teams */}
+                            <div className="flex items-center gap-4 mt-1">
+                                <span className="text-sm font-medium text-olive-600 dark:text-olive-400 border-b-2 border-olive-600 pb-1">Chat</span>
+                            </div>
+                        </div>
+
+                        {/* Action buttons */}
+                        <div className="flex items-center gap-2">
+                            <button className="p-2 text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors">
+                                <MessageSquare size={18} />
+                            </button>
+                        </div>
+                    </div>
                 </div>
             )}
 

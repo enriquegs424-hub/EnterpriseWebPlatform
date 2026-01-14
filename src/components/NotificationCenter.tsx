@@ -15,23 +15,35 @@ interface Notification {
     createdAt: string;
 }
 
+import { useToast } from '@/components/ui/Toast';
+
 export default function NotificationCenter() {
     const [isOpen, setIsOpen] = useState(false);
     const [notifications, setNotifications] = useState<Notification[]>([]);
     const [loading, setLoading] = useState(false);
     const [unreadCount, setUnreadCount] = useState(0);
+    const { info, success, warning, error: errorToast } = useToast();
 
     useEffect(() => {
         fetchNotifications();
         // Poll for new notifications every 30 seconds
-        const interval = setInterval(fetchNotifications, 30000);
+        const interval = setInterval(() => fetchNotifications(true), 30000);
         return () => clearInterval(interval);
     }, []);
 
-    const fetchNotifications = async () => {
+    const fetchNotifications = async (isPolling = false) => {
         try {
             const response = await fetch('/api/notifications');
             const data = await response.json();
+
+            // Check for new notifications to show toast
+            if (isPolling && data.notifications?.length > notifications.length) {
+                const newNotification = data.notifications[0]; // Assuming sorted by date desc
+                if (!newNotification.isRead) {
+                    info(newNotification.title, newNotification.message);
+                }
+            }
+
             setNotifications(data.notifications || []);
             setUnreadCount(data.notifications?.filter((n: Notification) => !n.isRead).length || 0);
         } catch (error) {
