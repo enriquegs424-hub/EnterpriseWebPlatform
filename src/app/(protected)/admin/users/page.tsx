@@ -1,13 +1,16 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { getUsers, updateUser, inviteUser } from '@/app/admin/actions';
+import { getUsers, updateUser, inviteUser, deleteUser } from './actions';
 import {
     User, Shield, Briefcase, Mail, CheckCircle, XCircle, MoreVertical, Edit2,
-    Search, Filter, Plus, ChevronLeft, ChevronRight, Loader2
+    Search, Filter, Plus, ChevronLeft, ChevronRight, Loader2, Settings, Trash2,
+    ArrowUp, ArrowDown
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
+import { PermissionsModal } from './PermissionsModal';
+
 
 export default function UsersPage() {
     return (
@@ -29,7 +32,9 @@ function UsersContent() {
         role: 'ALL',
         department: 'ALL',
         status: 'ALL',
-        page: 1
+        page: 1,
+        sort: 'createdAt',
+        order: 'desc' as 'asc' | 'desc'
     });
 
     // Modals
@@ -39,8 +44,10 @@ function UsersContent() {
         name: '',
         email: '',
         role: 'WORKER',
-        department: 'ENGINEERING'
+        department: 'CIVIL_DESIGN'
     });
+    const [permissionsUser, setPermissionsUser] = useState<any>(null);
+
 
     const fetchUsers = async () => {
         setLoading(true);
@@ -79,6 +86,31 @@ function UsersContent() {
         await updateUser(editingUser.id, editingUser);
         setEditingUser(null);
         fetchUsers();
+    };
+
+    const handleDelete = async (id: string, name: string) => {
+        if (confirm(`¿Estás seguro de que quieres eliminar al usuario ${name}? Esta acción no se puede deshacer.`)) {
+            try {
+                await deleteUser(id);
+                fetchUsers();
+            } catch (error) {
+                alert('Error al eliminar usuario');
+            }
+        }
+    };
+
+    const handleSort = (key: string) => {
+        setFilters(prev => ({
+            ...prev,
+            sort: key,
+            order: prev.sort === key && prev.order === 'asc' ? 'desc' : 'asc',
+            page: 1
+        }));
+    };
+
+    const SortIcon = ({ column }: { column: string }) => {
+        if (filters.sort !== column) return null;
+        return filters.order === 'asc' ? <ArrowUp size={14} className="ml-1 inline" /> : <ArrowDown size={14} className="ml-1 inline" />;
     };
 
     return (
@@ -127,9 +159,13 @@ function UsersContent() {
                     onChange={e => setFilters({ ...filters, department: e.target.value, page: 1 })}
                 >
                     <option value="ALL">Todos los Deptos</option>
-                    <option value="ENGINEERING">Ingeniería</option>
-                    <option value="ARCHITECTURE">Arquitectura</option>
+                    <option value="CIVIL_DESIGN">Diseño y Civil</option>
+                    <option value="ELECTRICAL">Eléctrico</option>
+                    <option value="INSTRUMENTATION">Instrumentación</option>
                     <option value="ADMINISTRATION">Administración</option>
+                    <option value="IT">Informática</option>
+                    <option value="ECONOMIC">Económico</option>
+                    <option value="MARKETING">Marketing</option>
                 </select>
 
                 <select
@@ -155,10 +191,20 @@ function UsersContent() {
                             <table className="min-w-full divide-y divide-neutral-200 dark:divide-neutral-800 text-sm">
                                 <thead className="bg-neutral-50 dark:bg-neutral-800">
                                     <tr>
-                                        <th className="px-6 py-4 text-left font-semibold text-neutral-600 dark:text-neutral-400">Usuario</th>
+                                        <th
+                                            className="px-6 py-4 text-left font-semibold text-neutral-600 dark:text-neutral-400 cursor-pointer hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors"
+                                            onClick={() => handleSort('name')}
+                                        >
+                                            Usuario <SortIcon column="name" />
+                                        </th>
                                         <th className="px-6 py-4 text-left font-semibold text-neutral-600 dark:text-neutral-400">Rol</th>
                                         <th className="px-6 py-4 text-left font-semibold text-neutral-600 dark:text-neutral-400">Departamento</th>
-                                        <th className="px-6 py-4 text-left font-semibold text-neutral-600 dark:text-neutral-400">Horas/Día</th>
+                                        <th
+                                            className="px-6 py-4 text-left font-semibold text-neutral-600 dark:text-neutral-400 cursor-pointer hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors"
+                                            onClick={() => handleSort('dailyWorkHours')}
+                                        >
+                                            Horas/Día <SortIcon column="dailyWorkHours" />
+                                        </th>
                                         <th className="px-6 py-4 text-left font-semibold text-neutral-600 dark:text-neutral-400">Estado</th>
                                         <th className="px-6 py-4 text-right font-semibold text-neutral-600 dark:text-neutral-400">Acciones</th>
                                     </tr>
@@ -171,56 +217,92 @@ function UsersContent() {
                                             </td>
                                         </tr>
                                     ) : (
-                                        users.map((user) => (
-                                            <motion.tr
-                                                initial={{ opacity: 0 }}
-                                                animate={{ opacity: 1 }}
-                                                key={user.id}
-                                                className="hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-colors"
-                                            >
-                                                <td className="px-6 py-4">
-                                                    <div className="flex items-center">
-                                                        <div className="w-8 h-8 rounded-full bg-olive-100 dark:bg-olive-900/30 flex items-center justify-center text-olive-700 dark:text-olive-400 font-bold mr-3">
-                                                            {user.name[0]}
+                                        users.map((user) => {
+                                            const lastActive = user.activityLogs?.[0]?.createdAt;
+                                            const isOnline = lastActive && (new Date().getTime() - new Date(lastActive).getTime() < 15 * 60 * 1000);
+
+                                            return (
+                                                <motion.tr
+                                                    initial={{ opacity: 0 }}
+                                                    animate={{ opacity: 1 }}
+                                                    key={user.id}
+                                                    className="hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-colors"
+                                                >
+                                                    <td className="px-6 py-4">
+                                                        <div className="flex items-center">
+                                                            <div className="w-8 h-8 rounded-full bg-olive-100 dark:bg-olive-900/30 flex items-center justify-center text-olive-700 dark:text-olive-400 font-bold mr-3 relative">
+                                                                {user.name[0]}
+                                                                {isOnline && user.isActive && (
+                                                                    <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-white dark:border-neutral-900 rounded-full"></span>
+                                                                )}
+                                                            </div>
+                                                            <div>
+                                                                <p className="font-semibold text-neutral-900 dark:text-neutral-100">{user.name}</p>
+                                                                <p className="text-xs text-neutral-500 dark:text-neutral-400">{user.email}</p>
+                                                            </div>
                                                         </div>
-                                                        <div>
-                                                            <p className="font-semibold text-neutral-900 dark:text-neutral-100">{user.name}</p>
-                                                            <p className="text-xs text-neutral-500 dark:text-neutral-400">{user.email}</p>
+                                                    </td>
+                                                    <td className="px-6 py-4">
+                                                        <span className={`px-2 py-1 rounded-full text-xs font-bold ${user.role === 'ADMIN' ? 'bg-purple-50 text-purple-700 dark:bg-purple-900/20 dark:text-purple-300' :
+                                                            user.role === 'MANAGER' ? 'bg-amber-50 text-amber-700 dark:bg-amber-900/20 dark:text-amber-300' :
+                                                                user.role === 'CLIENT' ? 'bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-300' :
+                                                                    'bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300'
+                                                            }`}>
+                                                            {user.role}
+                                                        </span>
+                                                    </td>
+                                                    <td className="px-6 py-4 text-neutral-600 dark:text-neutral-400">
+                                                        {user.department}
+                                                    </td>
+                                                    <td className="px-6 py-4 text-neutral-600 dark:text-neutral-400 font-mono">
+                                                        {user.dailyWorkHours || 8}h
+                                                    </td>
+                                                    <td className="px-6 py-4">
+                                                        {!user.isActive ? (
+                                                            <span className="flex items-center text-xs font-bold text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 px-2 py-1 rounded-full w-fit">
+                                                                <XCircle size={14} className="mr-1" />
+                                                                INACTIVO
+                                                            </span>
+                                                        ) : isOnline ? (
+                                                            <span className="flex items-center text-xs font-bold text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20 px-2 py-1 rounded-full w-fit">
+                                                                <CheckCircle size={14} className="mr-1" />
+                                                                CONECTADO
+                                                            </span>
+                                                        ) : (
+                                                            <span className="flex items-center text-xs font-bold text-neutral-500 dark:text-neutral-400 bg-neutral-100 dark:bg-neutral-800 px-2 py-1 rounded-full w-fit">
+                                                                <CheckCircle size={14} className="mr-1" />
+                                                                DESCONECTADO
+                                                            </span>
+                                                        )}
+                                                    </td>
+                                                    <td className="px-6 py-4 text-right">
+                                                        <div className="flex items-center justify-end gap-2">
+                                                            <button
+                                                                onClick={() => setPermissionsUser(user)}
+                                                                className="p-2 text-neutral-400 hover:text-olive-600 dark:hover:text-olive-400 hover:bg-olive-50 dark:hover:bg-olive-900/20 rounded-lg transition-all"
+                                                                title="Gestionar Permisos"
+                                                            >
+                                                                <Shield size={16} />
+                                                            </button>
+                                                            <button
+                                                                onClick={() => setEditingUser({ ...user })}
+                                                                className="p-2 text-neutral-400 hover:text-olive-600 dark:hover:text-olive-400 hover:bg-olive-50 dark:hover:bg-olive-900/20 rounded-lg transition-all"
+                                                                title="Editar Usuario"
+                                                            >
+                                                                <Edit2 size={16} />
+                                                            </button>
+                                                            <button
+                                                                onClick={() => handleDelete(user.id, user.name)}
+                                                                className="p-2 text-neutral-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all"
+                                                                title="Eliminar Usuario"
+                                                            >
+                                                                <Trash2 size={16} />
+                                                            </button>
                                                         </div>
-                                                    </div>
-                                                </td>
-                                                <td className="px-6 py-4">
-                                                    <span className={`px-2 py-1 rounded-full text-xs font-bold ${user.role === 'ADMIN' ? 'bg-purple-50 text-purple-700 dark:bg-purple-900/20 dark:text-purple-300' :
-                                                        user.role === 'MANAGER' ? 'bg-amber-50 text-amber-700 dark:bg-amber-900/20 dark:text-amber-300' :
-                                                            user.role === 'CLIENT' ? 'bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-300' :
-                                                                'bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300'
-                                                        }`}>
-                                                        {user.role}
-                                                    </span>
-                                                </td>
-                                                <td className="px-6 py-4 text-neutral-600 dark:text-neutral-400">
-                                                    {user.department}
-                                                </td>
-                                                <td className="px-6 py-4 text-neutral-600 dark:text-neutral-400 font-mono">
-                                                    {user.dailyWorkHours || 8}h
-                                                </td>
-                                                <td className="px-6 py-4">
-                                                    <span className={`flex items-center text-xs font-bold ${user.isActive ? 'text-success-600 dark:text-success-400' : 'text-error-600 dark:text-error-400'
-                                                        }`}>
-                                                        {user.isActive ? <CheckCircle size={14} className="mr-1" /> : <XCircle size={14} className="mr-1" />}
-                                                        {user.isActive ? 'ACTIVO' : 'INACTIVO'}
-                                                    </span>
-                                                </td>
-                                                <td className="px-6 py-4 text-right">
-                                                    <button
-                                                        onClick={() => setEditingUser({ ...user })}
-                                                        className="p-2 text-neutral-400 hover:text-olive-600 dark:hover:text-olive-400 hover:bg-olive-50 dark:hover:bg-olive-900/20 rounded-lg transition-all"
-                                                    >
-                                                        <Edit2 size={16} />
-                                                    </button>
-                                                </td>
-                                            </motion.tr>
-                                        ))
+                                                    </td>
+                                                </motion.tr>
+                                            );
+                                        })
                                     )}
                                 </tbody>
                             </table>
@@ -305,10 +387,14 @@ function UsersContent() {
                                                     onChange={e => setEditingUser({ ...editingUser, department: e.target.value })}
                                                     className="w-full p-2 border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 rounded-lg focus:ring-2 focus:ring-olive-500/20 outline-none"
                                                 >
-                                                    <option value="ADMINISTRATION">ADMINISTRATION</option>
-                                                    <option value="ENGINEERING">ENGINEERING</option>
-                                                    <option value="ARCHITECTURE">ARCHITECTURE</option>
-                                                    <option value="OTHER">OTHER</option>
+                                                    <option value="CIVIL_DESIGN">Diseño y Civil</option>
+                                                    <option value="ELECTRICAL">Eléctrico</option>
+                                                    <option value="INSTRUMENTATION">Instrumentación</option>
+                                                    <option value="ADMINISTRATION">Administración</option>
+                                                    <option value="IT">Informática</option>
+                                                    <option value="ECONOMIC">Económico</option>
+                                                    <option value="MARKETING">Marketing</option>
+                                                    <option value="OTHER">Otro</option>
                                                 </select>
                                             </div>
                                         </div>
@@ -405,10 +491,14 @@ function UsersContent() {
                                                     onChange={e => setInviteData({ ...inviteData, department: e.target.value })}
                                                     className="w-full p-2 border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 rounded-lg focus:ring-2 focus:ring-olive-500/20 outline-none"
                                                 >
-                                                    <option value="ENGINEERING">ENGINEERING</option>
-                                                    <option value="ARCHITECTURE">ARCHITECTURE</option>
-                                                    <option value="ADMINISTRATION">ADMINISTRATION</option>
-                                                    <option value="OTHER">OTHER</option>
+                                                    <option value="CIVIL_DESIGN">Diseño y Civil</option>
+                                                    <option value="ELECTRICAL">Eléctrico</option>
+                                                    <option value="INSTRUMENTATION">Instrumentación</option>
+                                                    <option value="ADMINISTRATION">Administración</option>
+                                                    <option value="IT">Informática</option>
+                                                    <option value="ECONOMIC">Económico</option>
+                                                    <option value="MARKETING">Marketing</option>
+                                                    <option value="OTHER">Otro</option>
                                                 </select>
                                             </div>
                                         </div>
@@ -425,6 +515,21 @@ function UsersContent() {
                                     </form>
                                 </motion.div>
                             </div>
+                        )}
+
+                        {/* Permissions Modal */}
+                        {permissionsUser && (
+                            <PermissionsModal
+                                userId={permissionsUser.id}
+                                userName={permissionsUser.name}
+                                userRole={permissionsUser.role}
+                                userDepartment={permissionsUser.department}
+                                onClose={() => setPermissionsUser(null)}
+                                onSave={() => {
+                                    setPermissionsUser(null);
+                                    fetchUsers();
+                                }}
+                            />
                         )}
                     </>
                 )}

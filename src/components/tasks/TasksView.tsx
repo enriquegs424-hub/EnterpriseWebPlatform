@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { getAllTasks, createTask, updateTask, deleteTask, getTaskStats } from '@/app/(protected)/tasks/actions';
-import { getAllUsers } from '@/app/admin/actions';
+import { getUsers } from '@/app/(protected)/admin/users/actions';
 import { getAllProjects } from '@/app/admin/actions';
 import {
     CheckSquare, Plus, Filter, Calendar, User, Flag,
@@ -58,12 +58,12 @@ export default function TasksView({ projectId }: TasksViewProps) {
 
         const [tasksData, usersData, projectsData, statsData] = await Promise.all([
             getAllTasks(activeFilters),
-            getAllUsers(),
+            getUsers({ limit: 100 }),
             getAllProjects(),
             getTaskStats(projectId)
         ]);
         setTasks(tasksData);
-        setUsers(usersData);
+        setUsers(usersData.users);
         setProjects(projectsData);
         setStats(statsData);
         setLoading(false);

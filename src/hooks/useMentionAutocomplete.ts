@@ -14,9 +14,10 @@ interface User {
 interface UseMentionAutocompleteProps {
     textareaRef: React.RefObject<HTMLTextAreaElement | null>;
     onSelectMention: (username: string) => void;
+    onTextChange?: (newText: string) => void;
 }
 
-export function useMentionAutocomplete({ textareaRef, onSelectMention }: UseMentionAutocompleteProps) {
+export function useMentionAutocomplete({ textareaRef, onSelectMention, onTextChange }: UseMentionAutocompleteProps) {
     const [showSuggestions, setShowSuggestions] = useState(false);
     const [suggestions, setSuggestions] = useState<User[]>([]);
     const [selectedIndex, setSelectedIndex] = useState(0);
@@ -137,14 +138,19 @@ export function useMentionAutocomplete({ textareaRef, onSelectMention }: UseMent
 
         const newText = `${beforeMention}@${selected.name} ${afterCursor}`;
 
-        // Update textarea
+        // Update textarea and React state
         textarea.value = newText;
+
+        // Update parent component's React state
+        if (onTextChange) {
+            onTextChange(newText);
+        }
 
         // Set cursor after mention
         const newCursorPos = cursorPosition + selected.name.length + 2; // +2 for @ and space
         textarea.setSelectionRange(newCursorPos, newCursorPos);
 
-        // Trigger change event
+        // Trigger change event for other listeners
         textarea.dispatchEvent(new Event('input', { bubbles: true }));
 
         // Close suggestions

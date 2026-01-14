@@ -19,7 +19,7 @@
     "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx,json,css,md}\""
   },
   "prisma": {
-    "seed": "tsx prisma/seed.ts"
+    "seed": "tsx prisma/seed-users.ts"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.7.4",

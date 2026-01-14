@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { getAllProjects, createProject, updateProject, toggleProjectStatus } from '@/app/admin/actions';
+import { getAllProjects, createProject, updateProject, toggleProjectStatus } from './actions';
 import { getAllClients } from '@/app/(protected)/admin/clients/actions';
 import { Briefcase, Plus, Edit2, Power, PowerOff, Calendar, Building2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';

@@ -37,6 +37,9 @@ model Company {
   products Product[]
   taxRates TaxRate[]
   quotes   Quote[]
+  teams    Team[]
+  settings CompanySettings?
+  activityLogs ActivityLog[]
 
   @@index([slug])
 }
@@ -51,8 +54,6 @@ model User {
   department        Department        @default(OTHER)
   companyId         String?
   company           Company?          @relation(fields: [companyId], references: [id])
-  teamId            String?
-  team              Team?             @relation(fields: [teamId], references: [id])
   dailyWorkHours    Float             @default(8.0)
   isActive          Boolean           @default(true)
   createdAt         DateTime          @default(now())
@@ -78,6 +79,11 @@ model User {
   createdPayments   Payment[]
   savedFilters      SavedFilter[]
   Quote             Quote[]
+  
+  // New relations for permissions system
+  permissions       Permission[]
+  managedTeams      Team[]            @relation("TeamManager")
+  memberOfTeams     Team[]            @relation("TeamMembers")
 
   @@index([companyId])
 }
@@ -331,17 +337,22 @@ model DocumentShare {
 }
 
 enum Role {
+  SUPERADMIN
   ADMIN
   MANAGER
   WORKER
-  CLIENT
+  GUEST
 }
 
 enum Department {
-  ENGINEERING
-  ARCHITECTURE
-  ADMINISTRATION
-  OTHER
+  CIVIL_DESIGN      // Diseño y Civil
+  ELECTRICAL        // Eléctrico
+  INSTRUMENTATION   // Instrumentación y Control
+  ADMINISTRATION    // Administración
+  IT                // Informática
+  ECONOMIC          // Económico
+  MARKETING         // Marketing
+  OTHER             // Otros
 }
 
 enum TaskStatus {
@@ -502,16 +513,23 @@ enum ChatType {
 }
 
 model ActivityLog {
-  id        String   @id @default(cuid())
-  userId    String
-  user      User     @relation(fields: [userId], references: [id])
-  action    String
-  entityId  String?
-  details   String?  @db.Text
-  createdAt DateTime @default(now())
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id])
+  companyId  String?
+  company    Company? @relation(fields: [companyId], references: [id])
+  action     String
+  entityType String?
+  entityId   String?
+  details    String?  @db.Text
+  ipAddress  String?
+  userAgent  String?
+  createdAt  DateTime @default(now())
 
   @@index([userId])
+  @@index([companyId])
   @@index([createdAt])
+  @@index([action])
 }
 
 enum LeadStage {
@@ -583,9 +601,71 @@ model Team {
   id          String   @id @default(cuid())
   name        String
   description String?
-  members     User[]
+  companyId   String
+  company     Company  @relation(fields: [companyId], references: [id])
+  managerId   String?
+  manager     User?    @relation("TeamManager", fields: [managerId], references: [id])
+  members     User[]   @relation("TeamMembers")
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  @@index([companyId])
+  @@index([managerId])
+}
+
+// ============================================
+// PERMISSION SYSTEM
+// ============================================
+
+model Permission {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  resource  String   // "tasks", "expenses", "invoices", etc.
+  action    String   // "create", "read", "update", "delete", "approve"
+  granted   Boolean  @default(true) // true = override granted, false = override denied
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, resource, action])
+  @@index([userId])
+}
+
+model DepartmentPermission {
+  id         String     @id @default(cuid())
+  department Department // ENGINEERING, ARCHITECTURE, ADMINISTRATION, OTHER
+  resource   String     // "tasks", "expenses", "documents", etc.
+  action     String     // "create", "read", "update", "delete", "approve", "export"
+  granted    Boolean    @default(true) // true = allow, false = deny
+  scope      String?    // "all", "own", "department" - null means boolean only
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+
+  @@unique([department, resource, action])
+  @@index([department])
+}
+
+
+model CompanySettings {
+  id                 String   @id @default(cuid())
+  companyId          String   @unique
+  company            Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  
+  // SUPERADMIN vetos over this company's ADMIN
+  canCreateUsers     Boolean  @default(true)
+  canDeleteUsers     Boolean  @default(true)
+  canChangeRoles     Boolean  @default(true)
+  canAccessInvoicing Boolean  @default(true)
+  canAccessReports   Boolean  @default(true)
+  canExportData      Boolean  @default(true)
+  canViewAuditLogs   Boolean  @default(true)
+  canCreateGuests    Boolean  @default(true)
+  
+  // Enabled modules for this company
+  modulesEnabled     String[] @default(["projects", "tasks", "documents", "hours", "expenses", "invoices", "crm", "analytics"])
+  
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
 }
 
 // ============================================

@@ -80,7 +80,8 @@ export default function MessageComposer({
         onSelectMention: (username) => {
             // Optional: track mentions for analytics
             console.log('Mentioned:', username);
-        }
+        },
+        onTextChange: setMessage
     });
 
     // Auto-resize textarea

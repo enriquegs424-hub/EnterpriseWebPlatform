@@ -11,6 +11,8 @@ export async function getUsers(params?: {
     role?: string;
     department?: string;
     status?: string;
+    sort?: string;
+    order?: 'asc' | 'desc';
     page?: number;
     limit?: number;
 }) {
@@ -24,6 +26,8 @@ export async function getUsers(params?: {
         role,
         department,
         status,
+        sort = 'createdAt', // 'name' | 'createdAt'
+        order = 'desc', // 'asc' | 'desc'
         page = 1,
         limit = 50
     } = params || {};
@@ -55,10 +59,15 @@ export async function getUsers(params?: {
                 department: true,
                 dailyWorkHours: true,
                 createdAt: true,
+                activityLogs: {
+                    take: 1,
+                    orderBy: { createdAt: 'desc' },
+                    select: { createdAt: true }
+                }
             },
             take: limit,
             skip: (page - 1) * limit,
-            orderBy: { createdAt: 'desc' }
+            orderBy: { [sort]: order }
         }),
         prisma.user.count({ where })
     ]);
@@ -194,6 +203,143 @@ export async function deleteUser(id: string) {
     await prisma.user.delete({ where: { id } });
     await auditCrud('DELETE', 'User', id, { email: targetUser.email });
     revalidatePath('/admin/users');
+
+    return { success: true };
+}
+
+/**
+ * Obtener usuario por ID con permisos
+ */
+export async function getUserById(id: string) {
+    const user = await getAuthenticatedUser();
+    if (!user) throw new Error("No autenticado");
+
+    await checkPermission("users", "read");
+
+    // @ts-ignore
+    const targetUser = await (prisma.user as any).findUnique({
+        where: { id },
+        select: {
+            id: true,
+            name: true,
+            email: true,
+            role: true,
+            department: true,
+            companyId: true,
+            isActive: true,
+            dailyWorkHours: true,
+            createdAt: true,
+            updatedAt: true,
+            permissions: {
+                select: {
+                    id: true,
+                    resource: true,
+                    action: true,
+                    granted: true,
+                },
+            },
+            managedTeams: {
+                select: {
+                    id: true,
+                    name: true,
+                },
+            },
+            memberOfTeams: {
+                select: {
+                    id: true,
+                    name: true,
+                },
+            },
+        },
+    });
+
+    if (!targetUser) {
+        throw new Error("Usuario no encontrado");
+    }
+
+    return targetUser;
+}
+
+/**
+ * Obtener permisos granulares del usuario
+ */
+export async function getUserPermissions(userId: string) {
+    const user = await getAuthenticatedUser();
+    if (!user) throw new Error("No autenticado");
+
+    await checkPermission("permissions", "read");
+
+    const permissions = await (prisma as any).permission.findMany({
+        where: { userId },
+        orderBy: { resource: "asc" },
+    });
+
+    return permissions;
+}
+
+/**
+ * Actualizar permisos granulares de un usuario
+ */
+export async function updateUserPermissions(
+    userId: string,
+    permissions: Array<{
+        resource: string;
+        action: string;
+        granted: boolean | null; // null = usar default (no override)
+    }>
+) {
+    const user = await getAuthenticatedUser();
+    if (!user) throw new Error("No autenticado");
+
+    await checkPermission("permissions", "update");
+
+    // Eliminar permisos existentes del usuario
+    await (prisma as any).permission.deleteMany({
+        where: { userId },
+    });
+
+    // Crear nuevos permisos (solo los que sean override explícito, no null)
+    const permissionsToCreate = permissions.filter(p => p.granted !== null);
+
+    if (permissionsToCreate.length > 0) {
+        await (prisma as any).permission.createMany({
+            data: permissionsToCreate.map(p => ({
+                userId,
+                resource: p.resource,
+                action: p.action,
+                granted: p.granted,
+            })),
+        });
+    }
+
+    await auditCrud('UPDATE', 'Permissions', userId, {
+        count: permissions.length,
+        overrides: permissionsToCreate.length
+    });
+
+    revalidatePath("/admin/users");
+    revalidatePath(`/admin/users/${userId}`);
+
+    return { success: true, count: permissionsToCreate.length };
+}
+
+/**
+ * Cambiar contraseña de usuario
+ */
+export async function changeUserPassword(id: string, newPassword: string) {
+    const user = await getAuthenticatedUser();
+    if (!user) throw new Error("No autenticado");
+
+    await checkPermission("users", "update");
+
+    const passwordHash = await hash(newPassword, 12);
+
+    await prisma.user.update({
+        where: { id },
+        data: { passwordHash },
+    });
+
+    await auditCrud('UPDATE', 'User', id, { action: 'password_changed' });
 
     return { success: true };
 }

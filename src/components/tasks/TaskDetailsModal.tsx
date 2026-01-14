@@ -6,7 +6,7 @@ import { X, Calendar, User, Flag, AlignLeft, Trash2, Edit2, Save, CheckSquare, M
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { deleteTask, updateTask } from '@/app/(protected)/tasks/actions';
-import { getAllUsers, getAllProjects } from '@/app/admin/actions';
+import { getUsers } from '@/app/(protected)/admin/users/actions';
 import { useToast } from '@/components/ui/Toast';
 
 interface TaskDetailsModalProps {
@@ -35,7 +35,7 @@ export default function TaskDetailsModal({ task, isOpen, onClose, onUpdate }: Ta
 
         // Fetch users for assignment dropdown if needed
         if (users.length === 0) {
-            const fetchedUsers = await getAllUsers();
+            const { users: fetchedUsers } = await getUsers({ limit: 100 });
             setUsers(fetchedUsers);
         }
 

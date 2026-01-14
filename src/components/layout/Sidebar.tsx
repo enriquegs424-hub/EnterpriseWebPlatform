@@ -4,11 +4,18 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
     LayoutDashboard, Briefcase, Users, Settings,
-    Clock, FileText, FileCheck, BarChart, CheckSquare, FolderOpen, Calendar, Bell, MessageSquare, Activity, TrendingUp
+    Clock, FileText, FileCheck, BarChart, CheckSquare, FolderOpen, Calendar, Bell, MessageSquare, Activity, TrendingUp, Shield, Building2, UserCog
 } from 'lucide-react';
 import Image from 'next/image';
 
 const navItems = [
+    {
+        section: 'SuperAdmin', items: [
+            { label: 'Panel Global', href: '/superadmin', icon: Shield, desc: 'Panel de control global' },
+            { label: 'Empresas', href: '/superadmin/companies', icon: Building2, desc: 'Gestión de empresas' },
+            { label: 'Logs Globales', href: '/superadmin/logs', icon: Activity, desc: 'Auditoría de toda la plataforma' },
+        ], roles: ['SUPERADMIN']
+    },
     {
         section: 'Principal', items: [
             { label: 'Inicio', href: '/dashboard', icon: LayoutDashboard, desc: 'Panel de control personal' },
@@ -18,7 +25,7 @@ const navItems = [
             { label: 'Documentos', href: '/documents', icon: FolderOpen, desc: 'Gestión de archivos' },
             { label: 'Registro Diario', href: '/hours', icon: Clock, desc: 'Registrar y ver mis horas' },
             { label: 'Notificaciones', href: '/notifications', icon: Bell, desc: 'Centro de avisos' },
-        ]
+        ], roles: ['SUPERADMIN', 'ADMIN', 'MANAGER', 'WORKER']
     },
     {
         section: 'Gestión', items: [
@@ -27,16 +34,18 @@ const navItems = [
             { label: 'Facturas', href: '/invoices', icon: FileText, desc: 'Facturación y cobros' },
             { label: 'Proyectos', href: '/admin/projects', icon: Briefcase, desc: 'Códigos y clientes' },
             { label: 'Clientes', href: '/admin/clients', icon: Users, desc: 'Cartera de clientes' },
-        ]
+        ], roles: ['SUPERADMIN', 'ADMIN', 'MANAGER']
     },
     {
         section: 'Administración', items: [
             { label: 'Analytics', href: '/analytics', icon: BarChart, desc: 'Métricas y reportes' },
             { label: 'Monitor de Horas', href: '/admin/hours', icon: BarChart, desc: 'Supervisión en tiempo real' },
             { label: 'Usuarios', href: '/admin/users', icon: Users, desc: 'Gestión de equipo' },
+            { label: 'Departamentos', href: '/admin/departments', icon: Building2, desc: 'Configuración por áreas' },
+            { label: 'Equipos', href: '/admin/teams', icon: UserCog, desc: 'Organización de equipos' },
             { label: 'Auditoría', href: '/admin/logs', icon: Activity, desc: 'Logs del sistema' },
             { label: 'Configuración', href: '/settings', icon: Settings, desc: 'Preferencias personales' },
-        ]
+        ], roles: ['SUPERADMIN', 'ADMIN']
     }
 ];
 
@@ -84,15 +93,12 @@ export default function Sidebar() {
 
             <nav className="flex-1 py-6 px-3 space-y-8">
                 {navItems.map((section) => {
-                    // Role-based visibility
+                    // Role-based visibility using roles array
                     // @ts-ignore
-                    const userRole = session?.user?.role;
-                    const isUserAdmin = userRole === 'ADMIN';
-                    const isManager = userRole === 'MANAGER';
-                    const canManage = isUserAdmin || isManager;
+                    const userRole = session?.user?.role as string;
 
-                    if (section.section === 'Administración' && !canManage) return null;
-                    if (section.section === 'Gestión' && !canManage) return null;
+                    // Check if user's role is in the section's allowed roles
+                    if (section.roles && !section.roles.includes(userRole)) return null;
 
                     return (
                         <div key={section.section}>
@@ -107,7 +113,7 @@ export default function Sidebar() {
                                     const isChatItem = item.href === '/chat';
 
                                     // Hide Logs for non-admins
-                                    if (item.label === 'Auditoría' && !isUserAdmin) return null; // Only Admins can see Audit Logs
+                                    if (item.label === 'Auditoría' && !['SUPERADMIN', 'ADMIN'].includes(userRole)) return null;
 
                                     return (
                                         <Link

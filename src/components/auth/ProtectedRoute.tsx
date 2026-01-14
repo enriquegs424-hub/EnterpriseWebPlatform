@@ -23,7 +23,8 @@ export function ProtectedRoute({
     const router = useRouter();
 
     const userRole = (session?.user as any)?.role as string || 'WORKER';
-    const isAllowed = session?.user && allowedRoles.includes(userRole);
+    // SUPERADMIN siempre tiene acceso, o si el rol está en la lista permitida
+    const isAllowed = session?.user && (userRole === 'SUPERADMIN' || allowedRoles.includes(userRole));
 
     useEffect(() => {
         if (status === 'loading') return;
