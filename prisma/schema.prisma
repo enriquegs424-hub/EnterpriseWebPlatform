@@ -460,6 +460,9 @@ model ChatMember {
   userId String
   user   User   @relation("ChatMemberships", fields: [userId], references: [id], onDelete: Cascade)
 
+  isFavorite Boolean @default(false)
+  role       String  @default("MEMBER") // "ADMIN", "MEMBER"
+
   lastRead DateTime @default(now())
   joinedAt DateTime @default(now())
 
@@ -510,6 +513,7 @@ enum AttendeeStatus {
 enum ChatType {
   PROJECT
   DIRECT
+  GROUP
 }
 
 model ActivityLog {

@@ -283,26 +283,112 @@ export async function getUserChats() {
                     }
                 }
             }
-        },
-        orderBy: {
-            chat: {
-                updatedAt: 'desc'
-            }
         }
     });
 
-    return chatMemberships.map((cm) => {
+    // Process chats to add metadata and calculate unread counts
+    const chatsWithMeta = await Promise.all(chatMemberships.map(async (cm) => {
         const chat = cm.chat;
-        const unreadCount = 0; // TODO: Calculate based on lastRead
+
+        // Calculate real unread count
+        const unreadCount = await prisma.message.count({
+            where: {
+                chatId: chat.id,
+                createdAt: { gt: cm.lastRead },
+                authorId: { not: user.id }
+            }
+        });
 
         return {
             ...chat,
             lastMessage: chat.messages[0] || null,
             unreadCount,
             membershipId: cm.id,
-            lastRead: cm.lastRead
+            lastRead: cm.lastRead,
+            isFavorite: (cm as any).isFavorite,
+            role: (cm as any).role
         };
+    }));
+
+    // Sort: Favorites first, then by last message/update
+    return chatsWithMeta.sort((a, b) => {
+        // 1. Favorites first
+        if (a.isFavorite && !b.isFavorite) return -1;
+        if (!a.isFavorite && b.isFavorite) return 1;
+
+        // 2. Sort by update time (desc)
+        const dateA = a.lastMessage?.createdAt || a.updatedAt;
+        const dateB = b.lastMessage?.createdAt || b.updatedAt;
+        return new Date(dateB).getTime() - new Date(dateA).getTime();
     });
+}
+
+/**
+ * Toggle favorite status for a chat
+ */
+export async function toggleChatFavorite(chatId: string) {
+    const session = await auth();
+    if (!session?.user?.email) throw new Error('No autorizado');
+
+    const user = await prisma.user.findUnique({
+        where: { email: session.user.email }
+    });
+    if (!user) throw new Error('Usuario no encontrado');
+
+    const member = await prisma.chatMember.findUnique({
+        where: {
+            chatId_userId: {
+                chatId,
+                userId: user.id
+            }
+        }
+    });
+
+    if (!member) throw new Error('No eres miembro de este chat');
+
+    await prisma.chatMember.update({
+        where: { id: member.id },
+        data: { isFavorite: !(member as any).isFavorite } as any
+    });
+
+    revalidatePath('/chat');
+}
+
+/**
+ * Create a new group chat
+ */
+export async function createGroupChat(name: string, participantIds: string[]) {
+    const session = await auth();
+    if (!session?.user?.email) throw new Error('No autorizado');
+
+    const user = await prisma.user.findUnique({
+        where: { email: session.user.email }
+    });
+    if (!user) throw new Error('Usuario no encontrado');
+
+    // Create chat
+    const chat = await prisma.chat.create({
+        data: {
+            type: 'GROUP' as any,
+            name,
+            members: {
+                create: [
+                    { userId: user.id, role: 'ADMIN' } as any,
+                    ...participantIds.map(id => ({ userId: id, role: 'MEMBER' } as any))
+                ]
+            }
+        },
+        include: {
+            members: {
+                include: {
+                    user: { select: { id: true, name: true, email: true } }
+                }
+            }
+        }
+    });
+
+    revalidatePath('/chat');
+    return chat;
 }
 
 /**
@@ -735,4 +821,36 @@ export async function getTypingUsers(chatId: string) {
     }
 
     return typingUsers;
+}
+
+/**
+ * Get unread messages since a specific date for notifications
+ */
+export async function getUnreadMessages(since: Date) {
+    const session = await auth();
+    if (!session?.user?.email) return [];
+
+    const user = await prisma.user.findUnique({
+        where: { email: session.user.email }
+    });
+    if (!user) return [];
+
+    const messages = await prisma.message.findMany({
+        where: {
+            createdAt: { gt: since },
+            authorId: { not: user.id },
+            chat: {
+                members: {
+                    some: { userId: user.id }
+                }
+            }
+        },
+        include: {
+            author: { select: { name: true } },
+            chat: { select: { id: true, name: true, type: true } }
+        },
+        orderBy: { createdAt: 'desc' }
+    });
+
+    return messages;
 }

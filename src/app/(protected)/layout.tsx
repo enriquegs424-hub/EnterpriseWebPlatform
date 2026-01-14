@@ -6,6 +6,7 @@ import { redirect } from 'next/navigation';
 import SessionProvider from '@/components/providers/SessionProvider';
 import { ToastProvider } from '@/components/ui/Toast';
 import ErrorBoundary from '@/components/ErrorBoundary';
+import ChatNotificationObserver from '@/components/chat/ChatNotificationObserver';
 
 export default async function ProtectedLayout({ children }: { children: React.ReactNode }) {
     const session = await auth();
@@ -18,6 +19,7 @@ export default async function ProtectedLayout({ children }: { children: React.Re
         <SessionProvider>
             <ErrorBoundary>
                 <ToastProvider>
+                    <ChatNotificationObserver />
                     <div className="min-h-screen bg-neutral-50 dark:bg-neutral-950 flex font-sans text-neutral-900 dark:text-neutral-100 transition-colors">
                         {/* Desktop Sidebar */}
                         <div className="hidden lg:block">
