@@ -58,13 +58,13 @@ export async function getAllTasks(filters?: {
         where,
         include: {
             assignedTo: {
-                select: { id: true, name: true, email: true }
+                select: { id: true, name: true, email: true, image: true }
             },
             assignees: {
                 select: { id: true, name: true, email: true, image: true }
             },
             createdBy: {
-                select: { id: true, name: true }
+                select: { id: true, name: true, image: true }
             },
             project: {
                 select: { id: true, code: true, name: true }
@@ -72,7 +72,7 @@ export async function getAllTasks(filters?: {
             comments: {
                 include: {
                     user: {
-                        select: { id: true, name: true }
+                        select: { id: true, name: true, image: true }
                     }
                 },
                 orderBy: { createdAt: 'desc' }
@@ -410,7 +410,8 @@ export async function getUsersForAssignment() {
             name: true,
             email: true,
             role: true,
-            department: true
+            department: true,
+            image: true
         },
         orderBy: {
             name: 'asc'

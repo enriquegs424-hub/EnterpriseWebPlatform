@@ -290,9 +290,13 @@ export default function TeamDetailPage() {
                         {/* Manager */}
                         {team.manager && (
                             <div className="flex items-center gap-3 p-3 bg-neutral-50 dark:bg-neutral-900 rounded-lg">
-                                <div className="w-10 h-10 rounded-full bg-olive-100 dark:bg-olive-900/30 flex items-center justify-center text-olive-700 dark:text-olive-400 font-bold">
-                                    {team.manager.name?.[0]?.toUpperCase() || "?"}
-                                </div>
+                                {team.manager.image ? (
+                                    <img src={team.manager.image} alt={team.manager.name} className="w-10 h-10 rounded-full object-cover" />
+                                ) : (
+                                    <div className="w-10 h-10 rounded-full bg-olive-100 dark:bg-olive-900/30 flex items-center justify-center text-olive-700 dark:text-olive-400 font-bold">
+                                        {team.manager.name?.[0]?.toUpperCase() || "?"}
+                                    </div>
+                                )}
                                 <div>
                                     <p className="font-semibold text-neutral-900 dark:text-white text-sm">{team.manager.name}</p>
                                     <p className="text-xs text-neutral-500">Manager</p>
@@ -377,9 +381,13 @@ export default function TeamDetailPage() {
                                 className="px-6 py-4 flex items-center justify-between hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-colors"
                             >
                                 <div className="flex items-center gap-4">
-                                    <div className="w-10 h-10 rounded-full bg-neutral-100 dark:bg-neutral-700 flex items-center justify-center text-neutral-600 dark:text-neutral-300 font-bold">
-                                        {member.name?.[0]?.toUpperCase() || "?"}
-                                    </div>
+                                    {member.image ? (
+                                        <img src={member.image} alt={member.name} className="w-10 h-10 rounded-full object-cover" />
+                                    ) : (
+                                        <div className="w-10 h-10 rounded-full bg-neutral-100 dark:bg-neutral-700 flex items-center justify-center text-neutral-600 dark:text-neutral-300 font-bold">
+                                            {member.name?.[0]?.toUpperCase() || "?"}
+                                        </div>
+                                    )}
                                     <div>
                                         <p className="font-semibold text-neutral-900 dark:text-white">{member.name}</p>
                                         <p className="text-sm text-neutral-500">{member.email}</p>
@@ -448,9 +456,13 @@ export default function TeamDetailPage() {
                                             className="flex items-center justify-between p-3 bg-neutral-50 dark:bg-neutral-900 rounded-lg"
                                         >
                                             <div className="flex items-center gap-3">
-                                                <div className="w-9 h-9 rounded-full bg-neutral-200 dark:bg-neutral-700 flex items-center justify-center text-neutral-600 dark:text-neutral-300 font-bold text-sm">
-                                                    {user.name?.[0]?.toUpperCase() || "?"}
-                                                </div>
+                                                {user.image ? (
+                                                    <img src={user.image} alt={user.name} className="w-9 h-9 rounded-full object-cover" />
+                                                ) : (
+                                                    <div className="w-9 h-9 rounded-full bg-neutral-200 dark:bg-neutral-700 flex items-center justify-center text-neutral-600 dark:text-neutral-300 font-bold text-sm">
+                                                        {user.name?.[0]?.toUpperCase() || "?"}
+                                                    </div>
+                                                )}
                                                 <div>
                                                     <p className="font-medium text-neutral-900 dark:text-white">{user.name}</p>
                                                     <p className="text-xs text-neutral-500">{user.email}</p>

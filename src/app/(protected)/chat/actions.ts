@@ -147,7 +147,8 @@ export async function getOrCreateDirectChat(otherUserId: string) {
                         select: {
                             id: true,
                             name: true,
-                            email: true
+                            email: true,
+                            image: true
                         }
                     }
                 }
@@ -160,7 +161,8 @@ export async function getOrCreateDirectChat(otherUserId: string) {
                         select: {
                             id: true,
                             name: true,
-                            email: true
+                            email: true,
+                            image: true
                         }
                     },
                     replyTo: {
@@ -196,7 +198,8 @@ export async function getOrCreateDirectChat(otherUserId: string) {
                             select: {
                                 id: true,
                                 name: true,
-                                email: true
+                                email: true,
+                                image: true
                             }
                         }
                     }
