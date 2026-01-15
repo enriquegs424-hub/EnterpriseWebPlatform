@@ -30,6 +30,9 @@ export async function updateUserProfile(data: {
     department: string;
     dailyWorkHours: number;
     image?: string;
+    phone?: string;
+    jobTitle?: string;
+    bio?: string;
 }) {
     const session = await auth();
     if (!session?.user?.id) return { error: 'No autorizado' };
@@ -41,14 +44,58 @@ export async function updateUserProfile(data: {
                 name: data.name,
                 department: data.department as any,
                 dailyWorkHours: parseFloat(data.dailyWorkHours.toString()),
-                image: data.image
+                image: data.image,
+                // Store phone, jobTitle, bio in preferences JSON
+                preferences: {
+                    ...(await prisma.user.findUnique({ where: { id: session.user.id }, select: { preferences: true } }))?.preferences as any || {},
+                    phone: data.phone,
+                    jobTitle: data.jobTitle,
+                    bio: data.bio
+                }
             }
         });
+        // Revalidate all paths where user info is displayed
         revalidatePath('/settings');
+        revalidatePath('/');
+        revalidatePath('/dashboard');
+        revalidatePath('/chat');
         return { success: true, message: 'Perfil actualizado correctamente' };
     } catch (error) {
         return { error: 'Error al actualizar el perfil' };
     }
+}
+
+// Get available departments from enum
+export async function getDepartments() {
+    return [
+        { value: 'CIVIL_DESIGN', label: 'Diseño y Civil' },
+        { value: 'ELECTRICAL', label: 'Eléctrico' },
+        { value: 'INSTRUMENTATION', label: 'Instrumentación y Control' },
+        { value: 'ADMINISTRATION', label: 'Administración' },
+        { value: 'IT', label: 'Informática' },
+        { value: 'ECONOMIC', label: 'Económico' },
+        { value: 'MARKETING', label: 'Marketing' },
+        { value: 'OTHER', label: 'Otros' }
+    ];
+}
+
+// Get available timezones
+export async function getTimezones() {
+    return [
+        { value: 'Europe/Madrid', label: 'Madrid (CET/CEST)' },
+        { value: 'Europe/London', label: 'Londres (GMT/BST)' },
+        { value: 'Europe/Paris', label: 'París (CET/CEST)' },
+        { value: 'Europe/Berlin', label: 'Berlín (CET/CEST)' },
+        { value: 'America/New_York', label: 'Nueva York (EST/EDT)' },
+        { value: 'America/Los_Angeles', label: 'Los Ángeles (PST/PDT)' },
+        { value: 'America/Mexico_City', label: 'Ciudad de México (CST/CDT)' },
+        { value: 'America/Bogota', label: 'Bogotá (COT)' },
+        { value: 'America/Buenos_Aires', label: 'Buenos Aires (ART)' },
+        { value: 'America/Sao_Paulo', label: 'São Paulo (BRT)' },
+        { value: 'Asia/Tokyo', label: 'Tokio (JST)' },
+        { value: 'Asia/Shanghai', label: 'Shanghái (CST)' },
+        { value: 'UTC', label: 'UTC' }
+    ];
 }
 
 export async function updateUserPreferences(preferences: any) {

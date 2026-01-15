@@ -1,10 +1,10 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { getCurrentUser, updateUserProfile, changePassword, updateUserPreferences } from './actions';
+import { getCurrentUser, updateUserProfile, changePassword, updateUserPreferences, getDepartments, getTimezones } from './actions';
 import { useSession } from 'next-auth/react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { User, Lock, Bell, Palette, Save, AlertCircle, CheckCircle2, Eye, EyeOff, Sun, Moon } from 'lucide-react';
+import { User, Lock, Bell, Palette, Save, AlertCircle, CheckCircle2, Eye, EyeOff, Sun, Moon, Clock, Globe, Accessibility, Briefcase, Phone, FileText } from 'lucide-react';
 import { useTheme } from '@/providers/ThemeProvider';
 
 export default function SettingsPage() {
@@ -23,8 +23,15 @@ export default function SettingsPage() {
         dailyWorkHours: 8,
         language: 'es',
         timezone: 'Europe/Madrid',
-        image: ''
+        image: '',
+        phone: '',
+        jobTitle: '',
+        bio: ''
     });
+
+    // Departments and timezones from server
+    const [departments, setDepartments] = useState<{ value: string, label: string }[]>([]);
+    const [timezones, setTimezones] = useState<{ value: string, label: string }[]>([]);
 
     // Password form
     const [passwordData, setPasswordData] = useState({
@@ -38,34 +45,59 @@ export default function SettingsPage() {
         notifications: {
             weeklyReport: true,
             newProjects: true,
-            dailyReminder: true
+            dailyReminder: true,
+            taskComments: true,
+            chatMessages: true,
+            mentions: true
         },
         appearance: {
-            theme: 'mep',
+            theme: 'system',
             compactSidebar: false,
-            smoothAnimations: true
+            smoothAnimations: true,
+            density: 'normal',
+            fontSize: 'medium'
+        },
+        workSchedule: {
+            weekStart: 'monday',
+            timeFormat: '24h',
+            dateFormat: 'DD/MM/YYYY'
+        },
+        accessibility: {
+            highContrast: false,
+            reduceMotion: false,
+            screenReader: false
         }
     });
 
     useEffect(() => {
         loadUser();
+        loadOptions();
     }, []);
+
+    const loadOptions = async () => {
+        const [depts, tzs] = await Promise.all([getDepartments(), getTimezones()]);
+        setDepartments(depts);
+        setTimezones(tzs);
+    };
 
     const loadUser = async () => {
         const userData = await getCurrentUser();
         if (userData) {
             setUser(userData);
+            const prefs = userData.preferences as any || {};
             setProfileData({
                 name: userData.name,
                 department: userData.department,
                 dailyWorkHours: userData.dailyWorkHours,
-                language: (userData.preferences as any)?.language || 'es',
-                timezone: (userData.preferences as any)?.timezone || 'Europe/Madrid',
-                image: userData.image || '' // Add image with fallback
+                language: prefs.language || 'es',
+                timezone: prefs.timezone || 'Europe/Madrid',
+                image: userData.image || '',
+                phone: prefs.phone || '',
+                jobTitle: prefs.jobTitle || '',
+                bio: prefs.bio || ''
             });
             if (userData.preferences) {
-                // Merge with defaults
-                setPreferences(prev => ({ ...prev, ...(userData.preferences as any) }));
+                setPreferences(prev => ({ ...prev, ...prefs }));
             }
         }
         setLoading(false);
@@ -159,8 +191,10 @@ export default function SettingsPage() {
     const tabs = [
         { id: 'profile', label: 'Mi Perfil', icon: User },
         { id: 'password', label: 'Seguridad', icon: Lock },
+        { id: 'schedule', label: 'Horarios', icon: Clock },
         { id: 'notifications', label: 'Notificaciones', icon: Bell },
         { id: 'appearance', label: 'Apariencia', icon: Palette },
+        { id: 'accessibility', label: 'Accesibilidad', icon: Accessibility },
     ];
 
     return (
@@ -301,10 +335,9 @@ export default function SettingsPage() {
                                                     onChange={(e) => setProfileData({ ...profileData, department: e.target.value })}
                                                     className="w-full input-base"
                                                 >
-                                                    <option value="ENGINEERING">Ingeniería</option>
-                                                    <option value="ARCHITECTURE">Arquitectura</option>
-                                                    <option value="ADMINISTRATION">Administración</option>
-                                                    <option value="OTHER">Otro</option>
+                                                    {departments.map(dept => (
+                                                        <option key={dept.value} value={dept.value}>{dept.label}</option>
+                                                    ))}
                                                 </select>
                                             </div>
 
@@ -324,29 +357,75 @@ export default function SettingsPage() {
 
                                         <div className="grid grid-cols-2 gap-4">
                                             <div>
+                                                <label className="block text-sm font-semibold text-theme-secondary mb-2">
+                                                    <Phone size={14} className="inline mr-1" />
+                                                    Teléfono
+                                                </label>
+                                                <input
+                                                    type="tel"
+                                                    value={profileData.phone}
+                                                    onChange={(e) => setProfileData({ ...profileData, phone: e.target.value })}
+                                                    className="w-full input-base"
+                                                    placeholder="+34 600 000 000"
+                                                />
+                                            </div>
+
+                                            <div>
+                                                <label className="block text-sm font-semibold text-theme-secondary mb-2">
+                                                    <Briefcase size={14} className="inline mr-1" />
+                                                    Cargo / Puesto
+                                                </label>
+                                                <input
+                                                    type="text"
+                                                    value={profileData.jobTitle}
+                                                    onChange={(e) => setProfileData({ ...profileData, jobTitle: e.target.value })}
+                                                    className="w-full input-base"
+                                                    placeholder="Ingeniero Senior"
+                                                />
+                                            </div>
+                                        </div>
+
+                                        <div>
+                                            <label className="block text-sm font-semibold text-theme-secondary mb-2">
+                                                <FileText size={14} className="inline mr-1" />
+                                                Bio / Descripción
+                                            </label>
+                                            <textarea
+                                                value={profileData.bio}
+                                                onChange={(e) => setProfileData({ ...profileData, bio: e.target.value })}
+                                                className="w-full input-base min-h-[100px] resize-none"
+                                                placeholder="Cuéntanos un poco sobre ti..."
+                                                maxLength={500}
+                                            />
+                                            <p className="text-xs text-theme-muted mt-1">{profileData.bio.length}/500 caracteres</p>
+                                        </div>
+
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div>
                                                 <label className="block text-sm font-semibold text-theme-secondary mb-2">Idioma</label>
                                                 <select
-                                                    value={(profileData as any).language || 'es'}
-                                                    onChange={(e) => setProfileData({ ...profileData, language: e.target.value } as any)}
+                                                    value={profileData.language}
+                                                    onChange={(e) => setProfileData({ ...profileData, language: e.target.value })}
                                                     className="w-full input-base"
                                                 >
                                                     <option value="es">Español</option>
                                                     <option value="en">English</option>
                                                     <option value="fr">Français</option>
+                                                    <option value="pt">Português</option>
+                                                    <option value="de">Deutsch</option>
                                                 </select>
                                             </div>
 
                                             <div>
                                                 <label className="block text-sm font-semibold text-theme-secondary mb-2">Zona Horaria</label>
                                                 <select
-                                                    value={(profileData as any).timezone || 'Europe/Madrid'}
-                                                    onChange={(e) => setProfileData({ ...profileData, timezone: e.target.value } as any)}
+                                                    value={profileData.timezone}
+                                                    onChange={(e) => setProfileData({ ...profileData, timezone: e.target.value })}
                                                     className="w-full input-base"
                                                 >
-                                                    <option value="Europe/Madrid">Madrid (CET/CEST)</option>
-                                                    <option value="Europe/London">London (GMT/BST)</option>
-                                                    <option value="America/New_York">New York (EST/EDT)</option>
-                                                    <option value="UTC">UTC</option>
+                                                    {timezones.map(tz => (
+                                                        <option key={tz.value} value={tz.value}>{tz.label}</option>
+                                                    ))}
                                                 </select>
                                             </div>
                                         </div>
@@ -451,6 +530,7 @@ export default function SettingsPage() {
                                     </div>
 
                                     <div className="space-y-4">
+                                        <h3 className="text-sm font-bold text-theme-secondary uppercase tracking-wider">Email</h3>
                                         {[
                                             { id: 'weeklyReport', label: 'Resumen semanal de horas', desc: 'Recibe un correo todos los lunes con tu actividad.' },
                                             { id: 'newProjects', label: 'Nuevos proyectos asignados', desc: 'Aviso inmediato cuando se te asigne un nuevo código.' },
@@ -465,6 +545,31 @@ export default function SettingsPage() {
                                                     <input
                                                         type="checkbox"
                                                         checked={(preferences.notifications as any)[n.id]}
+                                                        onChange={() => toggleNotification(n.id)}
+                                                        className="sr-only peer"
+                                                    />
+                                                    <div className="w-11 h-6 bg-neutral-200 dark:bg-neutral-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-olive-600"></div>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+
+                                    <div className="space-y-4 pt-4 border-t border-theme-secondary">
+                                        <h3 className="text-sm font-bold text-theme-secondary uppercase tracking-wider">Push / In-App</h3>
+                                        {[
+                                            { id: 'taskComments', label: 'Comentarios en tareas', desc: 'Notificación cuando alguien comenta en tus tareas.' },
+                                            { id: 'chatMessages', label: 'Mensajes de chat', desc: 'Notificación de nuevos mensajes en conversaciones.' },
+                                            { id: 'mentions', label: 'Menciones', desc: 'Cuando alguien te menciona con @tu_nombre.' },
+                                        ].map((n) => (
+                                            <div key={n.id} className="flex items-start justify-between p-4 surface-tertiary rounded-2xl border border-theme-secondary hover:border-olive-300 dark:hover:border-olive-700 transition-colors">
+                                                <div>
+                                                    <p className="font-bold text-theme-primary text-sm">{n.label}</p>
+                                                    <p className="text-xs text-theme-tertiary mt-0.5">{n.desc}</p>
+                                                </div>
+                                                <div className="relative inline-flex items-center cursor-pointer">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={(preferences.notifications as any)?.[n.id] ?? true}
                                                         onChange={() => toggleNotification(n.id)}
                                                         className="sr-only peer"
                                                     />
@@ -547,6 +652,124 @@ export default function SettingsPage() {
                                                 <div className="w-11 h-6 bg-neutral-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-olive-600"></div>
                                             </div>
                                         </div>
+                                    </div>
+                                </motion.div>
+                            )}
+
+                            {activeTab === 'schedule' && (
+                                <motion.div
+                                    key="schedule"
+                                    initial={{ opacity: 0, x: 20 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    exit={{ opacity: 0, x: -20 }}
+                                    className="space-y-8"
+                                >
+                                    <div>
+                                        <h2 className="text-xl font-bold text-theme-primary mb-2 flex items-center">
+                                            <Clock className="w-5 h-5 mr-3 text-olive-600" />
+                                            Horarios y Formatos
+                                        </h2>
+                                        <p className="text-sm text-theme-tertiary">Configura tus preferencias de fecha, hora y semana laboral.</p>
+                                    </div>
+
+                                    <div className="space-y-6">
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div>
+                                                <label className="block text-sm font-semibold text-theme-secondary mb-2">Inicio de Semana</label>
+                                                <select
+                                                    value={(preferences.workSchedule as any)?.weekStart || 'monday'}
+                                                    onChange={(e) => savePreferences({
+                                                        ...preferences,
+                                                        workSchedule: { ...(preferences.workSchedule as any), weekStart: e.target.value }
+                                                    })}
+                                                    className="w-full input-base"
+                                                >
+                                                    <option value="monday">Lunes</option>
+                                                    <option value="sunday">Domingo</option>
+                                                    <option value="saturday">Sábado</option>
+                                                </select>
+                                            </div>
+
+                                            <div>
+                                                <label className="block text-sm font-semibold text-theme-secondary mb-2">Formato de Hora</label>
+                                                <select
+                                                    value={(preferences.workSchedule as any)?.timeFormat || '24h'}
+                                                    onChange={(e) => savePreferences({
+                                                        ...preferences,
+                                                        workSchedule: { ...(preferences.workSchedule as any), timeFormat: e.target.value }
+                                                    })}
+                                                    className="w-full input-base"
+                                                >
+                                                    <option value="24h">24 horas (14:30)</option>
+                                                    <option value="12h">12 horas (2:30 PM)</option>
+                                                </select>
+                                            </div>
+                                        </div>
+
+                                        <div>
+                                            <label className="block text-sm font-semibold text-theme-secondary mb-2">Formato de Fecha</label>
+                                            <select
+                                                value={(preferences.workSchedule as any)?.dateFormat || 'DD/MM/YYYY'}
+                                                onChange={(e) => savePreferences({
+                                                    ...preferences,
+                                                    workSchedule: { ...(preferences.workSchedule as any), dateFormat: e.target.value }
+                                                })}
+                                                className="w-full input-base"
+                                            >
+                                                <option value="DD/MM/YYYY">DD/MM/YYYY (31/12/2026)</option>
+                                                <option value="MM/DD/YYYY">MM/DD/YYYY (12/31/2026)</option>
+                                                <option value="YYYY-MM-DD">YYYY-MM-DD (2026-12-31)</option>
+                                                <option value="DD MMM YYYY">DD MMM YYYY (31 Dic 2026)</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </motion.div>
+                            )}
+
+                            {activeTab === 'accessibility' && (
+                                <motion.div
+                                    key="accessibility"
+                                    initial={{ opacity: 0, x: 20 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    exit={{ opacity: 0, x: -20 }}
+                                    className="space-y-8"
+                                >
+                                    <div>
+                                        <h2 className="text-xl font-bold text-theme-primary mb-2 flex items-center">
+                                            <Accessibility className="w-5 h-5 mr-3 text-olive-600" />
+                                            Accesibilidad
+                                        </h2>
+                                        <p className="text-sm text-theme-tertiary">Opciones para mejorar la experiencia de uso.</p>
+                                    </div>
+
+                                    <div className="space-y-4">
+                                        {[
+                                            { id: 'highContrast', label: 'Alto Contraste', desc: 'Aumenta el contraste de colores para mejor legibilidad.' },
+                                            { id: 'reduceMotion', label: 'Reducir Movimiento', desc: 'Desactiva animaciones y transiciones.' },
+                                            { id: 'screenReader', label: 'Optimizar para Lector de Pantalla', desc: 'Mejora la compatibilidad con tecnologías asistivas.' },
+                                        ].map((setting) => (
+                                            <div key={setting.id} className="flex items-start justify-between p-4 surface-tertiary rounded-2xl border border-theme-secondary hover:border-olive-300 dark:hover:border-olive-700 transition-colors">
+                                                <div>
+                                                    <p className="font-bold text-theme-primary text-sm">{setting.label}</p>
+                                                    <p className="text-xs text-theme-tertiary mt-0.5">{setting.desc}</p>
+                                                </div>
+                                                <div className="relative inline-flex items-center cursor-pointer">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={(preferences.accessibility as any)?.[setting.id] || false}
+                                                        onChange={() => {
+                                                            const newAccess = {
+                                                                ...(preferences.accessibility as any),
+                                                                [setting.id]: !(preferences.accessibility as any)?.[setting.id]
+                                                            };
+                                                            savePreferences({ ...preferences, accessibility: newAccess });
+                                                        }}
+                                                        className="sr-only peer"
+                                                    />
+                                                    <div className="w-11 h-6 bg-neutral-200 dark:bg-neutral-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-olive-600"></div>
+                                                </div>
+                                            </div>
+                                        ))}
                                     </div>
                                 </motion.div>
                             )}
