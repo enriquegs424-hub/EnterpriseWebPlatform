@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import Message from './Message';
 import MessageComposer from './MessageComposer';
-import { Loader2, MessageSquare, Search, FileText, X, Download, Settings, Trash2, UserPlus, UserMinus } from 'lucide-react';
+import { Loader2, MessageSquare, Search, FileText, X, Download, Settings, Trash2, UserPlus, UserMinus, Camera } from 'lucide-react';
 import EmptyState from '@/components/ui/EmptyState';
 import { format, isToday, isYesterday, differenceInDays } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -504,7 +504,7 @@ export default function ChatWindow({
                         animate={{ x: 0 }}
                         exit={{ x: '100%' }}
                         transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-                        className="absolute top-0 right-0 w-80 h-full bg-white dark:bg-neutral-900 border-l border-neutral-200 dark:border-neutral-700 shadow-lg z-20 flex flex-col"
+                        className="absolute top-0 right-0 w-full md:w-80 h-full bg-white dark:bg-neutral-900 border-l border-neutral-200 dark:border-neutral-700 shadow-lg z-20 flex flex-col"
                     >
                         {/* Panel Header */}
                         <div className="px-4 py-3 border-b border-neutral-200 dark:border-neutral-700 flex items-center justify-between">
@@ -585,11 +585,10 @@ export default function ChatWindow({
                 )}
             </AnimatePresence>
 
-            {/* Group Settings Modal */}
             {showSettings && chatInfo && (
                 <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-                    <div className="bg-white dark:bg-neutral-800 rounded-2xl shadow-2xl max-w-md w-full">
-                        <div className="px-6 py-4 border-b border-neutral-200 dark:border-neutral-700 flex items-center justify-between">
+                    <div className="bg-white dark:bg-neutral-800 rounded-2xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+                        <div className="px-6 py-4 border-b border-neutral-200 dark:border-neutral-700 flex items-center justify-between sticky top-0 bg-white dark:bg-neutral-800 z-10">
                             <h2 className="text-xl font-bold text-neutral-900 dark:text-white flex items-center gap-2">
                                 <Settings className="w-5 h-5 text-olive-600" />
                                 Configuración del grupo
@@ -601,47 +600,85 @@ export default function ChatWindow({
 
                         <div className="p-6 space-y-4">
                             {/* Edit Name & Image */}
-                            <div className="space-y-3">
-                                <div>
-                                    <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
+                            {/* Header: Image & Name */}
+                            <div className="flex items-start gap-4 p-4 bg-neutral-50 dark:bg-neutral-900/50 rounded-xl border border-neutral-100 dark:border-neutral-700/50">
+                                {/* Image Upload */}
+                                <div className="relative group cursor-pointer w-16 h-16 rounded-full overflow-hidden bg-white dark:bg-neutral-800 border-2 border-white dark:border-neutral-700 shadow-sm flex-shrink-0">
+                                    {newImage ? (
+                                        <img src={newImage} alt="Preview" className="w-full h-full object-cover" />
+                                    ) : (
+                                        <div className="w-full h-full flex items-center justify-center text-neutral-400 bg-neutral-100 dark:bg-neutral-800">
+                                            <Settings className="w-8 h-8 opacity-50" />
+                                        </div>
+                                    )}
+                                    <label className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity text-white cursor-pointer">
+                                        <input
+                                            type="file"
+                                            className="hidden"
+                                            accept="image/*"
+                                            onChange={async (e) => {
+                                                const file = e.target.files?.[0];
+                                                if (!file) return;
+
+                                                const formData = new FormData();
+                                                formData.append('file', file);
+
+                                                try {
+                                                    // Optimistic preview
+                                                    const reader = new FileReader();
+                                                    reader.onload = (ev) => setNewImage(ev.target?.result as string);
+                                                    reader.readAsDataURL(file);
+
+                                                    const res = await fetch('/api/upload', { method: 'POST', body: formData });
+                                                    if (res.ok) {
+                                                        const json = await res.json();
+                                                        setNewImage(json.url);
+                                                    } else {
+                                                        console.error("Upload failed");
+                                                        alert("Error al subir la imagen");
+                                                    }
+                                                } catch (err) {
+                                                    console.error("Upload error", err);
+                                                    alert("Error de conexión al subir imagen");
+                                                }
+                                            }}
+                                        />
+                                        <Camera className="w-6 h-6" />
+                                    </label>
+                                </div>
+
+                                {/* Name Input */}
+                                <div className="flex-1 space-y-1">
+                                    <label className="block text-xs font-semibold text-neutral-500 uppercase tracking-wider">
                                         Nombre del grupo
                                     </label>
                                     <input
                                         type="text"
                                         value={newName}
                                         onChange={(e) => setNewName(e.target.value)}
-                                        className="w-full px-4 py-2 bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-lg outline-none focus:ring-2 focus:ring-olive-500"
+                                        placeholder="Escribe un nombre..."
+                                        className="w-full px-0 py-2 bg-transparent border-b-2 border-neutral-200 dark:border-neutral-700 focus:border-olive-500 text-lg font-semibold text-neutral-900 dark:text-white outline-none transition-colors placeholder:text-neutral-400"
                                     />
                                 </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
-                                        Imagen (URL)
-                                    </label>
-                                    <input
-                                        type="text"
-                                        value={newImage}
-                                        onChange={(e) => setNewImage(e.target.value)}
-                                        placeholder="https://..."
-                                        className="w-full px-4 py-2 bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-lg outline-none focus:ring-2 focus:ring-olive-500"
-                                    />
-                                </div>
-                                <div className="flex justify-end">
-                                    <button
-                                        onClick={async () => {
-                                            if (newName.trim() || newImage.trim()) {
-                                                await updateGroupChat(chatId, {
-                                                    name: newName.trim() || undefined,
-                                                    image: newImage.trim() || undefined
-                                                });
-                                                setShowSettings(false);
-                                                window.location.reload();
-                                            }
-                                        }}
-                                        className="px-4 py-2 bg-olive-600 hover:bg-olive-700 text-white rounded-lg font-medium text-sm"
-                                    >
-                                        Guardar Cambios
-                                    </button>
-                                </div>
+                            </div>
+
+                            <div className="flex justify-end">
+                                <button
+                                    onClick={async () => {
+                                        if (newName.trim() || newImage.trim()) {
+                                            await updateGroupChat(chatId, {
+                                                name: newName.trim() || undefined,
+                                                image: newImage.trim() || undefined
+                                            });
+                                            setShowSettings(false);
+                                            window.location.reload();
+                                        }
+                                    }}
+                                    disabled={!newName.trim()}
+                                    className="px-4 py-2 bg-olive-600 hover:bg-olive-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg font-medium text-sm transition-colors"
+                                >
+                                    Guardar Cambios
+                                </button>
                             </div>
 
                             {/* Add Members */}
@@ -744,7 +781,8 @@ export default function ChatWindow({
                         </div>
                     </div>
                 </div>
-            )}
-        </div>
+            )
+            }
+        </div >
     );
 }

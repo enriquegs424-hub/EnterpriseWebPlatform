@@ -67,11 +67,17 @@ export default function ChatList({
     const [searchResults, setSearchResults] = useState<User[]>([]);
     const [isSearching, setIsSearching] = useState(false);
     const [isGroupDialogOpen, setIsGroupDialogOpen] = useState(false);
+    const [localChats, setLocalChats] = useState<Chat[]>(chats);
     const { error: toastError } = useToast();
 
-    // Favorites logic
-    const favorites = chats.filter(c => c.isFavorite);
-    const otherChats = chats.filter(c => !c.isFavorite);
+    // Sync local state when props change
+    useEffect(() => {
+        setLocalChats(chats);
+    }, [chats]);
+
+    // Favorites logic based on local state
+    const favorites = localChats.filter(c => c.isFavorite);
+    const otherChats = localChats.filter(c => !c.isFavorite);
 
     // Search for users when query changes
     useEffect(() => {
@@ -99,13 +105,31 @@ export default function ChatList({
 
     const handleToggleFavorite = async (e: React.MouseEvent, chatId: string) => {
         e.stopPropagation(); // Prevent chat selection
+
+        // Optimistic update
+        setLocalChats(prev => prev.map(c =>
+            c.id === chatId ? { ...c, isFavorite: !c.isFavorite } : c
+        ));
+
         try {
             await toggleChatFavorite(chatId);
             onRefreshRequest?.();
         } catch (error) {
             console.error('Error toggling favorite:', error);
+            // Revert on error
+            setLocalChats(prev => prev.map(c =>
+                c.id === chatId ? { ...c, isFavorite: !c.isFavorite } : c
+            ));
             toastError('Error', 'No se pudo actualizar el estado de favorito.');
         }
+    };
+
+    const handleChatSelect = (chatId: string) => {
+        // Optimistic read receipt
+        setLocalChats(prev => prev.map(c =>
+            c.id === chatId ? { ...c, unreadCount: 0 } : c
+        ));
+        onSelectChat(chatId);
     };
 
     const ChatItem = ({ chat }: { chat: Chat }) => {
@@ -124,7 +148,7 @@ export default function ChatList({
 
         return (
             <div
-                onClick={() => onSelectChat(chat.id)}
+                onClick={() => handleChatSelect(chat.id)}
                 className={`group relative flex items-center gap-3 p-3 cursor-pointer rounded-lg transition-all ${isSelected
                     ? 'bg-olive-100 dark:bg-olive-900/30 ring-1 ring-olive-500/20'
                     : 'hover:bg-neutral-100 dark:hover:bg-neutral-800'
