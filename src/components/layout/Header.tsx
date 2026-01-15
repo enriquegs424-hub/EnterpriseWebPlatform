@@ -1,21 +1,12 @@
 'use client';
 
-import { Bell, Search, X } from 'lucide-react';
+import { Bell, Search, X, CheckSquare, MessageSquare, Clock, Briefcase, Calendar } from 'lucide-react';
 import UserMenu from './UserMenu';
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { getMyNotifications, markNotificationAsRead, markAllNotificationsAsRead, getUnreadCount } from '@/app/(protected)/notifications/actions';
 import Link from 'next/link';
-import dynamic from 'next/dynamic';
-
-// Lazy load Timer to avoid SSR issues
-const TimerWrapper = dynamic(() => import('@/components/hours/TimerWrapper'), {
-    ssr: false,
-    loading: () => <div className="w-32 h-10 bg-neutral-100 rounded-lg animate-pulse"></div>
-});
-
-
 import GlobalSearch from '../GlobalSearch';
 
 export default function Header() {
@@ -65,15 +56,42 @@ export default function Header() {
         loadNotifications();
     };
 
-    const getNotificationIcon = (type: string) => {
-        switch (type) {
-            case 'TASK_ASSIGNED': return '📋';
-            case 'TASK_COMPLETED': return '✅';
-            case 'TASK_COMMENT': return '💬';
-            case 'TASK_DUE_SOON': return '⏰';
-            case 'HOURS_APPROVED': return '👍';
-            case 'PROJECT_ASSIGNED': return '🎯';
-            default: return '🔔';
+    const getNotificationIcon = (notif: any) => {
+        // Si tiene remitente (persona), mostrar su avatar
+        if (notif.sender) {
+            if (notif.sender.image) {
+                return (
+                    <img
+                        src={notif.sender.image}
+                        alt={notif.sender.name}
+                        className="w-8 h-8 rounded-full object-cover border border-neutral-200 dark:border-neutral-700"
+                    />
+                );
+            } else {
+                return (
+                    <div className="w-8 h-8 rounded-full bg-olive-100 dark:bg-olive-900/50 flex items-center justify-center text-olive-700 dark:text-olive-300 text-xs font-bold border border-olive-200 dark:border-olive-800">
+                        {notif.sender.name?.[0]?.toUpperCase() || 'U'}
+                    </div>
+                );
+            }
+        }
+
+        const iconProps = { size: 24, className: "text-olive-600 dark:text-olive-400 stroke-[1.5]" };
+
+        switch (notif.type) {
+            case 'TASK_ASSIGNED':
+            case 'TASK_COMPLETED':
+                return <CheckSquare {...iconProps} />;
+            case 'TASK_COMMENT':
+                return <MessageSquare {...iconProps} />;
+            case 'TASK_DUE_SOON':
+                return <Calendar {...iconProps} />;
+            case 'HOURS_APPROVED':
+                return <Clock {...iconProps} />;
+            case 'PROJECT_ASSIGNED':
+                return <Briefcase {...iconProps} />;
+            default:
+                return <Bell {...iconProps} />;
         }
     };
 
@@ -91,10 +109,7 @@ export default function Header() {
             </div>
 
             <div className="flex items-center space-x-4 ml-6">
-                {/* Timer - Lazy loaded to avoid SSR issues */}
-                <div className="hidden md:block">
-                    <TimerWrapper />
-                </div>
+
 
                 {/* Notifications */}
                 <div className="relative">
@@ -151,7 +166,9 @@ export default function Header() {
                                                         }`}
                                                 >
                                                     <div className="flex items-start space-x-3">
-                                                        <span className="text-2xl">{getNotificationIcon(notif.type)}</span>
+                                                        <div className="flex-shrink-0 mt-1">
+                                                            {getNotificationIcon(notif)}
+                                                        </div>
                                                         <div className="flex-1 min-w-0">
                                                             <p className={`text-sm font-bold ${!notif.isRead ? 'text-neutral-900' : 'text-neutral-600'}`}>
                                                                 {notif.title}

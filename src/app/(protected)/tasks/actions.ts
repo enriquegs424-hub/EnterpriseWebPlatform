@@ -172,7 +172,8 @@ export async function createTask(data: {
                     type: 'TASK_ASSIGNED',
                     title: 'Nueva tarea asignada',
                     message: `${session.user.name} te ha asignado: ${data.title}`,
-                    link: `/tasks/${task.id}`
+                    link: `/tasks/${task.id}`,
+                    senderId: session.user.id
                 });
             }
         }
@@ -252,7 +253,8 @@ export async function updateTask(taskId: string, data: {
                 type: 'TASK_COMPLETED',
                 title: 'Tarea completada',
                 message: `${session.user.name} ha completado: ${task.title}`,
-                link: `/tasks/${taskId}`
+                link: `/tasks/${taskId}`,
+                senderId: session.user.id
             });
         }
 
@@ -331,7 +333,8 @@ export async function addTaskComment(taskId: string, content: string) {
                 type: 'TASK_COMMENT',
                 title: 'Nuevo comentario en tarea',
                 message: `${session.user.name} comentó en: ${task.title}`,
-                link: `/tasks/${taskId}`
+                link: `/tasks/${taskId}`,
+                senderId: session.user.id
             });
         }
 
@@ -342,7 +345,8 @@ export async function addTaskComment(taskId: string, content: string) {
                 type: 'TASK_COMMENT',
                 title: 'Nuevo comentario en tarea',
                 message: `${session.user.name} comentó en: ${task.title}`,
-                link: `/tasks/${taskId}`
+                link: `/tasks/${taskId}`,
+                senderId: session.user.id
             });
         }
 

@@ -394,6 +394,7 @@ export async function createTeamTask(teamId: string, taskData: {
                 title: "Nueva tarea de equipo",
                 message: `${session.user.name} ha asignado al equipo "${team.name}": ${taskData.title}`,
                 link: `/tasks/${task.id}`,
+                senderId: session.user.id
             });
         }
     }

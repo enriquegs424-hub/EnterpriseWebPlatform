@@ -11,6 +11,7 @@ export async function createNotification(data: {
     title: string;
     message: string;
     link?: string;
+    senderId?: string;
 }) {
     try {
         await prisma.notification.create({
@@ -20,7 +21,8 @@ export async function createNotification(data: {
                 title: data.title,
                 message: data.message,
                 link: data.link,
-            }
+                senderId: data.senderId,
+            } as any
         });
     } catch (error) {
         console.error('Error creating notification:', error);
@@ -36,7 +38,15 @@ export async function getMyNotifications() {
         where: { userId: session.user.id },
         orderBy: { createdAt: 'desc' },
         take: 50,
-    });
+        include: {
+            sender: {
+                select: {
+                    name: true,
+                    image: true
+                }
+            }
+        }
+    } as any);
 }
 
 // Marcar notificación como leída
