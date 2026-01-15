@@ -854,3 +854,232 @@ export async function getUnreadMessages(since: Date) {
 
     return messages;
 }
+
+/**
+ * Update a group chat (name, members)
+ * ADMIN and MANAGER of the chat can update
+ */
+export async function updateGroupChat(chatId: string, data: {
+    name?: string;
+    image?: string;
+    addMemberIds?: string[];
+    removeMemberIds?: string[];
+}) {
+    const session = await auth();
+    const user = session?.user;
+    if (!user || !user.email) throw new Error('No autorizado');
+
+    const dbUser = await prisma.user.findUnique({
+        where: { email: user.email }
+    });
+    if (!dbUser) throw new Error('Usuario no encontrado');
+
+    // Get chat and check permissions
+    const chat = await prisma.chat.findUnique({
+        where: { id: chatId },
+        include: { members: true }
+    });
+
+    if (!chat) throw new Error('Chat no encontrado');
+    if (chat.type !== 'GROUP') throw new Error('Solo puedes editar chats de grupo');
+
+    // Check if user is ADMIN or MANAGER of the chat, or system ADMIN
+    const membership = chat.members.find(m => m.userId === dbUser.id);
+    const isSystemAdmin = dbUser.role === 'SUPERADMIN' || dbUser.role === 'ADMIN';
+    const isChatAdminOrManager = (membership as any)?.role === 'ADMIN' || (membership as any)?.role === 'MANAGER';
+
+    if (!isSystemAdmin && !isChatAdminOrManager) {
+        throw new Error('No tienes permisos para editar este grupo');
+    }
+
+    // Update name/image if provided
+    if (data.name || data.image) {
+        const updateData: any = {};
+        if (data.name) updateData.name = data.name;
+        if (data.image) updateData.image = data.image;
+
+        await prisma.chat.update({
+            where: { id: chatId },
+            data: updateData
+        });
+    }
+
+    // Add new members
+    if (data.addMemberIds && data.addMemberIds.length > 0) {
+        const existingIds = chat.members.map(m => m.userId);
+        const newIds = data.addMemberIds.filter(id => !existingIds.includes(id));
+
+        for (const userId of newIds) {
+            await prisma.chatMember.create({
+                data: { chatId, userId, role: 'MEMBER' } as any
+            });
+        }
+    }
+
+    // Remove members (cannot remove self if ADMIN)
+    if (data.removeMemberIds && data.removeMemberIds.length > 0) {
+        for (const userId of data.removeMemberIds) {
+            const memberToRemove = chat.members.find(m => m.userId === userId);
+            if (memberToRemove && (memberToRemove as any).role !== 'ADMIN') {
+                await prisma.chatMember.delete({
+                    where: { id: memberToRemove.id }
+                });
+            }
+        }
+    }
+
+    revalidatePath('/chat');
+    return { success: true };
+}
+
+/**
+ * Delete a group chat (SUPERADMIN/ADMIN only)
+ */
+export async function deleteGroupChat(chatId: string) {
+    const session = await auth();
+    if (!session?.user?.email) throw new Error('No autorizado');
+
+    const user = await prisma.user.findUnique({
+        where: { email: session.user.email }
+    });
+    if (!user) throw new Error('Usuario no encontrado');
+
+    // Only SUPERADMIN or ADMIN can delete
+    if (user.role !== 'SUPERADMIN' && user.role !== 'ADMIN') {
+        throw new Error('Solo los administradores pueden eliminar grupos');
+    }
+
+    const chat = await prisma.chat.findUnique({
+        where: { id: chatId }
+    });
+
+    if (!chat) throw new Error('Chat no encontrado');
+    if (chat.type !== 'GROUP') throw new Error('Solo puedes eliminar chats de grupo');
+
+    // Delete all messages, members, then chat
+    await prisma.message.deleteMany({ where: { chatId } });
+    await prisma.chatMember.deleteMany({ where: { chatId } });
+    await prisma.chat.delete({ where: { id: chatId } });
+
+    revalidatePath('/chat');
+    return { success: true };
+}
+
+/**
+ * Search messages within a chat
+ */
+export async function searchMessagesInChat(chatId: string, query: string) {
+    const session = await auth();
+    if (!session?.user?.email) throw new Error('No autorizado');
+
+    const user = await prisma.user.findUnique({
+        where: { email: session.user.email }
+    });
+    if (!user) throw new Error('Usuario no encontrado');
+
+    // Verify membership
+    const membership = await prisma.chatMember.findFirst({
+        where: { chatId, userId: user.id }
+    });
+    if (!membership) throw new Error('No eres miembro de este chat');
+
+    const messages = await prisma.message.findMany({
+        where: {
+            chatId,
+            deletedAt: null,
+            content: { contains: query, mode: 'insensitive' }
+        },
+        include: {
+            author: { select: { id: true, name: true, email: true } }
+        },
+        orderBy: { createdAt: 'desc' },
+        take: 50
+    });
+
+    return messages;
+}
+
+/**
+ * Get all attachments/files from a chat
+ */
+export async function getChatAttachments(chatId: string) {
+    const session = await auth();
+    if (!session?.user?.email) throw new Error('No autorizado');
+
+    const user = await prisma.user.findUnique({
+        where: { email: session.user.email }
+    });
+    if (!user) throw new Error('Usuario no encontrado');
+
+    // Verify membership
+    const membership = await prisma.chatMember.findFirst({
+        where: { chatId, userId: user.id }
+    });
+    if (!membership) throw new Error('No eres miembro de este chat');
+
+    // Get messages with attachments
+    const messages = await prisma.message.findMany({
+        where: {
+            chatId,
+            deletedAt: null,
+            attachments: { not: { equals: null } }
+        },
+        include: {
+            author: { select: { name: true } }
+        },
+        orderBy: { createdAt: 'desc' }
+    });
+
+    // Flatten attachments from all messages
+    const attachments: any[] = [];
+    messages.forEach(msg => {
+        if (msg.attachments && Array.isArray(msg.attachments)) {
+            (msg.attachments as any[]).forEach(att => {
+                attachments.push({
+                    ...att,
+                    messageId: msg.id,
+                    uploadedAt: msg.createdAt,
+                    uploadedBy: msg.author.name
+                });
+            });
+        }
+    });
+
+    return attachments;
+}
+
+/**
+ * Get chat info for management (including user's role)
+ */
+export async function getChatInfo(chatId: string) {
+    const session = await auth();
+    if (!session?.user?.email) throw new Error('No autorizado');
+
+    const user = await prisma.user.findUnique({
+        where: { email: session.user.email }
+    });
+    if (!user) throw new Error('Usuario no encontrado');
+
+    const chat = await prisma.chat.findUnique({
+        where: { id: chatId },
+        include: {
+            members: {
+                include: { user: { select: { id: true, name: true, email: true, role: true } } }
+            }
+        }
+    });
+
+    if (!chat) throw new Error('Chat no encontrado');
+
+    const membership = chat.members.find(m => m.userId === user.id);
+    if (!membership) throw new Error('No eres miembro de este chat');
+
+    return {
+        ...chat,
+        userRole: (membership as any).role,
+        userSystemRole: user.role,
+        canEdit: user.role === 'SUPERADMIN' || user.role === 'ADMIN' || user.role === 'MANAGER' || (membership as any).role === 'ADMIN',
+        canDelete: user.role === 'SUPERADMIN' || user.role === 'ADMIN'
+    };
+}
+

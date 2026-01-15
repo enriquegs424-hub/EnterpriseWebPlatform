@@ -107,6 +107,7 @@ model Project {
   Chat        Chat[]
   expenses    Expense[]
   invoices    Invoice[]
+  teams       Team[]      @relation("TeamProject")
 
   @@index([companyId])
   @@index([clientId])
@@ -441,6 +442,7 @@ model Chat {
   id        String   @id @default(cuid())
   type      ChatType @default(PROJECT)
   name      String? // For project chats, null for DMs
+  image     String? // URL of the chat image
   projectId String?
   project   Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
@@ -610,11 +612,20 @@ model Team {
   managerId   String?
   manager     User?    @relation("TeamManager", fields: [managerId], references: [id])
   members     User[]   @relation("TeamMembers")
+  
+  // Optional project link
+  projectId   String?
+  project     Project? @relation("TeamProject", fields: [projectId], references: [id])
+  
+  // Associated group chat
+  chatId      String?
+  
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
   @@index([companyId])
   @@index([managerId])
+  @@index([projectId])
 }
 
 // ============================================

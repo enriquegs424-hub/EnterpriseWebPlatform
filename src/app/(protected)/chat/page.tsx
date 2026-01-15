@@ -214,8 +214,12 @@ export default function ChatPage() {
                     chatName={
                         selectedChat?.type === 'PROJECT'
                             ? selectedChat?.project?.name
-                            : selectedChat?.members?.find((m: any) => m.user.id !== currentUserId)?.user.name
+                            : selectedChat?.type === 'GROUP'
+                                ? selectedChat?.name || 'Grupo'
+                                : selectedChat?.members?.find((m: any) => m.user.id !== currentUserId)?.user.name
                     }
+                    chatType={selectedChat?.type}
+                    chatMembers={selectedChat?.members}
                     messages={messages}
                     currentUserId={currentUserId}
                     onSendMessage={handleSendMessage}

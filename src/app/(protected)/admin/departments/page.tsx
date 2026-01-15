@@ -2,7 +2,11 @@
 
 import { useState, useEffect } from "react";
 import { getAllDepartmentPermissions, updateDepartmentPermissions, getDepartmentInfo } from "./actions";
-import { Building2, Users, Shield, Save, Loader2, Check, X, Minus, Info, ChevronDown, ChevronUp } from "lucide-react";
+import {
+    Building2, Users, Shield, Save, Loader2, Check, X, Minus, Info, ChevronDown, ChevronUp,
+    CheckSquare, FolderOpen, FileText, Clock, Receipt, FileCheck, Briefcase, TrendingUp,
+    Ruler, Zap, Gauge, Monitor, Coins, Megaphone, Package
+} from "lucide-react";
 import { motion } from "framer-motion";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 
@@ -14,17 +18,17 @@ export default function DepartmentsPage() {
     );
 }
 
-// Recursos y acciones (igual que en PermissionsModal)
+// Recursos y acciones (coinciden con el menú lateral)
 const RESOURCES = [
-    { id: "tasks", label: "Tareas", icon: "📋" },
-    { id: "projects", label: "Proyectos", icon: "📁" },
-    { id: "documents", label: "Documentos", icon: "📄" },
-    { id: "timeentries", label: "Horas", icon: "⏱️" },
-    { id: "expenses", label: "Gastos", icon: "💰" },
-    { id: "invoices", label: "Facturas", icon: "🧾" },
-    { id: "quotes", label: "Presupuestos", icon: "📝" },
-    { id: "clients", label: "Clientes", icon: "👥" },
-    { id: "leads", label: "Leads", icon: "🎯" },
+    { id: "tasks", label: "Tareas", Icon: CheckSquare },
+    { id: "projects", label: "Proyectos", Icon: Briefcase },
+    { id: "documents", label: "Documentos", Icon: FolderOpen },
+    { id: "timeentries", label: "Registro Diario", Icon: Clock },
+    { id: "expenses", label: "Gastos", Icon: Receipt },
+    { id: "invoices", label: "Facturas", Icon: FileText },
+    { id: "quotes", label: "Presupuestos", Icon: FileCheck },
+    { id: "clients", label: "Clientes", Icon: Users },
+    { id: "leads", label: "CRM", Icon: TrendingUp },
 ];
 
 const ACTIONS = [
@@ -37,14 +41,14 @@ const ACTIONS = [
 ];
 
 const DEPARTMENTS = [
-    { id: "CIVIL_DESIGN", label: "Diseño y Civil", icon: "📐", color: "text-blue-600 dark:text-blue-400" },
-    { id: "ELECTRICAL", label: "Eléctrico", icon: "⚡", color: "text-yellow-600 dark:text-yellow-400" },
-    { id: "INSTRUMENTATION", label: "Instrumentación", icon: "🎛️", color: "text-purple-600 dark:text-purple-400" },
-    { id: "ADMINISTRATION", label: "Administración", icon: "💼", color: "text-green-600 dark:text-green-400" },
-    { id: "IT", label: "Informática", icon: "💻", color: "text-cyan-600 dark:text-cyan-400" },
-    { id: "ECONOMIC", label: "Económico", icon: "💰", color: "text-emerald-600 dark:text-emerald-400" },
-    { id: "MARKETING", label: "Marketing", icon: "📢", color: "text-pink-600 dark:text-pink-400" },
-    { id: "OTHER", label: "Otros", icon: "📦", color: "text-gray-600 dark:text-gray-400" },
+    { id: "CIVIL_DESIGN", label: "Diseño y Civil", Icon: Ruler, accent: "border-l-olive-500" },
+    { id: "ELECTRICAL", label: "Eléctrico", Icon: Zap, accent: "border-l-olive-500" },
+    { id: "INSTRUMENTATION", label: "Instrumentación", Icon: Gauge, accent: "border-l-olive-500" },
+    { id: "ADMINISTRATION", label: "Administración", Icon: Briefcase, accent: "border-l-olive-500" },
+    { id: "IT", label: "Informática", Icon: Monitor, accent: "border-l-olive-500" },
+    { id: "ECONOMIC", label: "Económico", Icon: Coins, accent: "border-l-olive-500" },
+    { id: "MARKETING", label: "Marketing", Icon: Megaphone, accent: "border-l-olive-500" },
+    { id: "OTHER", label: "Otros", Icon: Package, accent: "border-l-neutral-400" },
 ];
 
 type PermissionState = boolean | null;
@@ -202,17 +206,27 @@ function DepartmentsContent() {
                             key={dept.id}
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
-                            className="bg-white dark:bg-neutral-900 rounded-xl shadow-sm border border-neutral-200 dark:border-neutral-800 overflow-hidden"
+                            className={`bg-white dark:bg-neutral-900 rounded-xl shadow-sm border border-neutral-200 dark:border-neutral-800 overflow-hidden border-l-4 ${dept.accent}`}
                         >
                             {/* Department Header */}
-                            <button
+                            <div
+                                role="button"
+                                tabIndex={0}
                                 onClick={() => setExpandedDept(isExpanded ? null : dept.id)}
-                                className="w-full px-6 py-4 flex items-center justify-between hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-colors"
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter' || e.key === ' ') {
+                                        e.preventDefault();
+                                        setExpandedDept(isExpanded ? null : dept.id);
+                                    }
+                                }}
+                                className="w-full px-6 py-4 flex items-center justify-between hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-colors cursor-pointer"
                             >
                                 <div className="flex items-center gap-4">
-                                    <div className="text-3xl">{dept.icon}</div>
+                                    <div className="w-10 h-10 rounded-lg bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center">
+                                        <dept.Icon className="w-5 h-5 text-neutral-600 dark:text-neutral-400" />
+                                    </div>
                                     <div className="text-left">
-                                        <h3 className={`text-lg font-bold ${dept.color}`}>
+                                        <h3 className="text-lg font-bold text-neutral-900 dark:text-neutral-100">
                                             {dept.label}
                                         </h3>
                                         <p className="text-sm text-neutral-500 dark:text-neutral-400 flex items-center gap-2">
@@ -246,7 +260,7 @@ function DepartmentsContent() {
                                     )}
                                     {isExpanded ? <ChevronUp /> : <ChevronDown />}
                                 </div>
-                            </button>
+                            </div>
 
                             {/* Permissions Grid */}
                             {isExpanded && (
@@ -256,77 +270,96 @@ function DepartmentsContent() {
                                     exit={{ height: 0, opacity: 0 }}
                                     className="border-t border-neutral-200 dark:border-neutral-800 p-6"
                                 >
-                                    <div className="overflow-x-auto">
-                                        <table className="w-full border-collapse">
-                                            <thead>
-                                                <tr className="bg-neutral-50 dark:bg-neutral-800">
-                                                    <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-700 dark:text-neutral-300 border border-neutral-200 dark:border-neutral-700">
-                                                        Recurso
-                                                    </th>
-                                                    {ACTIONS.map(action => (
-                                                        <th
-                                                            key={action.id}
-                                                            className="px-3 py-3 text-center text-xs font-semibold text-neutral-700 dark:text-neutral-300 border border-neutral-200 dark:border-neutral-700"
-                                                        >
-                                                            {action.label}
-                                                        </th>
-                                                    ))}
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                {RESOURCES.map(resource => (
-                                                    <tr key={resource.id} className="hover:bg-neutral-50/50 dark:hover:bg-neutral-800/30">
-                                                        <td className="px-4 py-2 text-sm font-medium text-neutral-900 dark:text-neutral-100 border border-neutral-200 dark:border-neutral-700">
-                                                            <span className="flex items-center gap-2">
-                                                                <span>{resource.icon}</span>
-                                                                {resource.label}
-                                                            </span>
-                                                        </td>
-                                                        {ACTIONS.map(action => {
-                                                            const state = permissions[dept.id]?.[resource.id]?.[action.id] ?? null;
-                                                            return (
-                                                                <td
-                                                                    key={action.id}
-                                                                    className="border border-neutral-200 dark:border-neutral-700 p-1"
-                                                                >
-                                                                    <button
-                                                                        onClick={() => togglePermission(dept.id, resource.id, action.id)}
-                                                                        className={`w-full h-10 rounded-lg border-2 transition-all flex items-center justify-center hover:scale-105 ${getPermissionColor(state)}`}
-                                                                    >
-                                                                        {getPermissionIcon(state)}
-                                                                    </button>
-                                                                </td>
-                                                            );
-                                                        })}
-                                                    </tr>
-                                                ))}
-                                            </tbody>
-                                        </table>
+                                    {/* Permissions Card Grid */}
+                                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                                        {RESOURCES.map(resource => (
+                                            <div
+                                                key={resource.id}
+                                                className="bg-neutral-50 dark:bg-neutral-800/50 rounded-xl p-4 border border-neutral-200 dark:border-neutral-700"
+                                            >
+                                                {/* Resource Header */}
+                                                <div className="flex items-center gap-3 mb-4 pb-3 border-b border-neutral-200 dark:border-neutral-700">
+                                                    <resource.Icon className="w-5 h-5 text-neutral-500 dark:text-neutral-400" />
+                                                    <h4 className="font-semibold text-neutral-900 dark:text-neutral-100">
+                                                        {resource.label}
+                                                    </h4>
+                                                </div>
+
+                                                {/* Actions Grid */}
+                                                <div className="grid grid-cols-3 gap-2">
+                                                    {ACTIONS.map(action => {
+                                                        const state = permissions[dept.id]?.[resource.id]?.[action.id] ?? null;
+                                                        return (
+                                                            <button
+                                                                key={action.id}
+                                                                onClick={() => togglePermission(dept.id, resource.id, action.id)}
+                                                                className={`flex flex-col items-center justify-center p-2 rounded-lg border-2 transition-all hover:scale-105 ${state === true
+                                                                    ? 'bg-green-50 dark:bg-green-900/20 border-green-300 dark:border-green-700'
+                                                                    : state === false
+                                                                        ? 'bg-red-50 dark:bg-red-900/20 border-red-300 dark:border-red-700'
+                                                                        : 'bg-white dark:bg-neutral-800 border-neutral-200 dark:border-neutral-600'
+                                                                    }`}
+                                                            >
+                                                                <div className={`w-6 h-6 rounded-full flex items-center justify-center mb-1 ${state === true
+                                                                    ? 'bg-green-500 text-white'
+                                                                    : state === false
+                                                                        ? 'bg-red-500 text-white'
+                                                                        : 'bg-neutral-300 dark:bg-neutral-600 text-neutral-600 dark:text-neutral-300'
+                                                                    }`}>
+                                                                    {state === true ? <Check className="w-3.5 h-3.5" /> :
+                                                                        state === false ? <X className="w-3.5 h-3.5" /> :
+                                                                            <Minus className="w-3.5 h-3.5" />}
+                                                                </div>
+                                                                <span className={`text-[10px] font-bold uppercase tracking-wide ${state === true
+                                                                    ? 'text-green-700 dark:text-green-400'
+                                                                    : state === false
+                                                                        ? 'text-red-700 dark:text-red-400'
+                                                                        : 'text-neutral-500 dark:text-neutral-400'
+                                                                    }`}>
+                                                                    {action.label}
+                                                                </span>
+                                                            </button>
+                                                        );
+                                                    })}
+                                                </div>
+                                            </div>
+                                        ))}
                                     </div>
 
                                     {/* Users in Department */}
                                     {info?.users && info.users.length > 0 && (
                                         <div className="mt-6 pt-6 border-t border-neutral-200 dark:border-neutral-800">
-                                            <h4 className="text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-3 flex items-center gap-2">
-                                                <Users className="w-4 h-4" />
-                                                Usuarios en este departamento ({info.userCount})
-                                            </h4>
-                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                                            <div className="flex items-center justify-between mb-4">
+                                                <h4 className="text-sm font-bold text-neutral-700 dark:text-neutral-300 flex items-center gap-2">
+                                                    <Users className="w-4 h-4" />
+                                                    Usuarios en este departamento
+                                                    <span className="ml-2 px-2 py-0.5 bg-neutral-200 dark:bg-neutral-700 rounded-full text-xs">
+                                                        {info.userCount}
+                                                    </span>
+                                                </h4>
+                                            </div>
+                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
                                                 {info.users.map((user: any) => (
                                                     <div
                                                         key={user.id}
-                                                        className="flex items-center gap-2 p-2 bg-neutral-50 dark:bg-neutral-800 rounded-lg text-sm"
+                                                        className="flex items-center gap-3 p-3 bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700 shadow-sm hover:shadow-md transition-all"
                                                     >
-                                                        <div className="w-8 h-8 rounded-full bg-olive-100 dark:bg-olive-900/30 flex items-center justify-center text-olive-700 dark:text-olive-400 font-bold">
-                                                            {user.name[0]}
+                                                        <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm ${user.role === 'ADMIN' ? 'bg-purple-500' :
+                                                            user.role === 'MANAGER' ? 'bg-blue-500' :
+                                                                'bg-olive-500'
+                                                            }`}>
+                                                            {user.name?.[0]?.toUpperCase() || '?'}
                                                         </div>
                                                         <div className="flex-1 min-w-0">
-                                                            <p className="font-semibold text-neutral-900 dark:text-neutral-100 truncate">
+                                                            <p className="font-bold text-neutral-900 dark:text-neutral-100 truncate text-sm">
                                                                 {user.name}
                                                             </p>
-                                                            <p className="text-xs text-neutral-500 dark:text-neutral-400">
+                                                            <span className={`inline-block text-[10px] font-bold uppercase px-1.5 py-0.5 rounded ${user.role === 'ADMIN' ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400' :
+                                                                user.role === 'MANAGER' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' :
+                                                                    'bg-neutral-100 text-neutral-600 dark:bg-neutral-700 dark:text-neutral-400'
+                                                                }`}>
                                                                 {user.role}
-                                                            </p>
+                                                            </span>
                                                         </div>
                                                     </div>
                                                 ))}
