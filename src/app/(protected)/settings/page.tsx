@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { getCurrentUser, updateUserProfile, changePassword, updateUserPreferences, getDepartments, getTimezones } from './actions';
 import { useSession } from 'next-auth/react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { User, Lock, Bell, Palette, Save, AlertCircle, CheckCircle2, Eye, EyeOff, Sun, Moon, Clock, Globe, Accessibility, Briefcase, Phone, FileText } from 'lucide-react';
+import { User, Lock, Bell, Palette, Save, AlertCircle, CheckCircle2, Eye, EyeOff, Sun, Moon, Clock, Globe, Accessibility, Briefcase, Phone, FileText, Monitor } from 'lucide-react';
 import { useTheme } from '@/providers/ThemeProvider';
 
 export default function SettingsPage() {
@@ -597,27 +597,38 @@ export default function SettingsPage() {
                                         <p className="text-sm text-theme-tertiary">Personaliza tu experiencia visual en la plataforma.</p>
                                     </div>
 
-                                    <div className="grid grid-cols-2 gap-4">
+                                    <div className="grid grid-cols-3 gap-4">
                                         <div
                                             onClick={() => setTheme('light')}
-                                            className={`p-4 rounded-3xl border-2 shadow-lg cursor-pointer flex flex-col items-center text-center transition-all ${theme === 'light' || theme === 'system' ? 'bg-olive-50 border-olive-500 shadow-olive-600/10' : 'bg-white border-transparent hover:border-neutral-200'}`}
+                                            className={`p-4 rounded-2xl border-2 cursor-pointer flex flex-col items-center text-center transition-all ${theme === 'light' ? 'bg-olive-50 dark:bg-olive-900/30 border-olive-500 shadow-lg shadow-olive-600/10' : 'bg-white dark:bg-neutral-800 border-neutral-200 dark:border-neutral-700 hover:border-olive-300 dark:hover:border-olive-700'}`}
                                         >
-                                            <div className="w-12 h-12 bg-olive-600 rounded-2xl mb-3 flex items-center justify-center text-white shadow-inner">
+                                            <div className="w-12 h-12 bg-gradient-to-br from-amber-400 to-orange-500 rounded-2xl mb-3 flex items-center justify-center text-white shadow-lg">
                                                 <Sun size={24} />
                                             </div>
-                                            <p className={`font-black text-sm ${theme === 'light' ? 'text-olive-900' : 'text-neutral-600'}`}>Modo Claro</p>
-                                            {theme === 'light' && <p className="text-[10px] text-olive-600/70 font-bold uppercase tracking-widest mt-1">Activo</p>}
+                                            <p className={`font-bold text-sm ${theme === 'light' ? 'text-olive-700 dark:text-olive-300' : 'text-neutral-600 dark:text-neutral-300'}`}>Claro</p>
+                                            {theme === 'light' && <p className="text-[10px] text-olive-600 font-bold uppercase tracking-widest mt-1">Activo</p>}
                                         </div>
 
                                         <div
                                             onClick={() => setTheme('dark')}
-                                            className={`p-4 rounded-3xl border-2 shadow-lg cursor-pointer flex flex-col items-center text-center transition-all ${theme === 'dark' ? 'bg-neutral-800 border-neutral-600 shadow-neutral-900/10' : 'bg-white border-transparent hover:border-neutral-200'}`}
+                                            className={`p-4 rounded-2xl border-2 cursor-pointer flex flex-col items-center text-center transition-all ${theme === 'dark' ? 'bg-neutral-800 border-olive-500 shadow-lg' : 'bg-white dark:bg-neutral-800 border-neutral-200 dark:border-neutral-700 hover:border-olive-300 dark:hover:border-olive-700'}`}
                                         >
-                                            <div className="w-12 h-12 bg-neutral-900 rounded-2xl mb-3 flex items-center justify-center text-white shadow-inner">
+                                            <div className="w-12 h-12 bg-gradient-to-br from-indigo-600 to-purple-700 rounded-2xl mb-3 flex items-center justify-center text-white shadow-lg">
                                                 <Moon size={24} />
                                             </div>
-                                            <p className={`font-black text-sm ${theme === 'dark' ? 'text-white' : 'text-neutral-600'}`}>Modo Oscuro</p>
-                                            {theme === 'dark' && <p className="text-[10px] text-neutral-400 font-bold uppercase tracking-widest mt-1">Activo</p>}
+                                            <p className={`font-bold text-sm ${theme === 'dark' ? 'text-white' : 'text-neutral-600 dark:text-neutral-300'}`}>Oscuro</p>
+                                            {theme === 'dark' && <p className="text-[10px] text-olive-400 font-bold uppercase tracking-widest mt-1">Activo</p>}
+                                        </div>
+
+                                        <div
+                                            onClick={() => setTheme('system')}
+                                            className={`p-4 rounded-2xl border-2 cursor-pointer flex flex-col items-center text-center transition-all ${theme === 'system' ? 'bg-olive-50 dark:bg-olive-900/30 border-olive-500 shadow-lg shadow-olive-600/10' : 'bg-white dark:bg-neutral-800 border-neutral-200 dark:border-neutral-700 hover:border-olive-300 dark:hover:border-olive-700'}`}
+                                        >
+                                            <div className="w-12 h-12 bg-gradient-to-br from-neutral-400 to-neutral-600 rounded-2xl mb-3 flex items-center justify-center text-white shadow-lg">
+                                                <Monitor size={24} />
+                                            </div>
+                                            <p className={`font-bold text-sm ${theme === 'system' ? 'text-olive-700 dark:text-olive-300' : 'text-neutral-600 dark:text-neutral-300'}`}>Sistema</p>
+                                            {theme === 'system' && <p className="text-[10px] text-olive-600 font-bold uppercase tracking-widest mt-1">Activo</p>}
                                         </div>
                                     </div>
 

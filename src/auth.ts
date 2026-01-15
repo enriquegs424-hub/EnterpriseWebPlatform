@@ -115,6 +115,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             if (token && session.user) {
                 session.user.id = token.id;
                 session.user.role = token.role;
+                session.user.image = token.image as string;
                 (session.user as any).companyId = token.companyId;
                 (session.user as any).preferences = token.preferences;
             }
