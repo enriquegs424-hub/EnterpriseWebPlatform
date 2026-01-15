@@ -73,10 +73,7 @@ export default function Message({
     const isDeleted = !!deletedAt;
 
     return (
-        <motion.div
-            initial={{ opacity: 0, y: 5 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.15 }}
+        <div
             className={`group flex gap-3 px-6 py-2.5 hover:bg-neutral-50/70 dark:hover:bg-neutral-800/50 transition-colors relative ${isDeleted ? 'opacity-50' : ''
                 } ${isOwnMessage ? 'flex-row-reverse' : ''}`}
             onMouseEnter={() => setShowActions(true)}
@@ -222,6 +219,6 @@ export default function Message({
                     </motion.div>
                 )}
             </AnimatePresence>
-        </motion.div>
+        </div>
     );
 }

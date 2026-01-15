@@ -12,6 +12,7 @@ import { useToast } from '@/components/ui/Toast';
 interface Chat {
     id: string;
     name?: string | null;
+    image?: string | null;
     type: 'PROJECT' | 'DIRECT' | 'GROUP';
     isFavorite: boolean;
     role: string;
@@ -155,12 +156,21 @@ export default function ChatList({
                     }`}
             >
                 <div className="relative flex-shrink-0">
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold border-2 ${isSelected
-                        ? 'bg-white text-olive-700 border-olive-200'
-                        : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 border-transparent'
-                        }`}>
-                        {initials}
-                    </div>
+                    {chat.type === 'GROUP' && chat.image ? (
+                        <div className={`w-10 h-10 rounded-full overflow-hidden border-2 ${isSelected
+                            ? 'border-olive-200'
+                            : 'border-transparent'
+                            }`}>
+                            <img src={chat.image} alt={title} className="w-full h-full object-cover" />
+                        </div>
+                    ) : (
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold border-2 ${isSelected
+                            ? 'bg-white text-olive-700 border-olive-200'
+                            : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 border-transparent'
+                            }`}>
+                            {initials}
+                        </div>
+                    )}
                     {/* Presence dot */}
                     <span className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white dark:border-neutral-950 ${isOnline ? 'bg-emerald-500' : 'bg-neutral-400'
                         }`} />
@@ -290,25 +300,43 @@ export default function ChatList({
                             </div>
                         )}
 
-                        {/* Other Chats Section */}
+                        {/* Chats Section (Recents - Mixed DMs and Groups) */}
                         <div className="space-y-1">
                             <div className="px-3 flex items-center gap-2 text-xs font-bold text-neutral-500 uppercase tracking-wider">
                                 <MessageSquare className="w-3 h-3" />
-                                <span>Chats Recientes</span>
+                                <span>Chats</span>
                             </div>
                             {otherChats.map(chat => (
                                 <ChatItem key={chat.id} chat={chat} />
                             ))}
-                            {chats.length === 0 && (
-                                <div className="text-center py-10 px-4">
-                                    <div className="w-12 h-12 bg-neutral-100 dark:bg-neutral-800 rounded-full flex items-center justify-center mx-auto mb-3">
-                                        <MessageSquare className="w-6 h-6 text-neutral-400" />
-                                    </div>
-                                    <h3 className="text-sm font-bold text-neutral-900 dark:text-neutral-100">No hay chats aún</h3>
-                                    <p className="text-xs text-neutral-500 mt-1">Busca un usuario arriba para comenzar una conversación.</p>
-                                </div>
+                            {otherChats.length === 0 && favorites.length === 0 && (
+                                <div className="px-3 text-xs text-neutral-400 italic">No hay chats recientes</div>
                             )}
                         </div>
+
+                        {/* Teams/Groups Section (Directory of all groups) */}
+                        <div className="space-y-1">
+                            <div className="px-3 flex items-center gap-2 text-xs font-bold text-neutral-500 uppercase tracking-wider">
+                                <UsersIcon className="w-3 h-3" />
+                                <span>Equipos y canales</span>
+                            </div>
+                            {chats.filter(c => c.type !== 'DIRECT').map(chat => (
+                                <ChatItem key={chat.id} chat={chat} />
+                            ))}
+                            {chats.filter(c => c.type !== 'DIRECT').length === 0 && (
+                                <div className="px-3 text-xs text-neutral-400 italic">No hay grupos</div>
+                            )}
+                        </div>
+
+                        {chats.length === 0 && (
+                            <div className="text-center py-10 px-4">
+                                <div className="w-12 h-12 bg-neutral-100 dark:bg-neutral-800 rounded-full flex items-center justify-center mx-auto mb-3">
+                                    <MessageSquare className="w-6 h-6 text-neutral-400" />
+                                </div>
+                                <h3 className="text-sm font-bold text-neutral-900 dark:text-neutral-100">No hay chats aún</h3>
+                                <p className="text-xs text-neutral-500 mt-1">Busca un usuario arriba para comenzar una conversación.</p>
+                            </div>
+                        )}
                     </div>
                 )}
             </div>

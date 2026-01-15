@@ -124,6 +124,43 @@ export default function ChatPage() {
         try {
             const newMessage = await sendMessage(selectedChatId, content, attachments, replyToId);
             setMessages(prev => [...prev, newMessage]);
+
+            // Update chat list
+            setChats(prev => {
+                const chatIndex = prev.findIndex(c => c.id === selectedChatId);
+                if (chatIndex === -1) return prev;
+
+                const chat = { ...prev[chatIndex] };
+                chat.lastMessage = {
+                    content: newMessage.content,
+                    createdAt: newMessage.createdAt,
+                    author: newMessage.author
+                };
+                chat.updatedAt = newMessage.createdAt;
+
+                // Remove from current position and add to top (after favorites if implemented, but here just top of list)
+                // Actually `getUserChats` sorts by Favorites then Date.
+                // We should maintain that.
+
+                const newChats = [...prev];
+                newChats.splice(chatIndex, 1);
+
+                // If it is a favorite, it stays in favorites section (which are at the top usually).
+                // If we perform a full sort it's safer.
+                newChats.push(chat);
+
+                return newChats.sort((a, b) => {
+                    // 1. Favorites first
+                    if (a.isFavorite && !b.isFavorite) return -1;
+                    if (!a.isFavorite && b.isFavorite) return 1;
+
+                    // 2. Sort by update time (desc)
+                    const dateA = a.lastMessage?.createdAt || a.updatedAt;
+                    const dateB = b.lastMessage?.createdAt || b.updatedAt;
+                    return new Date(dateB).getTime() - new Date(dateA).getTime();
+                });
+            });
+
             toast.success('Mensaje enviado', 'Tu mensaje ha sido enviado correctamente');
         } catch (error: any) {
             toast.error('Error', error.message || 'No se pudo enviar el mensaje');
