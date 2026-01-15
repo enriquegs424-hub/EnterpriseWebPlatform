@@ -139,10 +139,10 @@ export default function GlobalSearch({ isOpen, onClose }: GlobalSearchProps) {
                         animate={{ scale: 1, opacity: 1, y: 0 }}
                         exit={{ scale: 0.98, opacity: 0, y: -10 }}
                         transition={{ duration: 0.15, ease: "easeOut" }}
-                        className="bg-white rounded-3xl shadow-2xl max-w-3xl w-full overflow-hidden border border-neutral-200"
+                        className="bg-white dark:bg-neutral-900 rounded-3xl shadow-2xl max-w-3xl w-full overflow-hidden border border-neutral-200 dark:border-neutral-800"
                     >
                         {/* Search Input */}
-                        <div className="p-6 border-b border-neutral-200">
+                        <div className="p-6 border-b border-neutral-200 dark:border-neutral-800">
                             <div className="relative">
                                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 text-neutral-400" />
                                 <input
@@ -150,44 +150,24 @@ export default function GlobalSearch({ isOpen, onClose }: GlobalSearchProps) {
                                     value={query}
                                     onChange={(e) => setQuery(e.target.value)}
                                     placeholder="Buscar tareas, proyectos, documentos..."
-                                    className="w-full pl-14 pr-12 py-4 text-lg bg-neutral-50 border border-neutral-200 rounded-2xl focus:ring-4 focus:ring-olive-500/10 focus:border-olive-500 outline-none"
+                                    className="w-full pl-14 pr-12 py-4 text-lg bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-200 dark:border-neutral-700 rounded-2xl focus:ring-4 focus:ring-olive-500/10 focus:border-olive-500 outline-none text-neutral-900 dark:text-neutral-100 placeholder-neutral-400 dark:placeholder-neutral-500 transition-all"
                                     autoFocus
                                 />
                                 <button
                                     onClick={onClose}
-                                    className="absolute right-4 top-1/2 -translate-y-1/2 p-2 hover:bg-neutral-100 rounded-lg transition-all"
+                                    className="absolute right-4 top-1/2 -translate-y-1/2 p-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-all"
                                 >
-                                    <X size={20} className="text-neutral-400" />
+                                    <X size={20} className="text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300" />
                                 </button>
-                            </div>
-                            <div className="flex items-center justify-between mt-3 text-xs text-neutral-500">
-                                <div className="flex items-center space-x-4">
-                                    <span className="flex items-center space-x-1">
-                                        <kbd className="px-2 py-1 bg-neutral-100 rounded border border-neutral-200">↑↓</kbd>
-                                        <span>Navegar</span>
-                                    </span>
-                                    <span className="flex items-center space-x-1">
-                                        <kbd className="px-2 py-1 bg-neutral-100 rounded border border-neutral-200">Enter</kbd>
-                                        <span>Abrir</span>
-                                    </span>
-                                    <span className="flex items-center space-x-1">
-                                        <kbd className="px-2 py-1 bg-neutral-100 rounded border border-neutral-200">Esc</kbd>
-                                        <span>Cerrar</span>
-                                    </span>
-                                </div>
-                                <span className="flex items-center space-x-1">
-                                    <Command size={12} />
-                                    <span>K para abrir</span>
-                                </span>
                             </div>
                         </div>
 
                         {/* Results */}
-                        <div className="max-h-[60vh] overflow-y-auto">
+                        <div className="max-h-[60vh] overflow-y-auto custom-scrollbar">
                             {loading ? (
                                 <div className="p-12 text-center">
                                     <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-olive-600 border-t-transparent"></div>
-                                    <p className="mt-4 text-neutral-500">Buscando...</p>
+                                    <p className="mt-4 text-neutral-500 dark:text-neutral-400">Buscando...</p>
                                 </div>
                             ) : results.length > 0 ? (
                                 <div className="p-2">
@@ -196,8 +176,8 @@ export default function GlobalSearch({ isOpen, onClose }: GlobalSearchProps) {
                                             key={result.id}
                                             onClick={() => handleSelectResult(result)}
                                             className={`w-full p-4 rounded-xl transition-all flex items-center space-x-4 ${index === selectedIndex
-                                                ? 'bg-olive-50 border-2 border-olive-600'
-                                                : 'hover:bg-neutral-50 border-2 border-transparent'
+                                                ? 'bg-olive-50 dark:bg-olive-900/20 border-2 border-olive-600 dark:border-olive-500'
+                                                : 'hover:bg-neutral-50 dark:hover:bg-neutral-800/50 border-2 border-transparent'
                                                 }`}
                                         >
                                             <div className="flex-shrink-0">
@@ -205,13 +185,13 @@ export default function GlobalSearch({ isOpen, onClose }: GlobalSearchProps) {
                                             </div>
                                             <div className="flex-1 text-left">
                                                 <div className="flex items-center space-x-2">
-                                                    <h4 className="font-bold text-neutral-900">{result.title}</h4>
-                                                    <span className="px-2 py-0.5 bg-neutral-100 text-neutral-600 rounded text-xs font-medium">
+                                                    <h4 className="font-bold text-neutral-900 dark:text-neutral-100">{result.title}</h4>
+                                                    <span className="px-2 py-0.5 bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 rounded text-xs font-medium">
                                                         {getTypeLabel(result.type)}
                                                     </span>
                                                 </div>
                                                 {result.subtitle && (
-                                                    <p className="text-sm text-neutral-500 mt-1">{result.subtitle}</p>
+                                                    <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-1">{result.subtitle}</p>
                                                 )}
                                             </div>
                                         </button>
@@ -219,15 +199,15 @@ export default function GlobalSearch({ isOpen, onClose }: GlobalSearchProps) {
                                 </div>
                             ) : query.trim() ? (
                                 <div className="p-12 text-center">
-                                    <Search size={48} className="mx-auto text-neutral-200 mb-4" />
-                                    <h3 className="text-lg font-bold text-neutral-400 mb-2">Sin resultados</h3>
-                                    <p className="text-neutral-400">No se encontraron resultados para "{query}"</p>
+                                    <Search size={48} className="mx-auto text-neutral-200 dark:text-neutral-700 mb-4" />
+                                    <h3 className="text-lg font-bold text-neutral-400 dark:text-neutral-500 mb-2">Sin resultados</h3>
+                                    <p className="text-neutral-400 dark:text-neutral-500">No se encontraron resultados para "{query}"</p>
                                 </div>
                             ) : (
                                 <div className="p-12 text-center">
-                                    <Search size={48} className="mx-auto text-neutral-200 mb-4" />
-                                    <h3 className="text-lg font-bold text-neutral-400 mb-2">Búsqueda Global</h3>
-                                    <p className="text-neutral-400">Busca tareas, proyectos, documentos y más...</p>
+                                    <Search size={48} className="mx-auto text-neutral-200 dark:text-neutral-700 mb-4" />
+                                    <h3 className="text-lg font-bold text-neutral-400 dark:text-neutral-500 mb-2">Búsqueda Global</h3>
+                                    <p className="text-neutral-400 dark:text-neutral-500">Busca tareas, proyectos, documentos y más...</p>
                                 </div>
                             )}
                         </div>

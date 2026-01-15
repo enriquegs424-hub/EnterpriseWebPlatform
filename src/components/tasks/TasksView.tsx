@@ -43,14 +43,14 @@ export default function TasksView({ projectId }: TasksViewProps) {
     const filteredTasks = tasks.filter(task => {
         if (filterType === 'all') return true;
 
-        const isAssignedToMe = task.assignedToId === session?.user?.id;
+        const isAssignedToMe = task.assignedToId === session?.user?.id || task.assignees?.some((u: any) => u.id === session?.user?.id);
 
         if (filterType === 'assigned_to_me') {
             return isAssignedToMe;
         }
 
         if (filterType === 'assigned_by_me') {
-            return task.createdById === session?.user?.id && task.assignedToId !== session?.user?.id;
+            return task.createdById === session?.user?.id && !isAssignedToMe;
         }
 
         return true;
@@ -293,89 +293,113 @@ export default function TasksView({ projectId }: TasksViewProps) {
                                     <p className="text-neutral-400 dark:text-neutral-500">No hay tareas que coincidan con el filtro</p>
                                 </div>
                             ) : (
-                                filteredTasks.map((task) => (
-                                    <motion.div
-                                        key={task.id}
-                                        layout
-                                        initial={{ opacity: 0, y: 10 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        onClick={() => {
-                                            setSelectedTask(task);
-                                            // setIsDetailsOpen(true);
-                                        }}
-                                        className={`group bg-white dark:bg-neutral-900 rounded-xl p-4 shadow-sm hover:shadow-md transition-all cursor-pointer border border-neutral-200 dark:border-neutral-800 relative overflow-hidden ${task.assignedToId === session?.user?.id
+                                filteredTasks.map((task) => {
+                                    const assignees = task.assignees && task.assignees.length > 0
+                                        ? task.assignees
+                                        : (task.assignedTo ? [task.assignedTo] : []);
+                                    const isAssignedToMe = assignees.some((u: any) => u.id === session?.user?.id);
+                                    // If assigned to me, show creator. If assigned to others, show assignees.
+                                    const displayUsers = isAssignedToMe ? [task.createdBy] : assignees;
+                                    const label = isAssignedToMe ? 'De' : 'Para';
+
+                                    return (
+                                        <motion.div
+                                            key={task.id}
+                                            layout
+                                            initial={{ opacity: 0, y: 10 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            onClick={() => {
+                                                setSelectedTask(task);
+                                                // setIsDetailsOpen(true);
+                                            }}
+                                            className={`group bg-white dark:bg-neutral-900 rounded-xl p-4 shadow-sm hover:shadow-md transition-all cursor-pointer border border-neutral-200 dark:border-neutral-800 relative overflow-hidden ${isAssignedToMe
                                                 ? 'border-l-[6px] border-l-olive-600 dark:border-l-olive-500'
                                                 : 'border-l-[6px] border-l-neutral-300 dark:border-l-neutral-600 border-l-dashed'
-                                            }`}
-                                    >
-                                        <div className="flex flex-col md:flex-row md:items-center gap-4">
-                                            {/* Left: Status & Info - SIMPLIFIED */}
-                                            <div className="flex-1 min-w-0">
-                                                <div className="flex items-center gap-2 mb-1">
-                                                    {/* Minimized Status Badge */}
-                                                    <div className={`w-2 h-2 rounded-full ${task.status === 'COMPLETED' ? 'bg-green-500' :
+                                                }`}
+                                        >
+                                            <div className="flex flex-col md:flex-row md:items-center gap-4">
+                                                {/* Left: Status & Info - SIMPLIFIED */}
+                                                <div className="flex-1 min-w-0">
+                                                    <div className="flex items-center gap-2 mb-1">
+                                                        {/* Minimized Status Badge */}
+                                                        <div className={`w-2 h-2 rounded-full ${task.status === 'COMPLETED' ? 'bg-green-500' :
                                                             task.status === 'IN_PROGRESS' ? 'bg-blue-500' :
                                                                 'bg-neutral-400'
-                                                        }`} />
-                                                    <span className="text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wide">
-                                                        {task.status === 'IN_PROGRESS' ? 'En Curso' : task.status}
-                                                    </span>
-
-                                                    {/* My Task Badge (only if assigned to me) */}
-                                                    {task.assignedToId === session?.user?.id && (
-                                                        <span className="bg-olive-100 text-olive-700 dark:bg-olive-900/30 dark:text-olive-400 text-[10px] font-bold px-1.5 py-0.5 rounded ml-2">
-                                                            PARA MÍ
+                                                            }`} />
+                                                        <span className="text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wide">
+                                                            {task.status === 'IN_PROGRESS' ? 'En Curso' : task.status}
                                                         </span>
+
+                                                        {/* My Task Badge (only if assigned to me) */}
+                                                        {isAssignedToMe && (
+                                                            <span className="bg-olive-100 text-olive-700 dark:bg-olive-900/30 dark:text-olive-400 text-[10px] font-bold px-1.5 py-0.5 rounded ml-2">
+                                                                PARA MÍ
+                                                            </span>
+                                                        )}
+                                                    </div>
+
+                                                    <h3 className="font-bold text-neutral-900 dark:text-neutral-100 truncate text-base leading-tight">
+                                                        {task.title}
+                                                    </h3>
+
+                                                    {task.project && (
+                                                        <p className="text-xs text-neutral-400 mt-1 font-medium">
+                                                            {task.project.code} • {task.project.name}
+                                                        </p>
                                                     )}
                                                 </div>
 
-                                                <h3 className="font-bold text-neutral-900 dark:text-neutral-100 truncate text-base leading-tight">
-                                                    {task.title}
-                                                </h3>
-
-                                                {task.project && (
-                                                    <p className="text-xs text-neutral-400 mt-1 font-medium">
-                                                        {task.project.code} • {task.project.name}
-                                                    </p>
-                                                )}
-                                            </div>
-
-                                            {/* Right: User Info & Meta - SIMPLIFIED */}
-                                            <div className="flex items-center gap-5 text-sm">
-                                                {/* Priority Dot */}
-                                                <div className="flex items-center gap-1.5" title={`Prioridad: ${task.priority}`}>
-                                                    <div className={`w-2 h-2 rounded-full ${task.priority === 'URGENT' ? 'bg-red-500' :
+                                                {/* Right: User Info & Meta - SIMPLIFIED */}
+                                                <div className="flex items-center gap-5 text-sm">
+                                                    {/* Priority Dot */}
+                                                    <div className="flex items-center gap-1.5" title={`Prioridad: ${task.priority}`}>
+                                                        <div className={`w-2 h-2 rounded-full ${task.priority === 'URGENT' ? 'bg-red-500' :
                                                             task.priority === 'HIGH' ? 'bg-orange-500' :
                                                                 task.priority === 'MEDIUM' ? 'bg-blue-500' :
                                                                     'bg-neutral-300'
-                                                        }`} />
-                                                </div>
-
-                                                {task.dueDate && (
-                                                    <div className={`flex items-center gap-1.5 text-xs ${new Date(task.dueDate) < new Date() ? 'text-error-600 font-bold' : 'text-neutral-500'
-                                                        }`}>
-                                                        <Calendar size={14} />
-                                                        <span>{new Date(task.dueDate).toLocaleDateString(undefined, { day: 'numeric', month: 'short' })}</span>
+                                                            }`} />
                                                     </div>
-                                                )}
 
-                                                <div className="flex items-center gap-2 pl-4 border-l border-neutral-100 dark:border-neutral-800">
-                                                    <div className="text-right hidden sm:block">
-                                                        <p className="text-[10px] font-bold uppercase tracking-wide opacity-50">
-                                                            {task.assignedToId === session?.user?.id ? 'De' : 'Para'}
-                                                        </p>
-                                                        <p className="text-xs font-bold text-neutral-700 dark:text-neutral-300 truncate max-w-[80px]">
-                                                            {task.assignedToId === session?.user?.id ? task.createdBy.name.split(' ')[0] : task.assignedTo.name.split(' ')[0]}
-                                                        </p>
-                                                    </div>
-                                                    <div className="w-8 h-8 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-xs font-bold text-neutral-600 dark:text-neutral-300 ring-2 ring-white dark:ring-neutral-700 shadow-sm">
-                                                        {(task.assignedToId === session?.user?.id ? task.createdBy.name : task.assignedTo.name)?.charAt(0)}
+                                                    {task.dueDate && (
+                                                        <div className={`flex items-center gap-1.5 text-xs ${new Date(task.dueDate) < new Date() ? 'text-error-600 font-bold' : 'text-neutral-500'
+                                                            }`}>
+                                                            <Calendar size={14} />
+                                                            <span>{new Date(task.dueDate).toLocaleDateString(undefined, { day: 'numeric', month: 'short' })}</span>
+                                                        </div>
+                                                    )}
+
+                                                    <div className="flex items-center gap-2 pl-4 border-l border-neutral-100 dark:border-neutral-800">
+                                                        <div className="text-right hidden sm:block">
+                                                            <p className="text-[10px] font-bold uppercase tracking-wide opacity-50">
+                                                                {label}
+                                                            </p>
+                                                            <p className="text-xs font-bold text-neutral-700 dark:text-neutral-300 truncate max-w-[80px]">
+                                                                {displayUsers.length > 1 ? `${displayUsers.length} personas` : displayUsers[0]?.name.split(' ')[0]}
+                                                            </p>
+                                                        </div>
+
+                                                        <div className="flex -space-x-2">
+                                                            {displayUsers.slice(0, 3).map((u: any, i: number) => (
+                                                                <div key={u.id || i} className="w-8 h-8 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-xs font-bold text-neutral-600 dark:text-neutral-300 ring-2 ring-white dark:ring-neutral-700 shadow-sm overflow-hidden" title={u.name}>
+                                                                    {u.image ? (
+                                                                        <img src={u.image} alt={u.name} className="w-full h-full object-cover" />
+                                                                    ) : (
+                                                                        u.name?.charAt(0)
+                                                                    )}
+                                                                </div>
+                                                            ))}
+                                                            {displayUsers.length > 3 && (
+                                                                <div className="w-8 h-8 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-[10px] font-bold text-neutral-500 ring-2 ring-white dark:ring-neutral-700">
+                                                                    +{displayUsers.length - 3}
+                                                                </div>
+                                                            )}
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                    </motion.div>
-                                ))
+                                        </motion.div>
+                                    );
+                                })
                             )}
                         </motion.div>
                     )}
@@ -510,7 +534,7 @@ export default function TasksView({ projectId }: TasksViewProps) {
                                     <div>
                                         <label className="block text-sm font-bold text-neutral-700 dark:text-neutral-300 mb-2">Fecha límite</label>
                                         <input
-                                            type="date"
+                                            type="datetime-local"
                                             value={newTask.dueDate}
                                             onChange={(e) => setNewTask({ ...newTask, dueDate: e.target.value })}
                                             className="w-full px-4 py-2.5 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl focus:ring-4 focus:ring-olive-500/10 focus:border-olive-500 outline-none text-neutral-900 dark:text-neutral-100"

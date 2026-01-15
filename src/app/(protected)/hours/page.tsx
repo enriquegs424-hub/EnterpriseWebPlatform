@@ -35,25 +35,38 @@ export default function HoursPage() {
     const [entries, setEntries] = useState<TimeEntry[]>([]);
     const [loading, setLoading] = useState(true);
     const [viewMode, setViewMode] = useState<'week' | 'month'>('week');
-
-    // Current date reference
-    const today = new Date();
-    const [currentDate, setCurrentDate] = useState(today);
+    const [currentDate, setCurrentDate] = useState(new Date());
     const [selectedDate, setSelectedDate] = useState<string | null>(null);
-
-    // Form state
     const [showForm, setShowForm] = useState(false);
     const [editingEntry, setEditingEntry] = useState<TimeEntry | null>(null);
     const [projectId, setProjectId] = useState('');
-    const [formDate, setFormDate] = useState(today.toISOString().split('T')[0]);
+    const [formDate, setFormDate] = useState(new Date().toISOString().split('T')[0]);
     const [hours, setHours] = useState('');
     const [notes, setNotes] = useState('');
     const [submitting, setSubmitting] = useState(false);
     const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
+    const [entryMode, setEntryMode] = useState<'total' | 'range'>('total');
+    const [startTime, setStartTime] = useState('');
+    const [endTime, setEndTime] = useState('');
+
     useEffect(() => {
         loadData();
     }, []);
+
+    // Auto-calculate hours from range
+    useEffect(() => {
+        if (entryMode === 'range' && startTime && endTime) {
+            const [h1, m1] = startTime.split(':').map(Number);
+            const [h2, m2] = endTime.split(':').map(Number);
+            if (!isNaN(h1) && !isNaN(h2)) {
+                let diffInMinutes = (h2 * 60 + m2) - (h1 * 60 + m1);
+                if (diffInMinutes < 0) diffInMinutes += 24 * 60; // Handle overnight
+                // Round to 2 decimals
+                setHours((diffInMinutes / 60).toFixed(2));
+            }
+        }
+    }, [startTime, endTime, entryMode]);
 
     const loadData = async () => {
         setLoading(true);
@@ -71,11 +84,16 @@ export default function HoursPage() {
         }
     };
 
+    // Current date reference for today button and defaults
+    const today = new Date();
+
     // Get entries grouped by date
     const entriesByDate = useMemo(() => {
         const grouped: Record<string, TimeEntry[]> = {};
         entries.forEach(entry => {
-            const dateKey = new Date(entry.date).toISOString().split('T')[0];
+            // entry.date is likely a string from JSON, ensure it is Date or string correct
+            const d = new Date(entry.date);
+            const dateKey = d.toISOString().split('T')[0];
             if (!grouped[dateKey]) grouped[dateKey] = [];
             grouped[dateKey].push(entry);
         });
@@ -159,8 +177,16 @@ export default function HoursPage() {
         setCurrentDate(new Date());
     };
 
+    // Helper to format date key locally YYYY-MM-DD
+    const formatDateKey = (date: Date) => {
+        const y = date.getFullYear();
+        const m = String(date.getMonth() + 1).padStart(2, '0');
+        const d = String(date.getDate()).padStart(2, '0');
+        return `${y}-${m}-${d}`;
+    };
+
     const handleDayClick = (date: Date) => {
-        const dateStr = date.toISOString().split('T')[0];
+        const dateStr = formatDateKey(date);
         setSelectedDate(selectedDate === dateStr ? null : dateStr);
         setFormDate(dateStr);
     };
@@ -168,8 +194,11 @@ export default function HoursPage() {
     const openNewForm = (date?: string) => {
         setEditingEntry(null);
         setProjectId('');
-        setFormDate(date || today.toISOString().split('T')[0]);
+        setFormDate(date || formatDateKey(today));
         setHours('');
+        setStartTime('09:00');
+        setEndTime('17:00');
+        setEntryMode('total');
         setNotes('');
         setMessage(null);
         setShowForm(true);
@@ -178,8 +207,23 @@ export default function HoursPage() {
     const openEditForm = (entry: TimeEntry) => {
         setEditingEntry(entry);
         setProjectId(entry.project.id);
-        setFormDate(new Date(entry.date).toISOString().split('T')[0]);
+        const d = new Date(entry.date);
+        setFormDate(d.toISOString().split('T')[0]); // Use UTC Date for form as usually stored
         setHours(String(Number(entry.hours)));
+        // Try to infer times if stored (or leave empty)
+        // Since backend stores startTime/endTime only optionally, we might check if they exist on the entry type.
+        // Assuming EntryType returned by action has startTime/endTime
+        const fullEntry = entry as any;
+        if (fullEntry.startTime && fullEntry.endTime) {
+            setStartTime(fullEntry.startTime);
+            setEndTime(fullEntry.endTime);
+            setEntryMode('range');
+        } else {
+            setStartTime('');
+            setEndTime('');
+            setEntryMode('total');
+        }
+
         setNotes(entry.notes || '');
         setMessage(null);
         setShowForm(true);
@@ -201,15 +245,19 @@ export default function HoursPage() {
         setSubmitting(true);
         setMessage(null);
 
+        const payload = {
+            projectId,
+            date: formDate,
+            hours: hoursNum,
+            notes: notes || undefined,
+            startTime: entryMode === 'range' ? startTime : undefined,
+            endTime: entryMode === 'range' ? endTime : undefined,
+        };
+
         try {
             if (editingEntry) {
                 // Update existing entry
-                const result = await updateTimeEntry(editingEntry.id, {
-                    projectId,
-                    date: formDate,
-                    hours: hoursNum,
-                    notes: notes || undefined
-                });
+                const result = await updateTimeEntry(editingEntry.id, payload);
 
                 if (result.success) {
                     setMessage({ type: 'success', text: '✅ Horas actualizadas' });
@@ -223,18 +271,16 @@ export default function HoursPage() {
             } else {
                 // Create new entry
                 const result = await createTimeEntry({
-                    projectId,
-                    date: formDate,
-                    hours: hoursNum,
-                    notes: notes || undefined,
+                    ...payload,
                     billable: true
                 });
 
                 if (result.success) {
                     setMessage({ type: 'success', text: '✅ Horas registradas' });
-                    setProjectId('');
-                    setHours('');
-                    setNotes('');
+                    // Optional: Reset form fully or keep settings?
+                    // setProjectId('');
+                    // setHours('');
+                    // setNotes('');
                     setShowForm(false);
                     await loadData();
                     setTimeout(() => setMessage(null), 3000);
@@ -274,7 +320,7 @@ export default function HoursPage() {
     if (loading) {
         return (
             <div className="flex items-center justify-center h-64">
-                <div className="flex items-center space-x-2 text-gray-500 dark:text-gray-400">
+                <div className="flex items-center space-x-2 text-neutral-500 dark:text-neutral-400">
                     <div className="w-6 h-6 border-3 border-olive-600 border-t-transparent rounded-full animate-spin"></div>
                     <span>Cargando...</span>
                 </div>
@@ -287,20 +333,20 @@ export default function HoursPage() {
             {/* Header */}
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                 <div>
-                    <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                        <Clock className="w-7 h-7 text-olive-600 dark:text-olive-500" />
+                    <h1 className="text-2xl font-black text-neutral-900 dark:text-neutral-100 flex items-center gap-2">
+                        <Clock className="w-8 h-8 text-olive-600 dark:text-olive-500" />
                         Registro de Horas
                     </h1>
-                    <p className="text-gray-600 dark:text-gray-400 mt-1">
+                    <p className="text-neutral-500 dark:text-neutral-400 mt-1 font-medium">
                         Visualiza y registra tus horas de trabajo
                     </p>
                 </div>
                 <div className="flex items-center gap-3">
                     <button
                         onClick={() => openNewForm()}
-                        className="flex items-center gap-2 px-4 py-2 bg-olive-600 text-white rounded-lg hover:bg-olive-700 transition-colors dark:bg-olive-500 dark:hover:bg-olive-600"
+                        className="flex items-center gap-2 px-4 py-2 bg-olive-600 text-white rounded-xl hover:bg-olive-700 transition-all font-bold shadow-lg shadow-olive-600/20"
                     >
-                        <Plus className="w-4 h-4" />
+                        <Plus className="w-5 h-5" />
                         Registrar Horas
                     </button>
                 </div>
@@ -308,40 +354,40 @@ export default function HoursPage() {
 
             {/* Stats */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
-                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Total Registrado</p>
-                    <p className="text-2xl font-bold text-gray-900 dark:text-white">{totalHours.toFixed(1)}h</p>
+                <div className="bg-white dark:bg-neutral-900 p-5 rounded-2xl border border-neutral-200 dark:border-neutral-800 shadow-sm">
+                    <p className="text-xs font-bold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider mb-1">Total Registrado</p>
+                    <p className="text-3xl font-black text-neutral-900 dark:text-neutral-100">{totalHours.toFixed(1)}h</p>
                 </div>
-                <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
-                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Entradas</p>
-                    <p className="text-2xl font-bold text-gray-900 dark:text-white">{entries.length}</p>
+                <div className="bg-white dark:bg-neutral-900 p-5 rounded-2xl border border-neutral-200 dark:border-neutral-800 shadow-sm">
+                    <p className="text-xs font-bold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider mb-1">Entradas</p>
+                    <p className="text-3xl font-black text-neutral-900 dark:text-neutral-100">{entries.length}</p>
                 </div>
-                <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
-                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Promedio/Día</p>
-                    <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                <div className="bg-white dark:bg-neutral-900 p-5 rounded-2xl border border-neutral-200 dark:border-neutral-800 shadow-sm">
+                    <p className="text-xs font-bold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider mb-1">Promedio/Día</p>
+                    <p className="text-3xl font-black text-neutral-900 dark:text-neutral-100">
                         {entries.length > 0 ? (totalHours / new Set(entries.map(e => new Date(e.date).toDateString())).size).toFixed(1) : 0}h
                     </p>
                 </div>
             </div>
 
             {/* Calendar Controls */}
-            <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
-                <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex flex-wrap items-center justify-between gap-4">
-                    <div className="flex items-center gap-2">
+            <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200 dark:border-neutral-800 shadow-sm overflow-hidden">
+                <div className="p-4 border-b border-neutral-100 dark:border-neutral-800 flex flex-wrap items-center justify-between gap-4">
+                    <div className="flex items-center gap-2 bg-neutral-100 dark:bg-neutral-800 p-1 rounded-xl">
                         <button
                             onClick={() => setViewMode('week')}
-                            className={`px-4 py-2 rounded-lg transition-colors text-sm font-medium ${viewMode === 'week'
-                                    ? 'bg-olive-600 text-white dark:bg-olive-500'
-                                    : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300'
+                            className={`px-4 py-2 rounded-lg transition-all text-sm font-bold ${viewMode === 'week'
+                                ? 'bg-white dark:bg-neutral-700 shadow-sm text-olive-600 dark:text-olive-400'
+                                : 'text-neutral-600 dark:text-neutral-400 hover:bg-white/50 dark:hover:bg-neutral-700/50'
                                 }`}
                         >
                             Semanal
                         </button>
                         <button
                             onClick={() => setViewMode('month')}
-                            className={`px-4 py-2 rounded-lg transition-colors text-sm font-medium ${viewMode === 'month'
-                                    ? 'bg-olive-600 text-white dark:bg-olive-500'
-                                    : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300'
+                            className={`px-4 py-2 rounded-lg transition-all text-sm font-bold ${viewMode === 'month'
+                                ? 'bg-white dark:bg-neutral-700 shadow-sm text-olive-600 dark:text-olive-400'
+                                : 'text-neutral-600 dark:text-neutral-400 hover:bg-white/50 dark:hover:bg-neutral-700/50'
                                 }`}
                         >
                             Mensual
@@ -349,21 +395,21 @@ export default function HoursPage() {
                     </div>
 
                     <div className="flex items-center gap-3">
-                        <button onClick={navigatePrevious} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">
+                        <button onClick={navigatePrevious} className="p-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg text-neutral-600 dark:text-neutral-400">
                             <ChevronLeft className="w-5 h-5" />
                         </button>
-                        <span className="text-lg font-semibold text-gray-900 dark:text-white min-w-[200px] text-center">
+                        <span className="text-lg font-bold text-neutral-900 dark:text-neutral-100 min-w-[200px] text-center">
                             {viewMode === 'week'
                                 ? `${weekDays[0].getDate()} - ${weekDays[6].getDate()} ${MONTHS[weekDays[6].getMonth()]} ${weekDays[6].getFullYear()}`
                                 : `${MONTHS[currentDate.getMonth()]} ${currentDate.getFullYear()}`
                             }
                         </span>
-                        <button onClick={navigateNext} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">
+                        <button onClick={navigateNext} className="p-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg text-neutral-600 dark:text-neutral-400">
                             <ChevronRight className="w-5 h-5" />
                         </button>
                         <button
                             onClick={goToToday}
-                            className="px-3 py-1 text-sm font-medium text-olive-600 dark:text-olive-400 hover:bg-olive-50 dark:hover:bg-olive-900/20 rounded-lg"
+                            className="px-3 py-1 text-sm font-bold text-olive-600 dark:text-olive-400 hover:bg-olive-50 dark:hover:bg-olive-900/20 rounded-lg"
                         >
                             Hoy
                         </button>
@@ -372,9 +418,9 @@ export default function HoursPage() {
 
                 {/* Week View */}
                 {viewMode === 'week' && (
-                    <div className="grid grid-cols-7 divide-x divide-gray-200 dark:divide-gray-700">
-                        {weekDays.map((day, idx) => {
-                            const dateStr = day.toISOString().split('T')[0];
+                    <div className="grid grid-cols-7 divide-x divide-neutral-200 dark:divide-neutral-800">
+                        {weekDays.map((day: Date, idx: number) => {
+                            const dateStr = formatDateKey(day);
                             const dayHours = getHoursForDate(dateStr);
                             const dayEntries = entriesByDate[dateStr] || [];
                             const isTodayDate = isToday(day);
@@ -384,28 +430,28 @@ export default function HoursPage() {
                                 <div
                                     key={idx}
                                     onClick={() => handleDayClick(day)}
-                                    className={`min-h-[200px] p-3 cursor-pointer transition-colors ${isTodayDate ? 'bg-olive-50 dark:bg-olive-900/20' : ''
-                                        } ${isSelected ? 'ring-2 ring-olive-500 ring-inset' : ''} hover:bg-gray-50 dark:hover:bg-gray-700/50`}
+                                    className={`min-h-[200px] p-3 cursor-pointer transition-all ${isTodayDate ? 'bg-olive-50/50 dark:bg-olive-900/10' : ''
+                                        } ${isSelected ? 'ring-2 ring-inset ring-olive-500 bg-olive-50/30 dark:bg-olive-900/20' : ''} hover:bg-neutral-50 dark:hover:bg-neutral-800/50`}
                                 >
-                                    <div className="text-center mb-2">
-                                        <p className="text-xs font-medium text-gray-500 dark:text-gray-400">{WEEKDAYS[idx]}</p>
-                                        <p className={`text-lg font-bold ${isTodayDate ? 'text-olive-600 dark:text-olive-400' : 'text-gray-900 dark:text-white'}`}>
+                                    <div className="text-center mb-4">
+                                        <p className="text-xs font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider mb-1">{WEEKDAYS[idx]}</p>
+                                        <div className={`w-8 h-8 rounded-full flex items-center justify-center mx-auto text-sm font-bold ${isTodayDate ? 'bg-olive-600 text-white shadow-md shadow-olive-600/30' : 'text-neutral-700 dark:text-neutral-300'}`}>
                                             {day.getDate()}
-                                        </p>
+                                        </div>
                                         {dayHours > 0 && (
-                                            <span className="inline-block mt-1 px-2 py-0.5 bg-olive-100 dark:bg-olive-900/30 text-olive-700 dark:text-olive-300 text-xs font-semibold rounded-full">
+                                            <span className="inline-block mt-2 px-2 py-0.5 bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300 text-[10px] font-bold rounded-full border border-neutral-200 dark:border-neutral-700">
                                                 {dayHours}h
                                             </span>
                                         )}
                                     </div>
-                                    <div className="space-y-1">
+                                    <div className="space-y-1.5">
                                         {dayEntries.slice(0, 3).map(entry => (
-                                            <div key={entry.id} className="text-xs p-1.5 bg-blue-50 dark:bg-blue-900/20 rounded text-blue-700 dark:text-blue-300 truncate">
-                                                <span className="font-medium">{entry.project.code}</span> · {Number(entry.hours)}h
+                                            <div key={entry.id} className="text-[10px] p-1.5 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-md text-neutral-600 dark:text-neutral-300 shadow-sm truncate font-medium">
+                                                <span className="text-olive-600 dark:text-olive-400 font-bold">{entry.project.code}</span> · {Number(entry.hours)}h
                                             </div>
                                         ))}
                                         {dayEntries.length > 3 && (
-                                            <p className="text-xs text-gray-500 dark:text-gray-400">+{dayEntries.length - 3} más</p>
+                                            <p className="text-[10px] text-center font-medium text-neutral-400 dark:text-neutral-500">+{dayEntries.length - 3} más</p>
                                         )}
                                     </div>
                                 </div>
@@ -417,16 +463,16 @@ export default function HoursPage() {
                 {/* Month View */}
                 {viewMode === 'month' && (
                     <div>
-                        <div className="grid grid-cols-7 border-b border-gray-200 dark:border-gray-700">
+                        <div className="grid grid-cols-7 border-b border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-800/50">
                             {WEEKDAYS.map(day => (
-                                <div key={day} className="py-2 text-center text-xs font-semibold text-gray-500 dark:text-gray-400">
+                                <div key={day} className="py-2 text-center text-[10px] font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
                                     {day}
                                 </div>
                             ))}
                         </div>
                         <div className="grid grid-cols-7">
-                            {monthDays.map(({ date, isCurrentMonth }, idx) => {
-                                const dateStr = date.toISOString().split('T')[0];
+                            {monthDays.map(({ date, isCurrentMonth }: { date: Date; isCurrentMonth: boolean }, idx: number) => {
+                                const dateStr = formatDateKey(date);
                                 const dayHours = getHoursForDate(dateStr);
                                 const isTodayDate = isToday(date);
                                 const isSelected = selectedDate === dateStr;
@@ -435,18 +481,18 @@ export default function HoursPage() {
                                     <div
                                         key={idx}
                                         onClick={() => handleDayClick(date)}
-                                        className={`min-h-[80px] p-2 border-b border-r border-gray-100 dark:border-gray-700 cursor-pointer transition-colors ${!isCurrentMonth ? 'bg-gray-50 dark:bg-gray-900' : ''
-                                            } ${isTodayDate ? 'bg-olive-50 dark:bg-olive-900/20' : ''} ${isSelected ? 'ring-2 ring-olive-500 ring-inset' : ''
-                                            } hover:bg-gray-50 dark:hover:bg-gray-700/50`}
+                                        className={`min-h-[80px] p-2 border-b border-r border-neutral-100 dark:border-neutral-800 cursor-pointer transition-all ${!isCurrentMonth ? 'bg-neutral-50/50 dark:bg-neutral-900/50 opacity-50' : ''
+                                            } ${isTodayDate ? 'bg-olive-50/50 dark:bg-olive-900/10' : ''} ${isSelected ? 'ring-2 ring-inset ring-olive-500 z-10' : ''
+                                            } hover:bg-neutral-50 dark:hover:bg-neutral-800/50`}
                                     >
-                                        <p className={`text-sm font-medium ${!isCurrentMonth ? 'text-gray-400 dark:text-gray-600' :
-                                                isTodayDate ? 'text-olive-600 dark:text-olive-400' :
-                                                    'text-gray-900 dark:text-white'
+                                        <p className={`text-xs font-bold mb-1 ${!isCurrentMonth ? 'text-neutral-400 dark:text-neutral-600' :
+                                            isTodayDate ? 'text-olive-600 dark:text-olive-400' :
+                                                'text-neutral-700 dark:text-neutral-300'
                                             }`}>
                                             {date.getDate()}
                                         </p>
                                         {dayHours > 0 && (
-                                            <span className="inline-block mt-1 px-1.5 py-0.5 bg-olive-100 dark:bg-olive-900/30 text-olive-700 dark:text-olive-300 text-xs font-semibold rounded">
+                                            <span className="inline-block px-1.5 py-0.5 bg-olive-100 dark:bg-olive-900/30 text-olive-700 dark:text-olive-300 text-[10px] font-bold rounded">
                                                 {dayHours}h
                                             </span>
                                         )}
@@ -460,44 +506,51 @@ export default function HoursPage() {
 
             {/* Selected Day Details */}
             {selectedDate && (
-                <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
-                    <div className="flex items-center justify-between mb-4">
-                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200 dark:border-neutral-800 p-6 shadow-sm">
+                    <div className="flex items-center justify-between mb-6">
+                        <h3 className="text-xl font-bold text-neutral-900 dark:text-neutral-100">
                             {new Date(selectedDate).toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
                         </h3>
                         <button
                             onClick={() => openNewForm(selectedDate)}
-                            className="flex items-center gap-2 px-3 py-1.5 bg-olive-600 text-white rounded-lg hover:bg-olive-700 text-sm"
+                            className="flex items-center gap-2 px-4 py-2 bg-olive-600 text-white rounded-xl hover:bg-olive-700 text-sm font-bold shadow-md shadow-olive-600/20"
                         >
                             <Plus className="w-4 h-4" />
-                            Añadir
+                            Añadir Entrada
                         </button>
                     </div>
                     {(entriesByDate[selectedDate] || []).length === 0 ? (
-                        <p className="text-gray-500 dark:text-gray-400 text-sm">No hay horas registradas este día</p>
+                        <div className="text-center py-8 bg-neutral-50 dark:bg-neutral-800/50 rounded-xl border border-dashed border-neutral-200 dark:border-neutral-700">
+                            <Clock className="w-10 h-10 text-neutral-300 dark:text-neutral-600 mx-auto mb-2" />
+                            <p className="text-neutral-500 dark:text-neutral-400 font-medium">No hay horas registradas este día</p>
+                        </div>
                     ) : (
-                        <div className="space-y-2">
+                        <div className="space-y-3">
                             {(entriesByDate[selectedDate] || []).map(entry => (
-                                <div key={entry.id} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+                                <div key={entry.id} className="flex items-center justify-between p-4 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl hover:shadow-md transition-shadow">
                                     <div className="flex-1">
-                                        <p className="font-medium text-gray-900 dark:text-white">
-                                            <span className="text-olive-600 dark:text-olive-400">{entry.project.code}</span> · {entry.project.name}
+                                        <p className="font-bold text-neutral-900 dark:text-neutral-100">
+                                            <span className="text-olive-600 dark:text-olive-400 font-black">{entry.project.code}</span> · {entry.project.name}
                                         </p>
-                                        <p className="text-sm text-gray-600 dark:text-gray-400">
-                                            {Number(entry.hours)}h {entry.notes && `· ${entry.notes}`}
+                                        <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-1">
+                                            <span className="font-bold text-neutral-700 dark:text-neutral-300">{Number(entry.hours)}h</span>
+                                            {(entry as any).startTime && (entry as any).endTime && (
+                                                <span className="text-xs ml-2 opacity-75">({(entry as any).startTime} - {(entry as any).endTime})</span>
+                                            )}
+                                            {entry.notes && ` · ${entry.notes}`}
                                         </p>
                                     </div>
-                                    <div className="flex items-center gap-1">
+                                    <div className="flex items-center gap-2">
                                         <button
                                             onClick={() => openEditForm(entry)}
-                                            className="p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg"
+                                            className="p-2 text-neutral-500 hover:text-olive-600 hover:bg-olive-50 dark:text-neutral-400 dark:hover:bg-olive-900/20 rounded-lg transition-colors"
                                             title="Editar"
                                         >
                                             <Pencil className="w-4 h-4" />
                                         </button>
                                         <button
                                             onClick={() => handleDelete(entry.id)}
-                                            className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg"
+                                            className="p-2 text-neutral-500 hover:text-red-600 hover:bg-red-50 dark:text-neutral-400 dark:hover:bg-red-900/20 rounded-lg transition-colors"
                                             title="Eliminar"
                                         >
                                             <Trash2 className="w-4 h-4" />
@@ -512,24 +565,24 @@ export default function HoursPage() {
 
             {/* Form Modal */}
             {showForm && (
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-                    <div className="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-md shadow-2xl">
-                        <div className="flex items-center justify-between mb-4">
-                            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                    <div className="bg-white dark:bg-neutral-900 rounded-2xl p-6 w-full max-w-md shadow-2xl border border-neutral-200 dark:border-neutral-800">
+                        <div className="flex items-center justify-between mb-6">
+                            <h3 className="text-xl font-black text-neutral-900 dark:text-neutral-100">
                                 {editingEntry ? 'Editar Registro' : 'Registrar Horas'}
                             </h3>
-                            <button onClick={() => { setShowForm(false); setEditingEntry(null); }} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">
+                            <button onClick={() => { setShowForm(false); setEditingEntry(null); }} className="p-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg text-neutral-500 dark:text-neutral-400">
                                 <X className="w-5 h-5" />
                             </button>
                         </div>
 
-                        <form onSubmit={handleSubmit} className="space-y-4">
+                        <form onSubmit={handleSubmit} className="space-y-5">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Proyecto *</label>
+                                <label className="block text-sm font-bold text-neutral-700 dark:text-neutral-300 mb-2">Proyecto *</label>
                                 <select
                                     value={projectId}
                                     onChange={(e) => setProjectId(e.target.value)}
-                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white"
+                                    className="w-full px-4 py-2.5 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl focus:ring-4 focus:ring-olive-500/10 focus:border-olive-500 outline-none text-neutral-900 dark:text-neutral-100 font-medium"
                                     required
                                 >
                                     <option value="">Seleccionar...</option>
@@ -540,46 +593,92 @@ export default function HoursPage() {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Fecha *</label>
+                                <label className="block text-sm font-bold text-neutral-700 dark:text-neutral-300 mb-2">Fecha *</label>
                                 <input
                                     type="date"
                                     value={formDate}
                                     onChange={(e) => setFormDate(e.target.value)}
-                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white"
+                                    className="w-full px-4 py-2.5 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl focus:ring-4 focus:ring-olive-500/10 focus:border-olive-500 outline-none text-neutral-900 dark:text-neutral-100 font-medium"
                                     required
                                 />
                             </div>
 
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Horas *</label>
-                                <input
-                                    type="number"
-                                    step="0.5"
-                                    min="0.5"
-                                    max="24"
-                                    value={hours}
-                                    onChange={(e) => setHours(e.target.value)}
-                                    placeholder="8"
-                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white"
-                                    required
-                                />
+                            {/* Entry Mode Toggle */}
+                            <div className="bg-neutral-100 dark:bg-neutral-800 p-1 rounded-xl flex">
+                                <button
+                                    type="button"
+                                    className={`flex-1 py-1.5 text-sm font-bold rounded-lg transition-all ${entryMode === 'total' ? 'bg-white dark:bg-neutral-700 shadow-sm text-neutral-900 dark:text-neutral-100' : 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-700'}`}
+                                    onClick={() => setEntryMode('total')}
+                                >
+                                    Total Horas
+                                </button>
+                                <button
+                                    type="button"
+                                    className={`flex-1 py-1.5 text-sm font-bold rounded-lg transition-all ${entryMode === 'range' ? 'bg-white dark:bg-neutral-700 shadow-sm text-neutral-900 dark:text-neutral-100' : 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-700'}`}
+                                    onClick={() => setEntryMode('range')}
+                                >
+                                    Rango Horario
+                                </button>
                             </div>
 
+                            {entryMode === 'total' ? (
+                                <div>
+                                    <label className="block text-sm font-bold text-neutral-700 dark:text-neutral-300 mb-2">Total Horas *</label>
+                                    <input
+                                        type="number"
+                                        step="0.1"
+                                        min="0.1"
+                                        max="24"
+                                        value={hours}
+                                        onChange={(e) => setHours(e.target.value)}
+                                        placeholder="Ej: 8"
+                                        className="w-full px-4 py-2.5 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl focus:ring-4 focus:ring-olive-500/10 focus:border-olive-500 outline-none text-neutral-900 dark:text-neutral-100 font-medium"
+                                        required={entryMode === 'total'}
+                                    />
+                                </div>
+                            ) : (
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-sm font-bold text-neutral-700 dark:text-neutral-300 mb-2">Entrada</label>
+                                        <input
+                                            type="time"
+                                            value={startTime}
+                                            onChange={(e) => setStartTime(e.target.value)}
+                                            className="w-full px-4 py-2.5 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl focus:ring-4 focus:ring-olive-500/10 focus:border-olive-500 outline-none text-neutral-900 dark:text-neutral-100 font-medium"
+                                            required={entryMode === 'range'}
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-bold text-neutral-700 dark:text-neutral-300 mb-2">Salida</label>
+                                        <input
+                                            type="time"
+                                            value={endTime}
+                                            onChange={(e) => setEndTime(e.target.value)}
+                                            className="w-full px-4 py-2.5 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl focus:ring-4 focus:ring-olive-500/10 focus:border-olive-500 outline-none text-neutral-900 dark:text-neutral-100 font-medium"
+                                            required={entryMode === 'range'}
+                                        />
+                                    </div>
+                                    <div className="col-span-2 text-right text-xs font-bold text-neutral-500">
+                                        Calculado: {hours || 0}h
+                                    </div>
+                                </div>
+                            )}
+
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Notas (opcional)</label>
+                                <label className="block text-sm font-bold text-neutral-700 dark:text-neutral-300 mb-2">Notas (opcional)</label>
                                 <textarea
                                     value={notes}
                                     onChange={(e) => setNotes(e.target.value)}
                                     rows={2}
-                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white"
+                                    className="w-full px-4 py-2.5 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl focus:ring-4 focus:ring-olive-500/10 focus:border-olive-500 outline-none resize-none text-neutral-900 dark:text-neutral-100 font-medium placeholder-neutral-400"
                                     placeholder="Describe lo que hiciste..."
                                 />
                             </div>
 
                             {message && (
-                                <div className={`p-3 rounded-lg text-sm ${message.type === 'success'
-                                        ? 'bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-300'
-                                        : 'bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-300'
+                                <div className={`p-4 rounded-xl text-sm font-bold ${message.type === 'success'
+                                    ? 'bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-300'
+                                    : 'bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-300'
                                     }`}>
                                     {message.text}
                                 </div>
@@ -589,14 +688,14 @@ export default function HoursPage() {
                                 <button
                                     type="button"
                                     onClick={() => { setShowForm(false); setEditingEntry(null); }}
-                                    className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
+                                    className="flex-1 px-4 py-3 border border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-300 rounded-xl hover:bg-neutral-50 dark:hover:bg-neutral-800 font-bold transition-all"
                                 >
                                     Cancelar
                                 </button>
                                 <button
                                     type="submit"
                                     disabled={submitting}
-                                    className="flex-1 px-4 py-2 bg-olive-600 text-white rounded-lg hover:bg-olive-700 disabled:opacity-50"
+                                    className="flex-1 px-4 py-3 bg-olive-600 text-white rounded-xl hover:bg-olive-700 disabled:opacity-50 font-bold shadow-lg shadow-olive-600/20 transition-all"
                                 >
                                     {submitting ? 'Guardando...' : (editingEntry ? 'Actualizar' : 'Guardar')}
                                 </button>

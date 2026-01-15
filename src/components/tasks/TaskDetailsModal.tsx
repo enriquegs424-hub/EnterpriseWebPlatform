@@ -189,21 +189,30 @@ export default function TaskDetailsModal({ task, isOpen, onClose, onUpdate }: Ta
 
                     {/* Metadata Grid */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {/* Type */}
+                        <div className="flex items-start space-x-3">
+                            <Flag className="text-theme-muted mt-1" size={20} />
+                            <div className="flex-1">
+                                <h4 className="text-sm font-bold text-theme-primary mb-1">Tipo</h4>
+                                <p className="text-theme-secondary font-medium uppercase">{task.type || 'GENERAL'}</p>
+                            </div>
+                        </div>
+
                         {/* Due Date */}
                         <div className="flex items-start space-x-3">
                             <Calendar className="text-theme-muted mt-1" size={20} />
                             <div className="flex-1">
-                                <h4 className="text-sm font-bold text-theme-primary mb-1">Fecha Límite</h4>
+                                <h4 className="text-sm font-bold text-theme-primary mb-1">Fecha y Hora</h4>
                                 {isEditing ? (
                                     <input
-                                        type="date"
+                                        type="datetime-local"
                                         value={dueDate}
                                         onChange={e => setDueDate(e.target.value)}
                                         className="w-full text-sm input-base"
                                     />
                                 ) : (
                                     <p className="text-theme-secondary">
-                                        {task.dueDate ? format(new Date(task.dueDate), "EEEE d 'de' MMMM, yyyy", { locale: es }) : 'Sin fecha límite'}
+                                        {task.dueDate ? format(new Date(task.dueDate), "EEEE d 'de' MMMM, yyyy 'a las' HH:mm", { locale: es }) : 'Sin fecha límite'}
                                     </p>
                                 )}
                             </div>
@@ -213,7 +222,7 @@ export default function TaskDetailsModal({ task, isOpen, onClose, onUpdate }: Ta
                         <div className="flex items-start space-x-3">
                             <User className="text-theme-muted mt-1" size={20} />
                             <div className="flex-1">
-                                {task.assignedTo?.id === session?.user?.id ? (
+                                {task.assignedTo?.id === session?.user?.id && (!task.assignees || task.assignees.length <= 1) ? (
                                     <>
                                         <h4 className="text-sm font-bold text-theme-primary mb-1">Asignado por</h4>
                                         <div className="flex items-center space-x-2">
@@ -226,11 +235,18 @@ export default function TaskDetailsModal({ task, isOpen, onClose, onUpdate }: Ta
                                 ) : (
                                     <>
                                         <h4 className="text-sm font-bold text-theme-primary mb-1">Asignado a</h4>
-                                        <div className="flex items-center space-x-2">
-                                            <div className="w-6 h-6 rounded-full surface-tertiary text-theme-secondary flex items-center justify-center text-xs font-bold">
-                                                {task.assignedTo?.name?.charAt(0) || '?'}
-                                            </div>
-                                            <span className="text-theme-secondary">{task.assignedTo?.name || 'Sin asignar'}</span>
+                                        <div className="flex flex-col gap-2">
+                                            {(task.assignees && task.assignees.length > 0 ? task.assignees : (task.assignedTo ? [task.assignedTo] : [])).map((u: any) => (
+                                                <div key={u.id} className="flex items-center space-x-2">
+                                                    <div className="w-6 h-6 rounded-full surface-tertiary text-theme-secondary flex items-center justify-center text-xs font-bold">
+                                                        {u.name?.charAt(0) || '?'}
+                                                    </div>
+                                                    <span className="text-theme-secondary">{u.name}</span>
+                                                </div>
+                                            ))}
+                                            {(!task.assignees || task.assignees.length === 0) && !task.assignedTo && (
+                                                <span className="text-theme-secondary italic">Sin asignar</span>
+                                            )}
                                         </div>
                                     </>
                                 )}
@@ -240,7 +256,7 @@ export default function TaskDetailsModal({ task, isOpen, onClose, onUpdate }: Ta
                         {/* Project */}
                         {task.project && (
                             <div className="flex items-start space-x-3">
-                                <Flag className="text-theme-muted mt-1" size={20} />
+                                <CheckSquare className="text-theme-muted mt-1" size={20} />
                                 <div className="flex-1">
                                     <h4 className="text-sm font-bold text-theme-primary mb-1">Proyecto</h4>
                                     <p className="text-theme-secondary font-medium">{task.project.code} - {task.project.name}</p>

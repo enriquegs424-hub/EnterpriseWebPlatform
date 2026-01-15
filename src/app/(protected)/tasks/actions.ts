@@ -21,24 +21,47 @@ export async function getAllTasks(filters?: {
 
     const where: any = {};
 
-    // Si no es admin, solo ver tareas asignadas o creadas por el usuario
+    // Si no es admin, solo ver tareas asignadas (directa o múltiples) o creadas por el usuario
     if (session.user.role !== 'ADMIN') {
         where.OR = [
             { assignedToId: session.user.id },
+            { assignees: { some: { id: session.user.id } } },
             { createdById: session.user.id }
         ];
     }
 
     if (filters?.status) where.status = filters.status;
     if (filters?.priority) where.priority = filters.priority;
-    if (filters?.assignedToId) where.assignedToId = filters.assignedToId;
     if (filters?.projectId) where.projectId = filters.projectId;
+
+    // Filter by assignee (check both fields)
+    if (filters?.assignedToId) {
+        // If specific logic implies filtering by WHO is assigned
+        // We override the OR above if we want specific filtering, but usually filters are ANDed with permissions.
+        // We need to be careful not to break the permission scope.
+        // Actually, if a user filters by "assignedToId=X", they want tasks assigned to X.
+        const assigneeFilter = {
+            OR: [
+                { assignedToId: filters.assignedToId },
+                { assignees: { some: { id: filters.assignedToId } } }
+            ]
+        };
+
+        if (where.OR) {
+            where.AND = [assigneeFilter];
+        } else {
+            where.OR = assigneeFilter.OR;
+        }
+    }
 
     return await prisma.task.findMany({
         where,
         include: {
             assignedTo: {
                 select: { id: true, name: true, email: true }
+            },
+            assignees: {
+                select: { id: true, name: true, email: true, image: true }
             },
             createdBy: {
                 select: { id: true, name: true }
@@ -60,7 +83,7 @@ export async function getAllTasks(filters?: {
             { priority: 'desc' },
             { dueDate: 'asc' }
         ]
-    });
+    } as any);
 }
 
 // Obtener mis tareas
@@ -70,7 +93,10 @@ export async function getMyTasks() {
 
     return await prisma.task.findMany({
         where: {
-            assignedToId: session.user.id,
+            OR: [
+                { assignedToId: session.user.id },
+                { assignees: { some: { id: session.user.id } } }
+            ],
             status: { not: 'COMPLETED' }
         },
         include: {
@@ -79,13 +105,16 @@ export async function getMyTasks() {
             },
             project: {
                 select: { id: true, code: true, name: true }
+            },
+            assignees: {
+                select: { id: true, name: true, image: true }
             }
         },
         orderBy: [
             { priority: 'desc' },
             { dueDate: 'asc' }
         ]
-    });
+    } as any);
 }
 
 // Crear tarea
@@ -95,7 +124,8 @@ export async function createTask(data: {
     priority: string;
     type: string;
     dueDate?: string;
-    assignedToId: string;
+    assignedToId?: string;       // Legacy / Primary
+    assignedToIds?: string[];    // New multiple
     projectId?: string;
 }) {
     const session = await auth();
@@ -105,6 +135,14 @@ export async function createTask(data: {
     await checkPermission('tasks', 'create');
 
     try {
+        // Prepare assignees
+        const assigneeIds = new Set<string>();
+        if (data.assignedToIds) data.assignedToIds.forEach(id => assigneeIds.add(id));
+        if (data.assignedToId) assigneeIds.add(data.assignedToId);
+
+        const assigneesList = Array.from(assigneeIds);
+        const primaryAssignee = data.assignedToId || assigneesList[0] || null;
+
         const task = await prisma.task.create({
             data: {
                 title: data.title,
@@ -112,27 +150,35 @@ export async function createTask(data: {
                 priority: data.priority as any,
                 type: data.type as any,
                 dueDate: data.dueDate ? new Date(data.dueDate) : null,
-                assignedToId: data.assignedToId,
+                assignedToId: primaryAssignee || undefined,
                 createdById: session.user.id,
                 projectId: data.projectId || null,
-            },
+                assignees: {
+                    connect: assigneesList.map(id => ({ id }))
+                }
+            } as any,
             include: {
                 assignedTo: true,
+                assignees: true,
                 project: true
-            }
+            } as any
         });
 
-        // Crear notificación para el asignado
-        await createNotification({
-            userId: data.assignedToId,
-            type: 'TASK_ASSIGNED',
-            title: 'Nueva tarea asignada',
-            message: `${session.user.name} te ha asignado: ${data.title}`,
-            link: `/tasks/${task.id}`
-        });
+        // Crear notificación para los asignados
+        for (const userId of assigneesList) {
+            if (userId !== session.user.id) { // Don't notify self
+                await createNotification({
+                    userId,
+                    type: 'TASK_ASSIGNED',
+                    title: 'Nueva tarea asignada',
+                    message: `${session.user.name} te ha asignado: ${data.title}`,
+                    link: `/tasks/${task.id}`
+                });
+            }
+        }
 
         // Audit log
-        await auditCrud('CREATE', 'Task', task.id, { title: data.title, assignedToId: data.assignedToId });
+        await auditCrud('CREATE', 'Task', task.id, { title: data.title, assignees: assigneesList });
 
         revalidatePath('/tasks');
         return { success: true, task };

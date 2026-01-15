@@ -360,36 +360,42 @@ export async function createTeamTask(teamId: string, taskData: {
     if (!team) throw new Error("Equipo no encontrado");
     if (team.members.length === 0) throw new Error("El equipo no tiene miembros");
 
-    const createdTasks: any[] = [];
+    // Create ONE task for all members
+    const memberIds = team.members.map(m => m.id);
+
+    // Determine primary assignee (optional, maybe the creator if they are in the team, or the first member)
+    const primaryAssigneeId = memberIds.includes(session.user.id as string) ? session.user.id : (memberIds[0] || null);
 
     // Use team's linked project if not specified
     const projectId = taskData.projectId || team.project?.id || null;
 
-    // Create a task for each member
+    const task = await prisma.task.create({
+        data: {
+            title: taskData.title,
+            description: taskData.description,
+            priority: taskData.priority,
+            type: taskData.type,
+            dueDate: taskData.dueDate ? new Date(taskData.dueDate) : null,
+            assignedToId: (primaryAssigneeId || undefined) as any,
+            createdById: session.user.id as string,
+            projectId,
+            assignees: {
+                connect: memberIds.map(id => ({ id }))
+            }
+        } as any,
+    });
+
+    // Notify each team member
     for (const member of team.members) {
-        const task = await prisma.task.create({
-            data: {
-                title: taskData.title,
-                description: taskData.description,
-                priority: taskData.priority,
-                type: taskData.type,
-                dueDate: taskData.dueDate ? new Date(taskData.dueDate) : null,
-                assignedToId: member.id,
-                createdById: session.user.id as string,
-                projectId,
-            },
-        });
-
-        createdTasks.push(task);
-
-        // Notify each team member
-        await createNotification({
-            userId: member.id,
-            type: "TASK_ASSIGNED",
-            title: "Nueva tarea de equipo",
-            message: `${session.user.name} ha asignado al equipo "${team.name}": ${taskData.title}`,
-            link: `/tasks`,
-        });
+        if (member.id !== session.user.id) {
+            await createNotification({
+                userId: member.id,
+                type: "TASK_ASSIGNED",
+                title: "Nueva tarea de equipo",
+                message: `${session.user.name} ha asignado al equipo "${team.name}": ${taskData.title}`,
+                link: `/tasks/${task.id}`,
+            });
+        }
     }
 
     await logActivity(
@@ -397,11 +403,11 @@ export async function createTeamTask(teamId: string, taskData: {
         "CREATE",
         "task",
         teamId,
-        `Tarea de equipo creada: ${taskData.title} (${createdTasks.length} tareas)`
+        `Tarea de equipo creada: ${taskData.title} (Asignada a ${memberIds.length} miembros)`
     );
 
     revalidatePath("/tasks");
     revalidatePath(`/admin/teams/${teamId}`);
 
-    return { success: true, count: createdTasks.length };
+    return { success: true, count: 1, taskId: task.id };
 }

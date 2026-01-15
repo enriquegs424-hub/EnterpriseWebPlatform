@@ -12,7 +12,12 @@ interface Task {
     priority: string;
     status: string;
     dueDate?: Date;
-    assignedTo: {
+    assignees?: {
+        id: string;
+        name: string;
+        image?: string;
+    }[];
+    assignedTo?: {
         id: string;
         name: string;
     };
@@ -34,7 +39,11 @@ export default function KanbanCard({ task, onDragStart, onEdit, onDelete }: Kanb
     const { data: session } = useSession();
     const [showMenu, setShowMenu] = useState(false);
 
-    const isAssignedToMe = task.assignedTo?.id === session?.user?.id;
+    const assignees = task.assignees && task.assignees.length > 0
+        ? task.assignees
+        : (task.assignedTo ? [task.assignedTo] : []);
+
+    const isAssignedToMe = assignees.some(u => u.id === session?.user?.id);
 
     const getPriorityColor = (priority: string) => {
         // Only return bg color, borders handled by main div
@@ -144,9 +153,25 @@ export default function KanbanCard({ task, onDragStart, onEdit, onDelete }: Kanb
             <div className="flex items-center justify-between text-xs text-neutral-500 dark:text-neutral-400 pt-3 border-t border-neutral-100 dark:border-neutral-800">
                 <div className="flex items-center space-x-3">
                     {/* Assigned To */}
-                    <div className="flex items-center space-x-1" title={task.assignedTo.name}>
-                        <User size={12} />
-                        <span className="truncate max-w-[80px]">{task.assignedTo.name.split(' ')[0]}</span>
+                    <div className="flex items-center -space-x-2">
+                        {assignees.map((u, i) => (
+                            <div
+                                key={u.id || i}
+                                className="w-5 h-5 rounded-full bg-neutral-100 dark:bg-neutral-700 flex items-center justify-center text-[10px] font-bold text-neutral-600 dark:text-neutral-300 ring-2 ring-white dark:ring-neutral-800"
+                                title={u.name}
+                            >
+                                {(u as any).image ? (
+                                    <img src={(u as any).image} alt={u.name} className="w-full h-full rounded-full object-cover" />
+                                ) : (
+                                    u.name.charAt(0)
+                                )}
+                            </div>
+                        ))}
+                        {assignees.length === 0 && (
+                            <div className="w-5 h-5 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-[10px] text-neutral-400 ring-2 ring-white dark:ring-neutral-800">
+                                <User size={10} />
+                            </div>
+                        )}
                     </div>
 
                     {/* Comments */}

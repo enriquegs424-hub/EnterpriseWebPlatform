@@ -39,22 +39,31 @@ export default function AnalyticsPage() {
     // Load Data
     useEffect(() => {
         const loadTab = async () => {
+            // @ts-ignore
+            const role = session?.user?.role;
+            if (!role || !['ADMIN', 'MANAGER'].includes(role)) return;
+
             try {
                 setIsLoading(true);
-                // Load all analytics data
-                const [kpisData, projectsData, dailyData, teamData, financialData] = await Promise.all([
+
+                // Load shared analytics
+                const [kpisData, projectsData, dailyData, teamData] = await Promise.all([
                     getGeneralKPIs(),
                     getProjectAnalytics(),
                     getDailyMetrics(30),
-                    getResourceAnalytics(),
-                    getFinancialAnalytics()
+                    getResourceAnalytics()
                 ]);
 
                 setKpis(kpisData);
                 setProjectMetrics(projectsData);
                 setDailyMetrics(dailyData);
                 setTeamMetrics(teamData);
-                setFinancialMetrics(financialData);
+
+                // Load financial analytics only for ADMIN
+                if (role === 'ADMIN') {
+                    const financialData = await getFinancialAnalytics();
+                    setFinancialMetrics(financialData);
+                }
             } catch (error) {
                 console.error('Error loading analytics:', error);
             } finally {
@@ -62,8 +71,10 @@ export default function AnalyticsPage() {
             }
         };
 
-        loadTab();
-    }, []);
+        if (session?.user) {
+            loadTab();
+        }
+    }, [session]);
 
     const handleExport = async () => {
         try {

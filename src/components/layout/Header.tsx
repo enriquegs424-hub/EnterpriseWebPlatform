@@ -31,17 +31,8 @@ export default function Header() {
         // Actualizar cada 30 segundos
         const interval = setInterval(loadNotifications, 30000);
 
-        const handleKeyDown = (e: KeyboardEvent) => {
-            if (e.key === 'k' && (e.metaKey || e.ctrlKey)) {
-                e.preventDefault();
-                setIsCommandOpen(true);
-            }
-        };
-        window.addEventListener('keydown', handleKeyDown);
-
         return () => {
             clearInterval(interval);
-            window.removeEventListener('keydown', handleKeyDown);
         };
     }, []);
 
@@ -94,17 +85,16 @@ export default function Header() {
                 <div onClick={handleSearchClick} className="relative group cursor-pointer">
                     <Search className="w-5 h-5 text-neutral-400 group-focus-within:text-olive-600 absolute left-3 top-1/2 transform -translate-y-1/2 pointer-events-none transition-colors" />
                     <div className="w-full pl-10 pr-10 py-2.5 border border-neutral-200 dark:border-neutral-700 rounded-full text-sm bg-neutral-50 dark:bg-neutral-800 hover:bg-white dark:hover:bg-neutral-800 transition-all text-neutral-400 flex items-center justify-between">
-                        <span>Buscar (Ctrl + K)</span>
-                        <kbd className="hidden sm:inline-block border border-neutral-200 dark:border-neutral-600 rounded px-1 text-xs font-sans text-neutral-500">⌘K</kbd>
+                        <span>Buscar</span>
                     </div>
                 </div>
             </div>
 
             <div className="flex items-center space-x-4 ml-6">
                 {/* Timer - Lazy loaded to avoid SSR issues */}
-                {/* <div className="hidden md:block">
+                <div className="hidden md:block">
                     <TimerWrapper />
-                </div> */}
+                </div>
 
                 {/* Notifications */}
                 <div className="relative">
