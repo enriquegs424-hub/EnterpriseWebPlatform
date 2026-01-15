@@ -15,6 +15,7 @@ interface MessageProps {
         id: string;
         name: string;
         email: string;
+        image?: string | null;
     };
     createdAt: Date;
     isEdited?: boolean;
@@ -62,7 +63,7 @@ export default function Message({
         setIsEditing(false);
     };
 
-    // Avatar initials
+    // Avatar initials (fallback if no image)
     const initials = author.name
         .split(' ')
         .map(n => n[0])
@@ -80,14 +81,25 @@ export default function Message({
             onMouseLeave={() => setShowActions(false)}
         >
             {/* Avatar */}
-            <div
-                className={`w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center text-xs font-bold mt-0.5 ${isOwnMessage
-                    ? 'bg-olive-600 text-white ring-2 ring-olive-100 dark:ring-olive-900'
-                    : 'bg-neutral-100 dark:bg-neutral-700 text-neutral-700 dark:text-neutral-300 ring-2 ring-neutral-50 dark:ring-neutral-800'
-                    }`}
-            >
-                {initials}
-            </div>
+            {author.image ? (
+                <img
+                    src={author.image}
+                    alt={author.name}
+                    className={`w-8 h-8 rounded-full flex-shrink-0 object-cover mt-0.5 ${isOwnMessage
+                        ? 'ring-2 ring-olive-100 dark:ring-olive-900'
+                        : 'ring-2 ring-neutral-50 dark:ring-neutral-800'
+                        }`}
+                />
+            ) : (
+                <div
+                    className={`w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center text-xs font-bold mt-0.5 ${isOwnMessage
+                        ? 'bg-olive-600 text-white ring-2 ring-olive-100 dark:ring-olive-900'
+                        : 'bg-neutral-100 dark:bg-neutral-700 text-neutral-700 dark:text-neutral-300 ring-2 ring-neutral-50 dark:ring-neutral-800'
+                        }`}
+                >
+                    {initials}
+                </div>
+            )}
 
             <div className={`flex-1 min-w-0 flex flex-col ${isOwnMessage ? 'items-end' : ''}`}>
                 {/* Header */}

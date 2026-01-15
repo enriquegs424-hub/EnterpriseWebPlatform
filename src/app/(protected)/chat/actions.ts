@@ -35,7 +35,8 @@ export async function getOrCreateProjectChat(projectId: string) {
                         select: {
                             id: true,
                             name: true,
-                            email: true
+                            email: true,
+                            image: true
                         }
                     },
                     replyTo: {
@@ -524,7 +525,8 @@ export async function getMessages(
                 select: {
                     id: true,
                     name: true,
-                    email: true
+                    email: true,
+                    image: true
                 }
             },
             replyTo: {

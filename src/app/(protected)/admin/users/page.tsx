@@ -230,8 +230,14 @@ function UsersContent() {
                                                 >
                                                     <td className="px-6 py-4">
                                                         <div className="flex items-center">
-                                                            <div className="w-8 h-8 rounded-full bg-olive-100 dark:bg-olive-900/30 flex items-center justify-center text-olive-700 dark:text-olive-400 font-bold mr-3 relative">
-                                                                {user.name[0]}
+                                                            <div className="w-8 h-8 rounded-full mr-3 relative flex-shrink-0">
+                                                                {user.image ? (
+                                                                    <img src={user.image} alt={user.name} className="w-full h-full rounded-full object-cover" />
+                                                                ) : (
+                                                                    <div className="w-full h-full rounded-full bg-olive-100 dark:bg-olive-900/30 flex items-center justify-center text-olive-700 dark:text-olive-400 font-bold">
+                                                                        {user.name[0]}
+                                                                    </div>
+                                                                )}
                                                                 {isOnline && user.isActive && (
                                                                     <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-white dark:border-neutral-900 rounded-full"></span>
                                                                 )}

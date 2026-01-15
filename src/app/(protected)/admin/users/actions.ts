@@ -59,6 +59,7 @@ export async function getUsers(params?: {
                 department: true,
                 dailyWorkHours: true,
                 createdAt: true,
+                image: true,
                 activityLogs: {
                     take: 1,
                     orderBy: { createdAt: 'desc' },
