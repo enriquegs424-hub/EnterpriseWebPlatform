@@ -53,6 +53,7 @@ import { useSession } from 'next-auth/react';
 
 import { getUnreadCount } from '@/app/(protected)/notifications/actions';
 import { getUnreadCount as getChatUnreadCount } from '@/app/(protected)/chat/actions';
+import { getCurrentUser } from '@/app/(protected)/settings/actions';
 import { useState, useEffect } from 'react';
 
 // ... (imports)
@@ -62,6 +63,7 @@ export default function Sidebar() {
     const { data: session } = useSession();
     const [unreadCount, setUnreadCount] = useState(0);
     const [chatUnreadCount, setChatUnreadCount] = useState(0);
+    const [userImage, setUserImage] = useState<string | null>(null);
 
     useEffect(() => {
         const fetchUnread = async () => {
@@ -73,8 +75,16 @@ export default function Sidebar() {
             setChatUnreadCount(chatCount);
         };
 
+        const fetchUserImage = async () => {
+            const user = await getCurrentUser();
+            if (user?.image) {
+                setUserImage(user.image);
+            }
+        };
+
         if (session?.user) {
             fetchUnread();
+            fetchUserImage();
             // Simple polling every 30 seconds
             const interval = setInterval(fetchUnread, 30000);
             return () => clearInterval(interval);
@@ -160,8 +170,8 @@ export default function Sidebar() {
             {/* ... user ... */}
             <div className="p-4 border-t border-theme-primary surface-tertiary">
                 <div className="flex items-center">
-                    {session?.user?.image ? (
-                        <img src={session.user.image} alt="Avatar" className="w-9 h-9 rounded-full object-cover mr-3 border border-olive-200 dark:border-olive-900" />
+                    {userImage ? (
+                        <img src={userImage} alt="Avatar" className="w-9 h-9 rounded-full object-cover mr-3 border border-olive-200 dark:border-olive-900" />
                     ) : (
                         <div className="w-9 h-9 rounded-full bg-olive-100 dark:bg-olive-900/50 flex items-center justify-center text-olive-700 dark:text-olive-300 text-xs font-bold mr-3 border border-olive-200 dark:border-olive-800">
                             {session?.user?.name?.[0]?.toUpperCase() || 'U'}

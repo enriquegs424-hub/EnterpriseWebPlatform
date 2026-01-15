@@ -6,6 +6,7 @@ import { useSession } from 'next-auth/react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { User, Lock, Bell, Palette, Save, AlertCircle, CheckCircle2, Eye, EyeOff, Sun, Moon, Clock, Globe, Accessibility, Briefcase, Phone, FileText, Monitor } from 'lucide-react';
 import { useTheme } from '@/providers/ThemeProvider';
+import ToggleSwitch from '@/components/ui/ToggleSwitch';
 
 export default function SettingsPage() {
     const { data: session, update: updateSession } = useSession();
@@ -115,7 +116,8 @@ export default function SettingsPage() {
 
         if (result.success) {
             setMessage({ type: 'success', text: result.message || 'Perfil actualizado' });
-            await updateSession();
+            // Trigger session update
+            await updateSession({ trigger: 'update' });
             setTimeout(() => setMessage(null), 3000);
         } else {
             setMessage({ type: 'error', text: result.error || 'Error al actualizar' });
@@ -156,11 +158,9 @@ export default function SettingsPage() {
     const savePreferences = async (newPreferences: any) => {
         setPreferences(newPreferences);
         const result = await updateUserPreferences(newPreferences);
-        if (result.success) {
-            setMessage({ type: 'success', text: 'Preferencias guardadas' });
-            setTimeout(() => setMessage(null), 2000);
-        } else {
+        if (!result.success) {
             setMessage({ type: 'error', text: 'Error al guardar preferencias' });
+            setTimeout(() => setMessage(null), 3000);
         }
     };
 
@@ -541,15 +541,10 @@ export default function SettingsPage() {
                                                     <p className="font-bold text-theme-primary text-sm">{n.label}</p>
                                                     <p className="text-xs text-theme-tertiary mt-0.5">{n.desc}</p>
                                                 </div>
-                                                <div className="relative inline-flex items-center cursor-pointer">
-                                                    <input
-                                                        type="checkbox"
-                                                        checked={(preferences.notifications as any)[n.id]}
-                                                        onChange={() => toggleNotification(n.id)}
-                                                        className="sr-only peer"
-                                                    />
-                                                    <div className="w-11 h-6 bg-neutral-200 dark:bg-neutral-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-olive-600"></div>
-                                                </div>
+                                                <ToggleSwitch
+                                                    checked={(preferences.notifications as any)[n.id] ?? true}
+                                                    onChange={() => toggleNotification(n.id)}
+                                                />
                                             </div>
                                         ))}
                                     </div>
@@ -566,15 +561,10 @@ export default function SettingsPage() {
                                                     <p className="font-bold text-theme-primary text-sm">{n.label}</p>
                                                     <p className="text-xs text-theme-tertiary mt-0.5">{n.desc}</p>
                                                 </div>
-                                                <div className="relative inline-flex items-center cursor-pointer">
-                                                    <input
-                                                        type="checkbox"
-                                                        checked={(preferences.notifications as any)?.[n.id] ?? true}
-                                                        onChange={() => toggleNotification(n.id)}
-                                                        className="sr-only peer"
-                                                    />
-                                                    <div className="w-11 h-6 bg-neutral-200 dark:bg-neutral-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-olive-600"></div>
-                                                </div>
+                                                <ToggleSwitch
+                                                    checked={(preferences.notifications as any)?.[n.id] ?? true}
+                                                    onChange={() => toggleNotification(n.id)}
+                                                />
                                             </div>
                                         ))}
                                     </div>
@@ -633,35 +623,25 @@ export default function SettingsPage() {
                                     </div>
 
                                     <div className="space-y-4 pt-4 border-t border-theme-secondary">
-                                        <div className="flex items-center justify-between p-4">
+                                        <div className="flex items-center justify-between p-4 surface-tertiary rounded-2xl border border-theme-secondary">
                                             <div>
                                                 <p className="font-bold text-theme-primary text-sm">Barra Lateral Compacta</p>
                                                 <p className="text-xs text-theme-tertiary">Maximiza el espacio de trabajo ocultando textos.</p>
                                             </div>
-                                            <div className="relative inline-flex items-center cursor-pointer">
-                                                <input
-                                                    type="checkbox"
-                                                    checked={preferences.appearance.compactSidebar}
-                                                    onChange={() => toggleAppearance('compactSidebar')}
-                                                    className="sr-only peer"
-                                                />
-                                                <div className="w-11 h-6 bg-neutral-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-olive-600"></div>
-                                            </div>
+                                            <ToggleSwitch
+                                                checked={preferences.appearance?.compactSidebar ?? false}
+                                                onChange={() => toggleAppearance('compactSidebar')}
+                                            />
                                         </div>
-                                        <div className="flex items-center justify-between p-4">
+                                        <div className="flex items-center justify-between p-4 surface-tertiary rounded-2xl border border-theme-secondary">
                                             <div>
                                                 <p className="font-bold text-theme-primary text-sm">Animaciones Fluidas</p>
                                                 <p className="text-xs text-theme-tertiary">Habilitar transiciones suaves entre páginas.</p>
                                             </div>
-                                            <div className="relative inline-flex items-center cursor-pointer">
-                                                <input
-                                                    type="checkbox"
-                                                    checked={preferences.appearance.smoothAnimations}
-                                                    onChange={() => toggleAppearance('smoothAnimations')}
-                                                    className="sr-only peer"
-                                                />
-                                                <div className="w-11 h-6 bg-neutral-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-olive-600"></div>
-                                            </div>
+                                            <ToggleSwitch
+                                                checked={preferences.appearance?.smoothAnimations ?? true}
+                                                onChange={() => toggleAppearance('smoothAnimations')}
+                                            />
                                         </div>
                                     </div>
                                 </motion.div>
@@ -764,21 +744,16 @@ export default function SettingsPage() {
                                                     <p className="font-bold text-theme-primary text-sm">{setting.label}</p>
                                                     <p className="text-xs text-theme-tertiary mt-0.5">{setting.desc}</p>
                                                 </div>
-                                                <div className="relative inline-flex items-center cursor-pointer">
-                                                    <input
-                                                        type="checkbox"
-                                                        checked={(preferences.accessibility as any)?.[setting.id] || false}
-                                                        onChange={() => {
-                                                            const newAccess = {
-                                                                ...(preferences.accessibility as any),
-                                                                [setting.id]: !(preferences.accessibility as any)?.[setting.id]
-                                                            };
-                                                            savePreferences({ ...preferences, accessibility: newAccess });
-                                                        }}
-                                                        className="sr-only peer"
-                                                    />
-                                                    <div className="w-11 h-6 bg-neutral-200 dark:bg-neutral-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-olive-600"></div>
-                                                </div>
+                                                <ToggleSwitch
+                                                    checked={(preferences.accessibility as any)?.[setting.id] ?? false}
+                                                    onChange={() => {
+                                                        const newAccess = {
+                                                            ...(preferences.accessibility as any),
+                                                            [setting.id]: !(preferences.accessibility as any)?.[setting.id]
+                                                        };
+                                                        savePreferences({ ...preferences, accessibility: newAccess });
+                                                    }}
+                                                />
                                             </div>
                                         ))}
                                     </div>

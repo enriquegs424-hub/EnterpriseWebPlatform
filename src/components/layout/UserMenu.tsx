@@ -6,12 +6,14 @@ import { signOut, useSession } from 'next-auth/react';
 import { LogOut, User, ChevronDown, UserCheck, Sun, Moon, Monitor } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTheme } from '@/providers/ThemeProvider';
+import { getCurrentUser } from '@/app/(protected)/settings/actions';
 
 export default function UserMenu() {
     const { data: session } = useSession();
     const { setTheme, theme } = useTheme();
     const [isOpen, setIsOpen] = useState(false);
     const menuRef = useRef<HTMLDivElement>(null);
+    const [userImage, setUserImage] = useState<string | null>(null);
 
     useEffect(() => {
         function handleClickOutside(event: MouseEvent) {
@@ -23,6 +25,18 @@ export default function UserMenu() {
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
+    useEffect(() => {
+        const fetchUserImage = async () => {
+            const user = await getCurrentUser();
+            if (user?.image) {
+                setUserImage(user.image);
+            }
+        };
+        if (session?.user) {
+            fetchUserImage();
+        }
+    }, [session?.user]);
+
     if (!session?.user) return null;
 
     return (
@@ -31,8 +45,8 @@ export default function UserMenu() {
                 onClick={() => setIsOpen(!isOpen)}
                 className="flex items-center space-x-3 p-1 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
             >
-                {session.user.image ? (
-                    <img src={session.user.image} alt="Avatar" className="w-8 h-8 rounded-full object-cover ring-2 ring-olive-100 dark:ring-olive-900" />
+                {userImage ? (
+                    <img src={userImage} alt="Avatar" className="w-8 h-8 rounded-full object-cover ring-2 ring-olive-100 dark:ring-olive-900" />
                 ) : (
                     <div className="w-8 h-8 rounded-full bg-olive-600 flex items-center justify-center text-white text-xs font-bold ring-2 ring-olive-100 dark:ring-olive-900">
                         {session.user.name?.[0]?.toUpperCase() || 'U'}
