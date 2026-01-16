@@ -7,6 +7,7 @@ import { LogOut, User, ChevronDown, UserCheck, Sun, Moon, Monitor } from 'lucide
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTheme } from '@/providers/ThemeProvider';
 import { getCurrentUser } from '@/app/(protected)/settings/actions';
+import PresenceSelector from '@/components/PresenceSelector';
 
 export default function UserMenu() {
     const { data: session } = useSession();
@@ -75,6 +76,11 @@ export default function UserMenu() {
                         <div className="px-4 py-3 border-b border-neutral-100 dark:border-neutral-700">
                             <p className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">{session.user.name}</p>
                             <p className="text-xs text-neutral-500 dark:text-neutral-400 truncate">{session.user.email}</p>
+                        </div>
+
+                        {/* Presence Status Selector */}
+                        <div className="py-1 border-b border-neutral-100 dark:border-neutral-700">
+                            <PresenceSelector />
                         </div>
 
                         <div className="py-1">

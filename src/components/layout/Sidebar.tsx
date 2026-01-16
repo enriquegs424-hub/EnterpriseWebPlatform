@@ -39,7 +39,7 @@ const navItems = [
     {
         section: 'Administración', items: [
             { label: 'Analytics', href: '/analytics', icon: BarChart, desc: 'Métricas y reportes' },
-            { label: 'Monitor de Horas', href: '/admin/hours', icon: BarChart, desc: 'Supervisión en tiempo real' },
+            { label: 'Control de Horas', href: '/admin/hours', icon: BarChart, desc: 'Control horario de usuarios' },
             { label: 'Usuarios', href: '/admin/users', icon: Users, desc: 'Gestión de equipo' },
             { label: 'Departamentos', href: '/admin/departments', icon: Building2, desc: 'Configuración por áreas' },
             { label: 'Equipos', href: '/admin/teams', icon: UserCog, desc: 'Organización de equipos' },

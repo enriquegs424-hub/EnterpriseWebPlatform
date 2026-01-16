@@ -79,20 +79,9 @@ export async function getTimeEntries(filters?: TimeEntryFilters) {
 
     const where: any = {};
 
-    // RBAC: Users solo ven sus propias entradas, MANAGER/ADMIN ven todas de su company
-    if (user.role === 'WORKER' || user.role === 'CLIENT') {
-        where.userId = user.id;
-    } else {
-        // MANAGER/ADMIN pueden filtrar por usuario específico
-        if (userId) {
-            where.userId = userId;
-        } else {
-            // Ver todas las entradas de usuarios de su company
-            where.user = {
-                companyId: user.companyId as string
-            };
-        }
-    }
+    // Personal hours page - ALWAYS show only current user's entries
+    // This is the user's personal time tracking, not admin view
+    where.userId = user.id;
 
     if (projectId) where.projectId = projectId;
 
@@ -324,7 +313,7 @@ export async function deleteTimeEntry(id: string) {
     const user = await getAuthenticatedUser();
     if (!user) throw new Error("No autenticado");
 
-    await checkPermission("timeentries", "delete", id);
+    await checkPermission("timeentries", "delete");
 
     // Validate can delete
     const validation = await validateCanDelete({
@@ -364,7 +353,7 @@ export async function submitTimeEntryForApproval(id: string) {
     const user = await getAuthenticatedUser();
     if (!user) throw new Error("No autenticado");
 
-    await checkPermission("timeentries", "update", id);
+    await checkPermission("timeentries", "update");
 
     const validation = await validateCanSubmit({
         entryId: id,

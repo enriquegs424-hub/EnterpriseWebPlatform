@@ -56,6 +56,13 @@ model User {
   company           Company?          @relation(fields: [companyId], references: [id])
   dailyWorkHours    Float             @default(8.0)
   isActive          Boolean           @default(true)
+  
+  // Presence system (Teams-style)
+  presenceStatus    PresenceStatus    @default(OFFLINE)
+  presenceManual    Boolean           @default(false) // true if manually set
+  lastActiveAt      DateTime?         // Last activity timestamp
+  presenceExpiresAt DateTime?         // For temporary status duration
+  
   createdAt         DateTime          @default(now())
   updatedAt         DateTime          @updatedAt
   timeEntries       TimeEntry[]
@@ -359,6 +366,16 @@ enum Department {
   ECONOMIC          // Económico
   MARKETING         // Marketing
   OTHER             // Otros
+}
+
+// Presence status like Microsoft Teams
+enum PresenceStatus {
+  AVAILABLE         // Disponible (verde)
+  BUSY              // Ocupado (rojo)
+  DO_NOT_DISTURB    // No molestar (rojo con línea)
+  BE_RIGHT_BACK     // Vuelvo enseguida (amarillo)
+  AWAY              // Ausente (amarillo)
+  OFFLINE           // Desconectado (gris)
 }
 
 enum TaskStatus {

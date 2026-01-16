@@ -327,7 +327,7 @@ export async function addTaskComment(taskId: string, content: string) {
         });
 
         // Notificar al asignado si no es quien comenta
-        if (task.assignedToId !== session.user.id) {
+        if (task.assignedToId && task.assignedToId !== session.user.id) {
             await createNotification({
                 userId: task.assignedToId,
                 type: 'TASK_COMMENT',

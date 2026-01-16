@@ -1,19 +1,23 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { getAllUsersHours, getTeamStats, getAllUsers } from './actions';
-import { BarChart3, Users, Clock, TrendingUp, Filter, Download, Calendar } from 'lucide-react';
+import { getAllUsersHours, getTeamStats, getAllUsers, getProjects, getDepartments } from './actions';
+import { BarChart3, Users, Clock, TrendingUp, Filter, Download, Calendar, RotateCcw } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export default function AdminHoursPage() {
     const [entries, setEntries] = useState<any[]>([]);
     const [stats, setStats] = useState<any>(null);
     const [users, setUsers] = useState<any[]>([]);
+    const [projects, setProjects] = useState<any[]>([]);
+    const [departments, setDepartments] = useState<string[]>([]);
     const [loading, setLoading] = useState(true);
     const [period, setPeriod] = useState<'week' | 'month' | 'year'>('month');
 
     const [filters, setFilters] = useState({
         userId: '',
+        department: '',
+        projectId: '',
         startDate: '',
         endDate: '',
     });
@@ -22,12 +26,16 @@ export default function AdminHoursPage() {
         loadData();
     }, [filters, period]);
 
+    const hasFilters = Object.values(filters).some(v => v !== '');
+
     const loadData = async () => {
         setLoading(true);
-        const [entriesData, statsData, usersData] = await Promise.all([
-            getAllUsersHours(filters.userId || filters.startDate || filters.endDate ? filters : undefined),
+        const [entriesData, statsData, usersData, projectsData, departmentsData] = await Promise.all([
+            getAllUsersHours(hasFilters ? filters : undefined),
             getTeamStats(period),
             getAllUsers(),
+            getProjects(),
+            getDepartments(),
         ]);
 
         if (!Array.isArray(entriesData)) {
@@ -37,7 +45,19 @@ export default function AdminHoursPage() {
         }
         setStats(statsData);
         setUsers(usersData);
+        setProjects(projectsData);
+        setDepartments(departmentsData);
         setLoading(false);
+    };
+
+    const clearFilters = () => {
+        setFilters({
+            userId: '',
+            department: '',
+            projectId: '',
+            startDate: '',
+            endDate: '',
+        });
     };
 
     const exportToCSV = () => {
@@ -65,8 +85,8 @@ export default function AdminHoursPage() {
         <div className="space-y-6">
             <div className="flex justify-between items-center">
                 <div>
-                    <h1 className="text-2xl font-bold text-neutral-900 dark:text-neutral-100 border-l-4 border-olive-500 pl-4">Monitor Global de Horas</h1>
-                    <p className="text-neutral-500 dark:text-neutral-400 mt-1 ml-5">Vista en tiempo real de todas las horas del equipo</p>
+                    <h1 className="text-2xl font-bold text-neutral-900 dark:text-neutral-100 border-l-4 border-olive-500 pl-4">Control de Horas</h1>
+                    <p className="text-neutral-500 dark:text-neutral-400 mt-1 ml-5">Control horario de todos los usuarios</p>
                 </div>
                 <button
                     onClick={exportToCSV}
@@ -212,11 +232,22 @@ export default function AdminHoursPage() {
 
             {/* Filters */}
             <div className="bg-white dark:bg-neutral-800 rounded-2xl border border-neutral-200 dark:border-neutral-700 p-6">
-                <div className="flex items-center space-x-2 mb-4">
-                    <Filter className="w-5 h-5 text-olive-600" />
-                    <h3 className="font-bold text-neutral-900 dark:text-neutral-100">Filtros de Búsqueda</h3>
+                <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center space-x-2">
+                        <Filter className="w-5 h-5 text-olive-600" />
+                        <h3 className="font-bold text-neutral-900 dark:text-neutral-100">Filtros de Búsqueda</h3>
+                    </div>
+                    {hasFilters && (
+                        <button
+                            onClick={clearFilters}
+                            className="flex items-center gap-1 text-sm text-neutral-500 hover:text-olive-600 transition-colors"
+                        >
+                            <RotateCcw className="w-4 h-4" />
+                            Limpiar filtros
+                        </button>
+                    )}
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
                     <div>
                         <label className="block text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-1">Usuario</label>
                         <select
@@ -224,9 +255,35 @@ export default function AdminHoursPage() {
                             onChange={(e) => setFilters({ ...filters, userId: e.target.value })}
                             className="w-full p-2.5 border border-neutral-200 dark:border-neutral-700 rounded-lg focus:ring-2 focus:ring-olive-500/20 outline-none text-sm bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-200"
                         >
-                            <option value="">Todos los usuarios</option>
+                            <option value="">Todos</option>
                             {users.map((u) => (
-                                <option key={u.id} value={u.id}>{u.name} ({u.department})</option>
+                                <option key={u.id} value={u.id}>{u.name}</option>
+                            ))}
+                        </select>
+                    </div>
+                    <div>
+                        <label className="block text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-1">Departamento</label>
+                        <select
+                            value={filters.department}
+                            onChange={(e) => setFilters({ ...filters, department: e.target.value })}
+                            className="w-full p-2.5 border border-neutral-200 dark:border-neutral-700 rounded-lg focus:ring-2 focus:ring-olive-500/20 outline-none text-sm bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-200"
+                        >
+                            <option value="">Todos</option>
+                            {departments.map((d) => (
+                                <option key={d} value={d}>{d}</option>
+                            ))}
+                        </select>
+                    </div>
+                    <div>
+                        <label className="block text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-1">Proyecto</label>
+                        <select
+                            value={filters.projectId}
+                            onChange={(e) => setFilters({ ...filters, projectId: e.target.value })}
+                            className="w-full p-2.5 border border-neutral-200 dark:border-neutral-700 rounded-lg focus:ring-2 focus:ring-olive-500/20 outline-none text-sm bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-200"
+                        >
+                            <option value="">Todos</option>
+                            {projects.map((p) => (
+                                <option key={p.id} value={p.id}>{p.code} - {p.name}</option>
                             ))}
                         </select>
                     </div>

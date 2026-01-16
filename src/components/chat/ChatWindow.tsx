@@ -10,6 +10,7 @@ import { es } from 'date-fns/locale';
 import { motion, AnimatePresence } from 'framer-motion';
 import { searchMessagesInChat, getChatAttachments, getChatInfo, updateGroupChat, deleteGroupChat, searchUsers } from '@/app/(protected)/chat/actions';
 import { useRouter } from 'next/navigation';
+import CallButtons from './CallButtons';
 
 interface ChatMessage {
     id: string;
@@ -284,6 +285,12 @@ export default function ChatWindow({
                         <div className="flex-1">
                             <div className="flex items-center gap-4">
                                 <h2 className="font-semibold text-base text-neutral-900 dark:text-neutral-100">{chatName}</h2>
+                                {/* Call buttons - audio and video */}
+                                <CallButtons
+                                    chatId={chatId}
+                                    chatName={chatName || 'Chat'}
+                                    isGroup={chatType === 'GROUP'}
+                                />
                             </div>
                             {/* Tabs */}
                             <div className="flex items-center gap-4 mt-1">
