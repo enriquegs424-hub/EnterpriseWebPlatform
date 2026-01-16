@@ -4,6 +4,8 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 
+import { logActivity } from "@/lib/permissions";
+
 // Define locally until Prisma client is regenerated
 export type PresenceStatus = 'AVAILABLE' | 'BUSY' | 'DO_NOT_DISTURB' | 'BE_RIGHT_BACK' | 'AWAY' | 'OFFLINE';
 
@@ -40,6 +42,17 @@ export async function updatePresence(
         where: { id: session.user.id },
         data,
     });
+
+    // Log specific presence changes requested by user
+    if (status === 'BE_RIGHT_BACK') {
+        await logActivity(
+            session.user.id,
+            "PRESENCE",
+            "user",
+            session.user.id,
+            "Usuario cambió estado a: Vuelvo enseguida"
+        );
+    }
 
     revalidatePath('/admin/users');
     return { success: true };
@@ -139,6 +152,14 @@ export async function markOffline() {
             presenceExpiresAt: null,
         },
     });
+
+    await logActivity(
+        session.user.id,
+        "LOGOUT",
+        "user",
+        session.user.id,
+        "Usuario desconectado (Cierre de sesión o navegador)"
+    );
 }
 
 /**

@@ -63,10 +63,8 @@ export async function getInvoice(id: string) {
     if (!invoice) throw new Error('Invoice not found');
 
     // Permission check (ownership for non-admin)
-    if (session.user.role === 'CLIENT') {
-        if (invoice.client.id !== session.user.id) {
-            throw new Error('Unauthorized');
-        }
+    if (session.user.role === 'GUEST') {
+        throw new Error('Unauthorized');
     } else if (session.user.role === 'WORKER') {
         if (invoice.createdById !== session.user.id) {
             throw new Error('Unauthorized');
@@ -218,7 +216,7 @@ export async function deleteInvoice(id: string) {
     if (!invoice) return;
 
     // Check permission (ownership)
-    await checkPermission('invoices', 'delete', invoice.createdById);
+    await checkPermission('invoices', 'delete', { ownerId: invoice.createdById });
 
     // Can only delete DRAFT invoices
     if (invoice.status !== 'DRAFT') {

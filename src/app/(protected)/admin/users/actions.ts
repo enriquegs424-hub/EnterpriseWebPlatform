@@ -85,11 +85,22 @@ export async function updateUser(id: string, data: any) {
     // Get existing user for validation
     const targetUser = await prisma.user.findUnique({
         where: { id },
-        select: { role: true, companyId: true }
+        select: { role: true, companyId: true, email: true }
     });
 
     if (!targetUser) throw new Error("Usuario no encontrado");
     if (targetUser.companyId !== user.companyId) throw new Error("Usuario no pertenece a tu empresa");
+
+    // CRITICAL: Protect GUEST user
+    const GUEST_EMAIL = 'invitado@sistema.local';
+    if (targetUser.email === GUEST_EMAIL) {
+        if (data.role && data.role !== targetUser.role) {
+            throw new Error('No se puede cambiar el rol del usuario del sistema (GUEST)');
+        }
+        if (data.email && data.email !== targetUser.email) {
+            throw new Error('No se puede cambiar el email del usuario del sistema (GUEST)');
+        }
+    }
 
     // MANAGER restrictions
     if (user.role === 'MANAGER') {
@@ -192,6 +203,12 @@ export async function deleteUser(id: string) {
 
     if (!targetUser) throw new Error("Usuario no encontrado");
     if (targetUser.companyId !== user.companyId) throw new Error("Usuario no pertenece a tu empresa");
+
+    // CRITICAL: Cannot delete GUEST user
+    const GUEST_EMAIL = 'invitado@sistema.local';
+    if (targetUser.email === GUEST_EMAIL || targetUser.role === 'GUEST') {
+        throw new Error('No se puede eliminar el usuario del sistema (GUEST). Este usuario es necesario para el modo demo.');
+    }
 
     // Cannot delete own account
     if (id === user.id) throw new Error("No puedes eliminar tu propia cuenta");

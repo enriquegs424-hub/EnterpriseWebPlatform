@@ -257,6 +257,7 @@ export async function getGlobalLogs(options?: {
     action?: string;
     companyId?: string;
     userId?: string;
+    department?: string;
     dateFrom?: Date;
     dateTo?: Date;
 }) {
@@ -270,17 +271,28 @@ export async function getGlobalLogs(options?: {
     if (options?.action) where.action = options.action;
     if (options?.companyId) where.companyId = options.companyId;
     if (options?.userId) where.userId = options.userId;
+    if (options?.department) {
+        where.user = {
+            department: options.department as any
+        };
+    }
+
     if (options?.dateFrom || options?.dateTo) {
         where.createdAt = {};
         if (options.dateFrom) where.createdAt.gte = options.dateFrom;
-        if (options.dateTo) where.createdAt.lte = options.dateTo;
+        if (options.dateTo) {
+            // Adjust to end of day if it's a date only, or take strict timestamp
+            const endDate = new Date(options.dateTo);
+            endDate.setHours(23, 59, 59, 999);
+            where.createdAt.lte = endDate;
+        }
     }
 
     const [logs, total] = await Promise.all([
         prisma.activityLog.findMany({
             where,
             include: {
-                user: { select: { name: true, email: true } },
+                user: { select: { name: true, email: true, department: true } },
                 company: { select: { name: true } },
             } as any,
             orderBy: { createdAt: "desc" },
@@ -299,6 +311,23 @@ export async function getGlobalLogs(options?: {
             totalPages: Math.ceil(total / limit),
         },
     };
+}
+
+export async function getUsersForFilter() {
+    await requireSuperAdmin();
+
+    return prisma.user.findMany({
+        select: {
+            id: true,
+            name: true,
+            email: true,
+            department: true,
+            company: {
+                select: { name: true }
+            }
+        },
+        orderBy: { name: 'asc' }
+    });
 }
 
 // ============================================

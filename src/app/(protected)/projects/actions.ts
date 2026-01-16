@@ -66,6 +66,42 @@ export async function createProject(data: {
         },
     });
 
+    // AUTO-CREATE: Project folder in Documents
+    try {
+        await prisma.folder.create({
+            data: {
+                name: code, // Use project code as folder name
+                description: `Carpeta del proyecto ${data.name}`,
+                projectId: project.id,
+                createdById: user.id,
+            },
+        });
+    } catch (error) {
+        console.error('Error creating project folder:', error);
+    }
+
+    // AUTO-CREATE: Project chat (type: PROJECT)
+    try {
+        const chat = await prisma.chat.create({
+            data: {
+                type: 'PROJECT',
+                name: data.name,
+                projectId: project.id,
+            },
+        });
+
+        // Add creator as first member
+        await prisma.chatMember.create({
+            data: {
+                chatId: chat.id,
+                userId: user.id,
+                role: 'ADMIN',
+            },
+        });
+    } catch (error) {
+        console.error('Error creating project chat:', error);
+    }
+
     await auditCrud("CREATE", "Project", project.id, project);
     revalidatePath("/projects");
 
