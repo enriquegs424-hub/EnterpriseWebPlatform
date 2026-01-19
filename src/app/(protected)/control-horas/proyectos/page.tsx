@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FolderOpen, Clock, ChevronDown, ChevronRight, Download, Calendar } from 'lucide-react';
 import { getProyectosResumen, getProyectosActivos } from '../actions';
 import { formatHoras, MESES_CORTO, MESES } from '../utils';
