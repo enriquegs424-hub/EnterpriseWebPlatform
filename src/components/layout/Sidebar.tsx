@@ -86,9 +86,13 @@ import { getUnreadCount as getChatUnreadCount } from '@/app/(protected)/chat/act
 import { getCurrentUser } from '@/app/(protected)/settings/actions';
 
 
+import { useSidebar } from './SidebarContext';
+import { Menu, ChevronLeft } from 'lucide-react';
+
 export default function Sidebar() {
     const pathname = usePathname();
     const { data: session } = useSession();
+    const { isCollapsed, toggleSidebar } = useSidebar();
     const [unreadCount, setUnreadCount] = useState(0);
     const [chatUnreadCount, setChatUnreadCount] = useState(0);
     const [userImage, setUserImage] = useState<string | null>(null);
@@ -120,16 +124,45 @@ export default function Sidebar() {
     }, [session, pathname]); // Re-fetch on navigation too
 
     return (
-        <aside className="w-64 surface-secondary border-r border-theme-primary flex flex-col h-screen fixed left-0 top-0 overflow-y-auto z-20 transition-colors">
+        <aside
+            className={`
+                fixed left-0 top-0 h-screen z-20 flex flex-col surface-secondary border-r border-theme-primary overflow-y-auto overflow-x-hidden transition-all duration-300 ease-in-out
+                ${isCollapsed ? 'w-20' : 'w-64'}
+            `}
+        >
             {/* ... header ... */}
-            <div className="h-16 flex items-center px-6 border-b border-theme-primary bg-gradient-to-r from-white to-olive-50/20 dark:from-neutral-900 dark:to-neutral-900">
-                <div className="w-8 h-8 relative mr-3">
-                    <Image src="/M_max.png" alt="Logo" fill className="object-contain" />
+            <div className="h-16 flex items-center justify-between px-4 border-b border-theme-primary bg-gradient-to-r from-white to-olive-50/20 dark:from-neutral-900 dark:to-neutral-900 shrink-0">
+                <div className={`flex items-center ${isCollapsed ? 'justify-center w-full' : ''}`}>
+                    <div className="w-8 h-8 relative shrink-0">
+                        <Image src="/M_max.png" alt="Logo" fill className="object-contain" />
+                    </div>
+                    {!isCollapsed && (
+                        <span className="font-black text-lg text-olive-900 dark:text-olive-500 ml-3 whitespace-nowrap">MEP Projects</span>
+                    )}
                 </div>
-                <span className="font-black text-lg text-olive-900 dark:text-olive-500">MEP Projects</span>
+                {!isCollapsed && (
+                    <button
+                        onClick={toggleSidebar}
+                        className="p-1.5 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-500"
+                    >
+                        <ChevronLeft size={20} />
+                    </button>
+                )}
             </div>
 
-            <nav className="flex-1 py-6 px-3 space-y-8">
+            {/* Collapse toggle button centered when collapsed */}
+            {isCollapsed && (
+                <div className="flex justify-center py-2 border-b border-theme-primary/50">
+                    <button
+                        onClick={toggleSidebar}
+                        className="p-2 rounded-lg hover:bg-olive-100 dark:hover:bg-neutral-800 text-olive-600 transition-colors"
+                    >
+                        <Menu size={20} />
+                    </button>
+                </div>
+            )}
+
+            <nav className="flex-1 py-4 px-3 space-y-4">
                 {navItems.map((section) => {
                     // Role-based visibility using roles array
                     const userRole = (session?.user as any)?.role as string || 'WORKER';
@@ -139,10 +172,17 @@ export default function Sidebar() {
 
                     return (
                         <div key={section.section}>
-                            <div className="px-3 mb-3 text-[10px] font-black text-theme-muted uppercase tracking-widest flex items-center">
-                                <span className="flex-1">{section.section}</span>
-                                <div className="h-px bg-theme-primary flex-1 ml-2"></div>
-                            </div>
+                            {!isCollapsed ? (
+                                <div className="px-3 mb-2 text-[10px] font-black text-theme-muted uppercase tracking-widest flex items-center">
+                                    <span className="flex-1 truncate">{section.section}</span>
+                                    <div className="h-px bg-theme-primary flex-1 ml-2"></div>
+                                </div>
+                            ) : (
+                                <div className="flex justify-center mb-2">
+                                    <div className="h-px w-8 bg-theme-primary"></div>
+                                </div>
+                            )}
+
                             <div className="space-y-1">
                                 {section.items.map((item) => {
                                     const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
@@ -165,31 +205,35 @@ export default function Sidebar() {
                                             className={`group flex items-center px-3 py-2.5 text-sm font-semibold rounded-xl transition-all relative ${isActive
                                                 ? 'bg-olive-600 text-white shadow-lg shadow-olive-600/20'
                                                 : 'sidebar-item'
-                                                }`}
-                                            title={item.desc}
+                                                } ${isCollapsed ? 'justify-center' : ''}`}
+                                            title={isCollapsed ? item.label : item.desc}
                                         >
-                                            <div className="relative">
-                                                <item.icon className={`w-5 h-5 mr-3 transition-transform group-hover:scale-110 ${isActive ? 'text-white' : 'text-theme-muted'}`} />
+                                            <div className="relative flex items-center justify-center">
+                                                <item.icon className={`w-5 h-5 transition-transform group-hover:scale-110 ${isActive ? 'text-white' : 'text-theme-muted'} ${!isCollapsed ? 'mr-3' : ''}`} />
+
+                                                {/* Badges */}
                                                 {isNotificationItem && unreadCount > 0 && (
-                                                    <span className={`absolute -top-1 right-2 w-2.5 h-2.5 rounded-full border-2 ${isActive ? 'bg-red-400 border-olive-600' : 'bg-red-500 border-white dark:border-neutral-900'}`}></span>
+                                                    <span className={`absolute -top-1.5 -right-1.5 w-3 h-3 rounded-full border-2 ${isActive ? 'bg-red-400 border-olive-600' : 'bg-red-500 border-white dark:border-neutral-900'}`}></span>
                                                 )}
                                                 {isChatItem && chatUnreadCount > 0 && (
-                                                    <span className={`absolute -top-1 right-2 w-2.5 h-2.5 rounded-full border-2 ${isActive ? 'bg-blue-400 border-olive-600' : 'bg-blue-500 border-white dark:border-neutral-900'}`}></span>
+                                                    <span className={`absolute -top-1.5 -right-1.5 w-3 h-3 rounded-full border-2 ${isActive ? 'bg-blue-400 border-olive-600' : 'bg-blue-500 border-white dark:border-neutral-900'}`}></span>
                                                 )}
                                             </div>
-                                            <span className="flex-1">{item.label}</span>
-                                            {isNotificationItem && unreadCount > 0 && (
-                                                <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-md ml-auto ${isActive ? 'bg-white/20 text-white' : 'bg-red-100 text-red-600 dark:bg-red-900/30'}`}>
-                                                    {unreadCount}
-                                                </span>
-                                            )}
-                                            {isChatItem && chatUnreadCount > 0 && (
-                                                <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-md ml-auto ${isActive ? 'bg-white/20 text-white' : 'bg-blue-100 text-blue-600 dark:bg-blue-900/30'}`}>
-                                                    {chatUnreadCount}
-                                                </span>
-                                            )}
-                                            {!isNotificationItem && !isChatItem && isActive && (
-                                                <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse ml-auto"></div>
+
+                                            {!isCollapsed && (
+                                                <>
+                                                    <span className="flex-1 truncate">{item.label}</span>
+                                                    {isNotificationItem && unreadCount > 0 && (
+                                                        <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-md ml-auto ${isActive ? 'bg-white/20 text-white' : 'bg-red-100 text-red-600 dark:bg-red-900/30'}`}>
+                                                            {unreadCount}
+                                                        </span>
+                                                    )}
+                                                    {isChatItem && chatUnreadCount > 0 && (
+                                                        <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-md ml-auto ${isActive ? 'bg-white/20 text-white' : 'bg-blue-100 text-blue-600 dark:bg-blue-900/30'}`}>
+                                                            {chatUnreadCount}
+                                                        </span>
+                                                    )}
+                                                </>
                                             )}
                                         </Link>
                                     );
@@ -201,22 +245,24 @@ export default function Sidebar() {
             </nav>
 
             {/* ... user ... */}
-            <div className="p-4 border-t border-theme-primary surface-tertiary">
-                <div className="flex items-center">
+            <div className="p-4 border-t border-theme-primary surface-tertiary shrink-0">
+                <div className={`flex items-center ${isCollapsed ? 'justify-center' : ''}`}>
                     {userImage ? (
-                        <img src={userImage} alt="Avatar" className="w-9 h-9 rounded-full object-cover mr-3 border border-olive-200 dark:border-olive-900" />
+                        <img src={userImage} alt="Avatar" className={`w-9 h-9 rounded-full object-cover border border-olive-200 dark:border-olive-900 ${!isCollapsed ? 'mr-3' : ''}`} />
                     ) : (
-                        <div className="w-9 h-9 rounded-full bg-olive-100 dark:bg-olive-900/50 flex items-center justify-center text-olive-700 dark:text-olive-300 text-xs font-bold mr-3 border border-olive-200 dark:border-olive-800">
+                        <div className={`w-9 h-9 rounded-full bg-olive-100 dark:bg-olive-900/50 flex items-center justify-center text-olive-700 dark:text-olive-300 text-xs font-bold border border-olive-200 dark:border-olive-800 ${!isCollapsed ? 'mr-3' : ''}`}>
                             {session?.user?.name?.[0]?.toUpperCase() || 'U'}
                         </div>
                     )}
-                    <div className="overflow-hidden">
-                        <p className="text-sm font-semibold text-theme-primary truncate">{session?.user?.name || 'Usuario'}</p>
-                        <p className="text-xs text-olive-600 dark:text-olive-400 font-medium truncate">
-                            {/* @ts-ignore */}
-                            {session?.user?.role || 'Trabajador'}
-                        </p>
-                    </div>
+                    {!isCollapsed && (
+                        <div className="overflow-hidden">
+                            <p className="text-sm font-semibold text-theme-primary truncate w-full">{session?.user?.name || 'Usuario'}</p>
+                            <p className="text-xs text-olive-600 dark:text-olive-400 font-medium truncate">
+                                {/* @ts-ignore */}
+                                {session?.user?.role || 'Trabajador'}
+                            </p>
+                        </div>
+                    )}
                 </div>
             </div>
         </aside>
