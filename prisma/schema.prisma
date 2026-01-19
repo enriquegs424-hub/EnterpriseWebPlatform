@@ -970,3 +970,38 @@ model SavedFilter {
   @@index([userId])
   @@index([page])
 }
+
+// ============================================
+// HOLIDAYS (Configurable by SUPERADMIN)
+// ============================================
+
+model Holiday {
+  id        String   @id @default(cuid())
+  companyId String?  // null = global for all companies
+  date      DateTime @db.Date
+  name      String   // "Año Nuevo", "Viernes Santo", etc.
+  type      String   @default("NATIONAL") // NATIONAL, REGIONAL, LOCAL, COMPANY
+  year      Int      // For quick filtering by year
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([companyId, date])
+  @@index([companyId])
+  @@index([year])
+}
+
+// ============================================
+// HOURS CONTROL SETTINGS (Configurable by ADMIN)
+// ============================================
+
+model HoursControlSettings {
+  id                    String   @id @default("default")
+  companyId             String?  @unique
+  defaultDailyHours     Float    @default(8.0)
+  lockAfterDays         Int      @default(30) // Lock editing after N days
+  reminderThresholdDays Int      @default(3)  // Remind if N days without entries
+  approvalFrequency     String   @default("none") // none, weekly, monthly
+  calculationMode       String   @default("laborables") // laborables, imputados
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+}

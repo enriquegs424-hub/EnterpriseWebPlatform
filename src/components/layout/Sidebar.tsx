@@ -13,6 +13,7 @@ const navItems = [
         section: 'SuperAdmin', items: [
             { label: 'Panel Global', href: '/superadmin', icon: Shield, desc: 'Panel de control global' },
             { label: 'Empresas', href: '/superadmin/companies', icon: Building2, desc: 'Gestión de empresas' },
+            { label: 'Festivos', href: '/superadmin/holidays', icon: Calendar, desc: 'Calendario festivo' },
             { label: 'Logs Globales', href: '/superadmin/logs', icon: Activity, desc: 'Auditoría de toda la plataforma' },
         ], roles: ['SUPERADMIN']
     },
@@ -28,6 +29,14 @@ const navItems = [
         ], roles: ['SUPERADMIN', 'ADMIN', 'MANAGER', 'WORKER']
     },
     {
+        section: 'Control Horas', items: [
+            { label: 'Mi Hoja', href: '/control-horas/mi-hoja', icon: Calendar, desc: 'Mi hoja mensual de horas' },
+            { label: 'Equipo', href: '/control-horas/equipo', icon: Users, desc: 'Vista global del equipo', managerOnly: true },
+            { label: 'Por Proyecto', href: '/control-horas/proyectos', icon: Briefcase, desc: 'Horas por proyecto', managerOnly: true },
+            { label: 'Anual', href: '/control-horas/anual', icon: BarChart, desc: 'Resumen anual', managerOnly: true },
+        ], roles: ['SUPERADMIN', 'ADMIN', 'MANAGER', 'WORKER']
+    },
+    {
         section: 'Gestión', items: [
             { label: 'CRM', href: '/crm', icon: TrendingUp, desc: 'Gestión de leads y clientes' },
             { label: 'Presupuestos', href: '/quotes', icon: FileCheck, desc: 'Gestión de presupuestos' },
@@ -39,7 +48,7 @@ const navItems = [
     {
         section: 'Administración', items: [
             { label: 'Analytics', href: '/analytics', icon: BarChart, desc: 'Métricas y reportes' },
-            { label: 'Control de Horas', href: '/admin/hours', icon: BarChart, desc: 'Control horario de usuarios' },
+            { label: 'Horas Global', href: '/admin/hours', icon: Clock, desc: 'Control horario de usuarios' },
             { label: 'Usuarios', href: '/admin/users', icon: Users, desc: 'Gestión de equipo' },
             { label: 'Departamentos', href: '/admin/departments', icon: Building2, desc: 'Configuración por áreas' },
             { label: 'Equipos', href: '/admin/teams', icon: UserCog, desc: 'Organización de equipos' },
@@ -124,6 +133,9 @@ export default function Sidebar() {
 
                                     // Hide Logs for non-admins
                                     if (item.label === 'Auditoría' && !['SUPERADMIN', 'ADMIN'].includes(userRole)) return null;
+
+                                    // Hide managerOnly items from WORKER
+                                    if ((item as any).managerOnly && userRole === 'WORKER') return null;
 
                                     return (
                                         <Link
