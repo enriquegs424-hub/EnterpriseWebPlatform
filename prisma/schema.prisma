@@ -93,6 +93,7 @@ model User {
   permissions       Permission[]
   managedTeams      Team[]            @relation("TeamManager")
   memberOfTeams     Team[]            @relation("TeamMembers")
+  calendarItems     CalendarItem[]
 
   @@index([companyId])
 }
@@ -425,6 +426,7 @@ model Event {
   allDay      Boolean   @default(false)
   location    String?
   type        EventType @default(MEETING)
+  recurrenceRule String? // ISO 8601 repeating rule pattern or simplified "DAILY", "WEEKLY", "MONTHLY"
 
   userId    String
   projectId String?
@@ -1004,4 +1006,23 @@ model HoursControlSettings {
   calculationMode       String   @default("laborables") // laborables, imputados
   createdAt             DateTime @default(now())
   updatedAt             DateTime @updatedAt
+}
+
+// ============================================
+// CALENDAR ITEMS (Personal quick notes/reminders)
+// ============================================
+
+model CalendarItem {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title       String
+  description String?
+  date        DateTime @db.Date
+  allDay      Boolean  @default(true)
+  color       String?  @default("#8b5cf6") // Purple
+  createdAt   DateTime @default(now())
+
+  @@index([userId, date])
+  @@index([date])
 }

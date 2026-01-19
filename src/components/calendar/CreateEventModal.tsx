@@ -21,6 +21,7 @@ export default function CreateEventModal({ isOpen, onClose, currentDate, project
     const [start, setStart] = useState('');
     const [end, setEnd] = useState('');
     const [type, setType] = useState<EventType>('MEETING');
+    const [recurrence, setRecurrence] = useState('');
 
     // Reset form when modal opens
     useEffect(() => {
@@ -48,6 +49,7 @@ export default function CreateEventModal({ isOpen, onClose, currentDate, project
             setLocation('');
             setDescription('');
             setType('MEETING');
+            setRecurrence('');
         }
     }, [isOpen, currentDate]);
 
@@ -63,7 +65,8 @@ export default function CreateEventModal({ isOpen, onClose, currentDate, project
                 description,
                 location,
                 type,
-                projectId
+                projectId,
+                recurrenceRule: recurrence || undefined
             });
             onClose();
         } catch (error) {
@@ -184,6 +187,22 @@ export default function CreateEventModal({ isOpen, onClose, currentDate, project
                             ))}
                         </div>
                     </div>
+
+                    {/* Recurrence */}
+                    <div>
+                        <label className="block text-sm font-bold text-neutral-700 mb-1">Repetir</label>
+                        <select
+                            value={recurrence}
+                            onChange={(e) => setRecurrence(e.target.value)}
+                            className="w-full px-4 py-2 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-olive-500 focus:border-olive-500 text-sm bg-white"
+                        >
+                            <option value="">No repetir</option>
+                            <option value="DAILY">Diariamente</option>
+                            <option value="WEEKLY">Semanalmente</option>
+                            <option value="MONTHLY">Mensualmente</option>
+                            <option value="YEARLY">Anualmente</option>
+                        </select>
+                    </div>
                 </div>
 
                 <div className="p-6 border-t border-neutral-200 bg-neutral-50 flex justify-end space-x-3">
@@ -207,7 +226,7 @@ export default function CreateEventModal({ isOpen, onClose, currentDate, project
                         ) : 'Crear Evento'}
                     </button>
                 </div>
-            </motion.div>
-        </div>
+            </motion.div >
+        </div >
     );
 }

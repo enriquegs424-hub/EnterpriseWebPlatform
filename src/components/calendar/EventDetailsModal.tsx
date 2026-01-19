@@ -38,7 +38,7 @@ export default function EventDetailsModal({ event, isOpen, onClose, onUpdate }: 
         setTitle(event.title);
         setDescription(event.description || '');
         setLocation(event.location || '');
-        setStart(formatForInput(new Date(event.startDate)));
+        setStart(formatForInput(new Date(event.date || event.startDate)));
         setEnd(formatForInput(new Date(event.endDate)));
 
         setIsEditing(true);
@@ -92,8 +92,8 @@ export default function EventDetailsModal({ event, isOpen, onClose, onUpdate }: 
             >
                 {/* Header with Type Color */}
                 <div className={`p-6 border-b border-neutral-200 flex justify-between items-start ${event.type === 'MEETING' ? 'bg-blue-50' :
-                        event.type === 'DEADLINE' ? 'bg-red-50' :
-                            event.type === 'REMINDER' ? 'bg-amber-50' : 'bg-neutral-50'
+                    event.type === 'DEADLINE' ? 'bg-red-50' :
+                        event.type === 'REMINDER' ? 'bg-amber-50' : 'bg-neutral-50'
                     }`}>
                     <div>
                         {isEditing ? (
@@ -105,8 +105,8 @@ export default function EventDetailsModal({ event, isOpen, onClose, onUpdate }: 
                         ) : (
                             <>
                                 <span className={`text-xs font-bold px-2 py-1 rounded-md uppercase tracking-wide opacity-80 mb-2 inline-block ${event.type === 'MEETING' ? 'bg-blue-100 text-blue-800' :
-                                        event.type === 'DEADLINE' ? 'bg-red-100 text-red-800' :
-                                            event.type === 'REMINDER' ? 'bg-amber-100 text-amber-800' : 'bg-neutral-200 text-neutral-800'
+                                    event.type === 'DEADLINE' ? 'bg-red-100 text-red-800' :
+                                        event.type === 'REMINDER' ? 'bg-amber-100 text-amber-800' : 'bg-neutral-200 text-neutral-800'
                                     }`}>
                                     {event.type}
                                 </span>
@@ -142,10 +142,10 @@ export default function EventDetailsModal({ event, isOpen, onClose, onUpdate }: 
                                 </div>
                             ) : (
                                 <p className="text-neutral-600">
-                                    {format(new Date(event.startDate), "EEEE d 'de' MMMM, yyyy", { locale: es })}
+                                    {format(new Date(event.date || event.startDate), "EEEE d 'de' MMMM, yyyy", { locale: es })}
                                     <br />
                                     <span className="text-neutral-500">
-                                        {format(new Date(event.startDate), 'HH:mm')} - {format(new Date(event.endDate), 'HH:mm')}
+                                        {format(new Date(event.date || event.startDate), 'HH:mm')} - {format(new Date(event.endDate), 'HH:mm')}
                                     </span>
                                 </p>
                             )}

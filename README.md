@@ -1,234 +1,319 @@
-# MEP Projects - Enterprise ERP Platform
+<p align="center">
+  <img src="public/logo.svg" alt="MEP Projects Logo" width="200" />
+</p>
 
-Modern enterprise resource planning (ERP) platform built with Next.js, TypeScript, and PostgreSQL. Designed for professional services companies requiring project management, CRM, finance, and HR capabilities.
+<h1 align="center">MEP Projects</h1>
+<p align="center">
+  <strong>🏗️ Plataforma ERP Empresarial para Servicios Profesionales</strong>
+</p>
+<p align="center">
+  Gestión integral de proyectos, clientes, facturación, tareas y más — todo en una sola plataforma moderna.
+</p>
 
-## 🎯 Vision
-
-Build a comprehensive ERP system with **Odoo-level functionality and professionalism**, featuring full multi-tenant support, granular permissions (RBAC), complete audit trails, and automated business workflows.
-
-## 🚀 Quick Start
-
-```bash
-# Install dependencies
-npm install
-
-# Setup database
-npm run db:push
-npm run db:seed
-
-# Start development server
-npm run dev
-```
-
-Visit `http://localhost:3000`
-- **Admin**: admin@mep-projects.com / admin123
-
-## 📚 Documentation
-
-- **[Architecture](./ARCHITECTURE.md)** - System design, stack, decisions
-- **[Roadmap](./ROADMAP_TRACKING.md)** - Live tracker, priorities, progress
-- **[Backlog](./BACKLOG_EXECUTABLE.md)** - Actionable tasks with DoD
-- **[Changelog](./CHANGELOG.md)** - Version history
-- **[Contributing](./CONTRIBUTING.md)** - Development guidelines
-
-## ✨ Core Features
-
-### Security & Access Control
-- ✅ **Multi-tenant**: Company-level data isolation
-- ✅ **RBAC**: 4 roles (ADMIN, MANAGER, WORKER, CLIENT) × 11 resources
-- ✅ **Proxy middleware**: Global route protection (Next.js 16)
-- ✅ **Rate limiting**: API abuse prevention
-- ✅ **Audit trail**: Automatic CRUD logging
-
-### Business Modules
-- ✅ **Projects**: With tasks, documents, events
-- ✅ **CRM**: Lead pipeline (NEW → QUALIFIED → PROPOSAL → NEGOTIATION → CLOSED)
-- ✅ **Tasks**: Kanban, list, calendar views
-- ✅ **Time Tracking**: Daily entry + approval workflow
-- ✅ **Expenses**: Approval flow (PENDING → APPROVED → PAID)
-- ✅ **Invoices**: Auto-numbering, payment tracking, status flow
-- ✅ **Documents**: Versioning, sharing
-- ✅ **Calendar**: Events, scheduling
-- ✅ **Chat**: Team communications
-- ✅ **Analytics**: Dashboards, reports
-
-### State Management
-- ✅ **State machines**: Validated transitions for Tasks, Leads, Expenses, Invoices, TimeEntries
-- ✅ **Workflow validation**: Invalid state changes blocked automatically
-
-## 🏗️ Tech Stack
-
-| Layer | Technology |
-|-------|------------|
-| **Frontend** | Next.js 16.1, React 19, Tailwind CSS 4 |
-| **Backend** | Next.js Server Actions, Prisma ORM 5.22 |
-| **Database** | PostgreSQL |
-| **Auth** | NextAuth 5 beta (JWT + session) |
-| **Testing** | Vitest 4.0 (30 tests passing) |
-| **Deployment** | Docker Compose |
-
-## 📊 Project Status
-
-| Module | Backend | UI | RBAC | State | Audit | Tests | Status |
-|--------|---------|-----|------|-------|-------|-------|--------|
-| Tasks | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | 100% |
-| Expenses | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | 100% |
-| Leads | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | 100% |
-| Clients | ✅ | ✅ | ✅ | - | ✅ | - | 90% |
-| Invoices | ✅ | 🟡 | ✅ | ✅ | ✅ | ✅ | 85% |
-| Projects | ✅ | ✅ | 🟡 | - | 🟡 | - | 70% |
-| Documents | ✅ | ✅ | 🟡 | - | 🟡 | - | 70% |
-| Hours | ✅ | ✅ | 🟡 | 🟡 | 🟡 | - | 75% |
-
-**Overall Progress**: 85% core functionality complete
-
-## 🎯 Current Priorities (P0)
-
-1. **Invoice creation form** - Backend ready, needs dynamic line items UI
-2. **Invoice PDF generation** - jsPDF installed, implement template
-3. **DataTable generic component** - Reusable across all modules
-4. **ESLint + Prettier strict** - Code quality enforcement
-5. **RBAC application** - Complete for Projects, Documents, Hours
-
-See [BACKLOG_EXECUTABLE.md](./BACKLOG_EXECUTABLE.md) for full task list.
-
-## 📝 Development Scripts
-
-```bash
-# Development
-npm run dev              # Start dev server (port 3000)
-npm run build            # Production build
-npm run start            # Start production server
-
-# Database
-npm run db:push          # Apply schema changes
-npm run db:seed          # Seed database
-npm run db:studio        # Open Prisma Studio
-npm run db:reset         # Reset + reseed database
-
-# Quality
-npm run lint             # Run ESLint
-npm run type-check       # TypeScript check
-npm test                 # Run tests (30 tests)
-npm run test:ui          # Test UI
-npm run test:coverage    # Coverage report
-```
-
-## 🔧 Environment Variables
-
-Create `.env` file:
-
-```env
-# Database
-DATABASE_URL="postgresql://user:pass@localhost:5432/mepprojects"
-
-# Auth
-NEXTAUTH_URL="http://localhost:3000"
-NEXTAUTH_SECRET="your-secret-here"
-
-# Optional
-REDIS_URL=""              # For rate limiting (production)
-SMTP_HOST=""              # For email automation
-SMTP_USER=""
-SMTP_PASS=""
-```
-
-## 🏢 Architecture Principles
-
-1. **Multi-tenant first**: All core entities have `companyId`
-2. **RBAC mandatory**: No CRUD without `checkPermission()`
-3. **Audit trail systematic**: Every mutation logs via `auditCrud()`
-4. **State validation**: Business logic uses state machines
-5. **Security multi-layer**: Proxy + RBAC + state + rate limit
-6. **Type-safe strict**: No `any` types allowed
-7. **Database-first**: Prisma schema is source of truth
-8. **Server-side logic**: Critical business logic never in client
-9. **Test critical paths**: State machines and permissions covered
-
-## 🐳 Docker Deployment
-
-```bash
-# Build and start
-docker-compose up -d
-
-# View logs
-docker-compose logs -f app
-
-# Stop
-docker-compose down
-```
-
-## 🧪 Testing
-
-```bash
-# Run all tests
-npm test
-
-# Watch mode
-npm test -- --watch
-
-# With UI
-npm run test:ui
-
-# Coverage report
-npm run test:coverage
-```
-
-**Current Coverage**:
-- State Machine: 30 tests ✅
-- Permissions: Tests pending
-- Actions: Tests pending
-
-## 📈 Roadmap to Odoo Parity
-
-### Completed ✅
-- Multi-tenant architecture
-- RBAC system
-- State machines
-- Core modules (Tasks, CRM, Expenses, Invoices)
-- Audit trail
-- Rate limiting
-
-### In Progress 🟡
-- Invoice form + PDF
-- DataTable component
-- Full RBAC coverage
-- CI/CD pipeline
-
-### Planned 📋
-- Products/Services catalog
-- Tax management UI
-- Financial reports (P&L, Balance Sheet)
-- EventBus for automations
-- Notification rules engine
-- Webhooks outbound
-- REST API v1
-- Module system
-
-See [ROADMAP_TRACKING.md](./ROADMAP_TRACKING.md) for detailed progress.
-
-## 🤝 Contributing
-
-1. Follow TypeScript strict mode
-2. Run `npm run lint` before commit
-3. Add tests for new features
-4. Update CHANGELOG.md
-5. Document breaking changes
-
-See [CONTRIBUTING.md](./CONTRIBUTING.md) for details.
-
-## 📄 License
-
-Proprietary - MEP Projects S.L.
-
-## 🆘 Support
-
-- **Issues**: Create GitHub issue
-- **Docs**: Check documentation folder
-- **Troubleshooting**: See `_legacy/docs/TROUBLESHOOTING.md`
+<p align="center">
+  <a href="#-inicio-rápido">Inicio Rápido</a> •
+  <a href="#-características">Características</a> •
+  <a href="#-para-desarrolladores">Para Developers</a> •
+  <a href="#-roadmap-completo">Roadmap</a>
+</p>
 
 ---
 
-**Last Updated**: 2026-01-09  
-**Version**: 1.0.0-beta  
-**Status**: 🚀 Production Ready (Core Modules)
+## 📋 ¿Qué es MEP Projects?
+
+MEP Projects es una **plataforma ERP (Enterprise Resource Planning) moderna** diseñada para empresas de servicios profesionales como estudios de ingeniería, arquitectura, consultoría y similares.
+
+### 🎯 Problema que Resuelve
+
+| Sin MEP Projects | Con MEP Projects |
+|------------------|------------------|
+| Hojas de Excel dispersas | Base de datos centralizada |
+| Emails para coordinar | Chat integrado + Notificaciones |
+| Control de horas manual | Registro automático con aprobaciones |
+| Facturas en Word | Generación automatizada con PDF |
+| Seguimiento de clientes en papel | CRM con pipeline visual |
+| Documentos en carpetas locales | Gestor documental con versiones |
+| Múltiples herramientas desconectadas | Todo integrado en una plataforma |
+
+### 🏆 ¿Por qué MEP Projects?
+
+- **Todo en uno**: No más saltar entre 10 aplicaciones diferentes
+- **Diseñado para ingeniería**: Funcionalidades específicas para estudios técnicos
+- **Moderno y rápido**: Tecnología de última generación (Next.js 15, React 19)
+- **Seguro**: Multi-tenant, RBAC, audit trail completo
+- **Escalable**: Preparado para crecer con tu empresa
+
+---
+
+## ✨ Características Actuales
+
+### 🗂️ Módulos Principales
+
+#### 📊 Dashboard & Home
+- KPIs en tiempo real: Proyectos activos, tareas pendientes, horas registradas
+- Widget de clima integrado
+- Actividad reciente del equipo
+- Tareas urgentes y accesos directos
+
+#### 📁 Gestión de Proyectos
+- Vista de lista y detalle completo
+- Fases, etapas y presupuesto
+- Equipo asignado con roles
+- Documentos y tareas asociadas
+- Historial de actividad
+
+#### ✅ Gestión de Tareas
+- **Vista Kanban**: Drag & drop entre columnas
+- **Vista Lista**: Tabla ordenable y filtrable
+- **Vista Calendario**: Por fecha de vencimiento
+- Prioridades, asignaciones, comentarios, subtareas, etiquetas
+
+#### 📅 Calendario Avanzado
+- Vistas: Mes, Semana, Día
+- Eventos, Tareas, Festivos, Notas personales
+- **Eventos recurrentes**: Diario, Semanal, Mensual, Anual
+- **Drag & Drop**: Reorganizar arrastrando
+- Quick Add para notas rápidas
+
+#### 💬 Chat y Comunicación
+- Mensajes directos y grupos
+- Favoritos y notificaciones
+- Búsqueda y archivos compartidos
+- Preview de últimos mensajes
+
+#### 📄 Gestor Documental
+- Carpetas jerárquicas
+- Versiones y preview (PDF, Word, Excel, imágenes)
+- Compartir y asociar a proyectos
+
+#### 🕐 Control de Horas
+- Registro diario por proyecto
+- Resúmenes y flujo de aprobación
+- Exportación a Excel
+
+#### 💰 Facturación y Presupuestos
+- Facturas con numeración automática
+- Estados: DRAFT → SENT → PAID → CANCELLED
+- Generación PDF
+- Presupuestos con conversión a factura
+
+#### 🎯 CRM
+- Pipeline visual: NEW → CONTACTED → QUALIFIED → PROPOSAL → NEGOTIATION → WON/LOST
+- Actividades y conversión a cliente
+
+#### 👥 Clientes
+- Ficha completa con contactos
+- Proyectos y facturas asociadas
+
+#### 📈 Analytics
+- Dashboards de productividad e ingresos
+- Gráficos y exportación
+
+#### 🔔 Notificaciones
+- Alertas en tiempo real
+- Centro de notificaciones
+- Configuración por tipo
+
+#### ⚙️ SuperAdmin
+- Gestión de usuarios y roles
+- Festivos y configuración de empresa
+- Logs de auditoría
+
+### 🔐 Seguridad
+
+| Característica | Descripción |
+|----------------|-------------|
+| **Multi-tenant** | Datos aislados por empresa |
+| **RBAC** | 4 roles × 11+ recursos |
+| **Audit Trail** | Registro automático de acciones |
+| **Rate Limiting** | Protección contra abusos |
+| **Sesiones seguras** | JWT + HTTP-only cookies |
+
+### 🎨 UX/UI
+
+- Diseño moderno con animaciones fluidas
+- Modo oscuro completo
+- Responsive (desktop, tablet, móvil)
+- Internacionalización (ES, EN)
+
+---
+
+## 🚀 Inicio Rápido
+
+### Requisitos
+- Node.js 18+, PostgreSQL 14+, npm
+
+### Instalación
+
+```bash
+git clone https://github.com/tu-org/mep-projects.git
+cd mep-projects
+npm install
+cp .env.example .env
+npm run db:push && npm run db:seed
+npm run dev
+```
+
+### Acceso: `http://localhost:3000`
+
+| Rol | Email | Contraseña |
+|-----|-------|------------|
+| Admin | admin@mep-projects.com | admin123 |
+| Worker | carlos.martinez@mep-projects.com | admin123 |
+
+---
+
+## 🛠️ Tech Stack
+
+| Capa | Tecnología |
+|------|------------|
+| Frontend | Next.js 15, React 19, Tailwind CSS 4, Framer Motion |
+| Backend | Next.js Server Actions, Prisma ORM 5 |
+| Database | PostgreSQL |
+| Auth | NextAuth.js 5 |
+| Testing | Vitest 4 |
+
+### Arquitectura
+
+```
+Browser (React 19 + Tailwind)
+        ↕ HTTP
+Server (Next.js 15 App Router + Server Actions)
+        ↕ Prisma ORM
+PostgreSQL (25+ models)
+```
+
+### Scripts
+
+```bash
+npm run dev          # Desarrollo
+npm run db:push      # Aplicar schema
+npm run db:seed      # Datos iniciales
+npm run db:studio    # GUI de BD
+npm test             # Tests
+```
+
+---
+
+## 🗺️ Roadmap Completo
+
+### ✅ Fase 1: Core Platform (COMPLETADA)
+- ✅ Autenticación, Multi-tenant, RBAC
+- ✅ Dashboard, Proyectos, Tareas
+- ✅ Control de horas, Calendario, Chat
+- ✅ Documentos, CRM, Facturación
+- ✅ Notificaciones, Modo oscuro, Audit trail
+
+### ✅ Fase 2: Interactividad (COMPLETADA)
+- ✅ Drag & Drop (tareas y calendario)
+- ✅ Eventos recurrentes
+- ✅ Chat con grupos y favoritos
+- ✅ Preview de documentos mejorado
+
+### 🚧 Fase 3: Integraciones
+| Feature | Prioridad |
+|---------|-----------|
+| Exportación iCal | P0 |
+| Emails automáticos | P0 |
+| PDF templates personalizables | P1 |
+| Firma digital | P1 |
+| Importación de datos | P2 |
+
+### 📋 Fase 4: Automatización
+| Feature | Prioridad |
+|---------|-----------|
+| Motor de reglas (if X then Y) | P0 |
+| Workflows automáticos | P0 |
+| Recordatorios inteligentes | P1 |
+| Templates de proyecto | P1 |
+| Tareas recurrentes | P1 |
+
+### 📋 Fase 5: Finanzas Avanzadas
+| Feature | Prioridad |
+|---------|-----------|
+| Contabilidad básica | P0 |
+| Informes financieros (P&L, Balance) | P0 |
+| Conciliación bancaria | P1 |
+| Gastos de empleados | P1 |
+| Multi-moneda | P2 |
+
+### 📋 Fase 6: RRHH
+| Feature | Prioridad |
+|---------|-----------|
+| Vacaciones y ausencias | P0 |
+| Nóminas básicas | P1 |
+| Objetivos (OKR) | P2 |
+| Evaluaciones de desempeño | P2 |
+
+### 📋 Fase 7: Colaboración Avanzada
+| Feature | Prioridad |
+|---------|-----------|
+| Portal de cliente | P0 |
+| Menciones (@usuario) | P0 |
+| Comentarios en documentos | P1 |
+| Videoconferencia | P2 |
+
+### 📋 Fase 8: Analytics Avanzado
+| Feature | Prioridad |
+|---------|-----------|
+| Dashboards customizables | P0 |
+| Informes personalizados | P0 |
+| Alertas inteligentes | P1 |
+| Predicciones ML | P2 |
+
+### 📋 Fase 9: Plataforma
+| Feature | Prioridad |
+|---------|-----------|
+| API REST pública | P0 |
+| Webhooks | P0 |
+| SDK/CLI | P2 |
+| Marketplace | P2 |
+
+### 📋 Fase 10: Móvil
+| Feature | Prioridad |
+|---------|-----------|
+| App iOS | P0 |
+| App Android | P0 |
+| Push notifications | P0 |
+| Modo offline | P1 |
+
+### 📋 Fase 11: Enterprise
+| Feature | Prioridad |
+|---------|-----------|
+| SSO/SAML | P0 |
+| Permisos granulares (ABAC) | P0 |
+| Multi-región | P1 |
+| Cumplimiento (GDPR, SOC2) | P1 |
+
+---
+
+## 📊 Métricas
+
+| Métrica | Valor |
+|---------|-------|
+| Líneas de código | ~50,000 |
+| Modelos de BD | 25+ |
+| Componentes React | 80+ |
+| Server Actions | 100+ |
+| Tests | 30+ |
+
+---
+
+## 📖 Documentación
+
+- [ARCHITECTURE.md](./ARCHITECTURE.md)
+- [CONTRIBUTING.md](./CONTRIBUTING.md)
+- [CHANGELOG.md](./CHANGELOG.md)
+- [docs/modules/](./docs/modules/)
+
+---
+
+## 📄 Licencia
+
+Propietario - MEP Projects S.L.
+
+---
+
+<p align="center">
+  <sub>Versión: 1.0.0</sub>
+</p>
