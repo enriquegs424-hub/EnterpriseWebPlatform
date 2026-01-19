@@ -159,9 +159,8 @@ export default function ProyectosPage() {
                                 {datos.proyectos.map((proyecto) => {
                                     const isExpanded = expandedProjects.has(proyecto.projectId);
                                     return (
-                                        <>
+                                        <React.Fragment key={proyecto.projectId}>
                                             <tr
-                                                key={proyecto.projectId}
                                                 className="hover:bg-neutral-50 dark:hover:bg-neutral-800/50 cursor-pointer"
                                                 onClick={() => toggleExpand(proyecto.projectId)}
                                             >
@@ -216,7 +215,7 @@ export default function ProyectosPage() {
                                                     </td>
                                                 </tr>
                                             ))}
-                                        </>
+                                        </React.Fragment>
                                     );
                                 })}
                                 {/* Fila de totales */}

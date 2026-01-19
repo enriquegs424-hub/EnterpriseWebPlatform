@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx tsc:*)",
+      "Bash(npm run build:*)",
+      "Bash(timeout 30 npm run dev:*)",
+      "Bash(npx prisma db push:*)",
+      "Bash(timeout 25 npm run dev)"
+    ]
+  }
+}

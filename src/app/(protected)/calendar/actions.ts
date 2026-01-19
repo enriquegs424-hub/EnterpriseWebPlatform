@@ -640,3 +640,96 @@ export async function moveCalendarItem(itemId: string, type: CalendarItemType, n
 
     revalidatePath('/calendar');
 }
+
+// ============================================
+// ICAL EXPORT
+// ============================================
+
+import {
+    generateICalContent,
+    generateICalFilename,
+    type ICalExportOptions,
+    type RecurringEventInfo
+} from '@/lib/exports/ical-export';
+
+export interface ExportCalendarOptions {
+    startDate: Date;
+    endDate: Date;
+    includeTasks?: boolean;
+    includeHolidays?: boolean;
+    includePersonalItems?: boolean;
+    includeEvents?: boolean;
+}
+
+export async function exportCalendarToIcal(options: ExportCalendarOptions): Promise<{
+    success: boolean;
+    content?: string;
+    filename?: string;
+    error?: string;
+}> {
+    try {
+        const session = await auth();
+        if (!session?.user?.email) {
+            return { success: false, error: 'No autenticado' };
+        }
+
+        const user = await prisma.user.findUnique({
+            where: { email: session.user.email },
+            select: { id: true, name: true, companyId: true }
+        });
+
+        if (!user) {
+            return { success: false, error: 'Usuario no encontrado' };
+        }
+
+        // Get unified calendar items
+        const items = await getCalendarData(options.startDate, options.endDate);
+
+        // Fetch recurring events to get recurrenceRule (expanded instances don't have it)
+        const recurringEvents = await prisma.event.findMany({
+            where: {
+                // @ts-ignore
+                recurrenceRule: { not: null },
+                startDate: { lte: options.endDate },
+                OR: [
+                    { userId: user.id },
+                    { attendees: { some: { userId: user.id } } }
+                ]
+            },
+            select: {
+                id: true,
+                // @ts-ignore
+                recurrenceRule: true
+            }
+        });
+
+        const recurringEventInfo: RecurringEventInfo[] = recurringEvents.map((e: any) => ({
+            id: e.id,
+            recurrenceRule: e.recurrenceRule
+        }));
+
+        // Generate iCal content
+        const icalOptions: ICalExportOptions = {
+            calendarName: `Calendario de ${user.name || 'Usuario'}`,
+            includeTasks: options.includeTasks ?? true,
+            includeHolidays: options.includeHolidays ?? true,
+            includePersonalItems: options.includePersonalItems ?? true,
+            includeEvents: options.includeEvents ?? true
+        };
+
+        const content = generateICalContent(items, icalOptions, recurringEventInfo);
+        const filename = generateICalFilename(options.startDate, options.endDate);
+
+        return {
+            success: true,
+            content,
+            filename
+        };
+    } catch (error) {
+        console.error('Error exporting calendar to iCal:', error);
+        return {
+            success: false,
+            error: error instanceof Error ? error.message : 'Error al exportar calendario'
+        };
+    }
+}

@@ -95,6 +95,14 @@ model User {
   memberOfTeams     Team[]            @relation("TeamMembers")
   calendarItems     CalendarItem[]
 
+  // Time tracking relations
+  approvedTimeEntries TimeEntry[]     @relation("ApprovedTimeEntries")
+  workerCalendarConfig WorkerCalendarConfig[]
+  workerMonthlyStats  WorkerMonthlyStats[]
+
+  // Economic tracking
+  hourCost          Decimal?          @db.Decimal(10, 2)  // Cost per hour for economic analysis
+
   @@index([companyId])
 }
 
@@ -118,6 +126,7 @@ model Project {
   expenses    Expense[]
   invoices    Invoice[]
   teams       Team[]      @relation("TeamProject")
+  hoursAggregates ProjectHoursAggregate[]
 
   @@index([companyId])
   @@index([clientId])
@@ -194,18 +203,40 @@ model Lead {
 }
 
 model TimeEntry {
-  id        String   @id @default(cuid())
-  userId    String
-  projectId String
-  date      DateTime
-  hours     Float
-  notes     String?
-  createdAt DateTime @default(now())
-  project   Project  @relation(fields: [projectId], references: [id])
-  user      User     @relation(fields: [userId], references: [id])
+  id          String          @id @default(cuid())
+  userId      String
+  projectId   String
+  date        DateTime        @db.Date
+  hours       Float
+  startTime   String?         // HH:mm format (optional, for detailed tracking)
+  endTime     String?         // HH:mm format (optional, for detailed tracking)
+  notes       String?
+  status      TimeEntryStatus @default(DRAFT)
+
+  // Approval workflow
+  submittedAt DateTime?
+  approvedAt  DateTime?
+  approvedById String?
+  rejectionReason String?
+
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @default(now()) @updatedAt
+
+  project     Project         @relation(fields: [projectId], references: [id])
+  user        User            @relation(fields: [userId], references: [id])
+  approvedBy  User?           @relation("ApprovedTimeEntries", fields: [approvedById], references: [id])
 
   @@index([userId, date])
   @@index([projectId])
+  @@index([status])
+  @@index([userId, status])
+}
+
+enum TimeEntryStatus {
+  DRAFT       // Worker creating/editing
+  SUBMITTED   // Submitted for approval
+  APPROVED    // Manager/Admin approved
+  REJECTED    // Manager/Admin rejected
 }
 
 model Task {
@@ -1025,4 +1056,161 @@ model CalendarItem {
 
   @@index([userId, date])
   @@index([date])
+}
+
+// ============================================
+// WORKER CALENDAR CONFIGURATION
+// Per-worker working schedule configuration
+// ============================================
+
+model WorkerCalendarConfig {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Period configuration (year/month based or permanent)
+  year        Int?     // null = permanent config
+  month       Int?     // 1-12, null = all year
+
+  // Daily working hours configuration
+  dailyHours  Float    @default(8.0)  // Standard hours per day
+
+  // Weekly schedule (true = working day)
+  workMonday    Boolean @default(true)
+  workTuesday   Boolean @default(true)
+  workWednesday Boolean @default(true)
+  workThursday  Boolean @default(true)
+  workFriday    Boolean @default(true)
+  workSaturday  Boolean @default(false)
+  workSunday    Boolean @default(false)
+
+  // Specific non-working dates (vacations, leaves)
+  nonWorkingDates DateTime[] @db.Date
+
+  // Notes (vacation reason, etc.)
+  notes       String?
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([userId, year, month])
+  @@index([userId])
+  @@index([year, month])
+}
+
+// ============================================
+// WORKER MONTHLY STATISTICS
+// Pre-calculated monthly statistics for reporting
+// ============================================
+
+model WorkerMonthlyStats {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  year        Int
+  month       Int      // 1-12
+
+  // Expected hours calculation
+  workingDays       Int       @default(0)   // Working days in month (excluding holidays/weekends)
+  expectedHours     Float     @default(0)   // workingDays * dailyHours
+
+  // Actual hours tracking
+  totalHours        Float     @default(0)   // Sum of all time entries
+  approvedHours     Float     @default(0)   // Sum of approved entries
+  pendingHours      Float     @default(0)   // Sum of draft/submitted entries
+
+  // Deviation
+  difference        Float     @default(0)   // totalHours - expectedHours
+  compliancePercent Float     @default(0)   // (totalHours / expectedHours) * 100
+
+  // Reporting tracking
+  lastEntryDate     DateTime? @db.Date      // Most recent time entry
+  daysWithEntries   Int       @default(0)   // Days with at least one entry
+  daysWithoutEntries Int      @default(0)   // Working days without entries
+
+  // Recalculation tracking
+  calculatedAt      DateTime  @default(now())
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([userId, year, month])
+  @@index([userId])
+  @@index([year, month])
+}
+
+// ============================================
+// PROJECT HOURS AGGREGATE
+// Pre-calculated project-level hours aggregation
+// ============================================
+
+model ProjectHoursAggregate {
+  id          String   @id @default(cuid())
+  projectId   String
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  year        Int
+  month       Int?     // null = annual total
+
+  // Hours breakdown
+  totalHours        Float     @default(0)
+  approvedHours     Float     @default(0)
+  pendingHours      Float     @default(0)
+
+  // Economic data (for CEP)
+  totalCost         Decimal?  @db.Decimal(12, 2)  // Sum of (hours * worker.hourCost)
+
+  // Contributors
+  contributorCount  Int       @default(0)   // Unique users with entries
+
+  // Recalculation tracking
+  calculatedAt      DateTime  @default(now())
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([projectId, year, month])
+  @@index([projectId])
+  @@index([year, month])
+}
+
+// ============================================
+// GLOBAL HOURS CONTROL DASHBOARD DATA
+// For admin dashboard reporting status
+// ============================================
+
+model WorkerReportingStatus {
+  id          String   @id @default(cuid())
+  userId      String   @unique
+
+  // Reference to personal timesheet (in real system this was a sheet link)
+  // Here we just track status
+
+  // Reporting status
+  lastEntryDate       DateTime? @db.Date   // Last day with time entry
+  daysSinceLastEntry  Int       @default(0)
+
+  // Expected vs actual (current month)
+  currentMonthExpected  Float   @default(0)
+  currentMonthActual    Float   @default(0)
+  currentMonthDiff      Float   @default(0)
+
+  // Year to date totals
+  ytdExpectedHours      Float   @default(0)
+  ytdActualHours        Float   @default(0)
+  ytdDifference         Float   @default(0)
+
+  // Alert flags
+  needsAttention        Boolean @default(false)  // Too many days without entry
+  hasPendingApprovals   Boolean @default(false)  // Has unapproved entries
+
+  // Last calculation
+  calculatedAt          DateTime @default(now())
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([lastEntryDate])
+  @@index([needsAttention])
 }

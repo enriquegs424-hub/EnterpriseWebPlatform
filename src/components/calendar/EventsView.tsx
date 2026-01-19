@@ -3,9 +3,10 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Clock, MapPin, Users, Plus, CheckSquare, Star, Trash2, X } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Clock, MapPin, Users, Plus, CheckSquare, Star, Trash2, X, FileDown } from 'lucide-react';
 import { format, addMonths, subMonths, addWeeks, subWeeks, addDays, subDays, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, isToday, startOfWeek, endOfWeek } from 'date-fns';
-import { getCalendarData, createCalendarItem, deleteCalendarItem, moveCalendarItem, type UnifiedCalendarItem } from '@/app/(protected)/calendar/actions';
+import { getCalendarData, createCalendarItem, deleteCalendarItem, moveCalendarItem, exportCalendarToIcal, type UnifiedCalendarItem } from '@/app/(protected)/calendar/actions';
+import { downloadICalFile } from '@/lib/exports/ical-export';
 import CreateEventModal from '@/components/calendar/CreateEventModal';
 import EventDetailsModal from '@/components/calendar/EventDetailsModal';
 
@@ -134,6 +135,9 @@ export default function EventsView({ projectId }: EventsViewProps) {
     const [quickAddOpen, setQuickAddOpen] = useState(false);
     const [quickAddDate, setQuickAddDate] = useState(new Date());
 
+    // Export state
+    const [exporting, setExporting] = useState(false);
+
     // Calendar Navigation
     const handlePrevious = () => {
         if (view === 'month') setCurrentDate(subMonths(currentDate, 1));
@@ -223,6 +227,31 @@ export default function EventsView({ projectId }: EventsViewProps) {
             fetchItems();
         } catch (error) {
             console.error('Error creating item:', error);
+        }
+    };
+
+    const handleExportToICal = async () => {
+        setExporting(true);
+        try {
+            const result = await exportCalendarToIcal({
+                startDate,
+                endDate,
+                includeTasks: true,
+                includeHolidays: true,
+                includePersonalItems: true,
+                includeEvents: true
+            });
+
+            if (result.success && result.content && result.filename) {
+                downloadICalFile(result.content, result.filename);
+            } else {
+                alert(result.error || 'Error al exportar el calendario');
+            }
+        } catch (error) {
+            console.error('Error exporting calendar:', error);
+            alert('Error al exportar el calendario');
+        } finally {
+            setExporting(false);
         }
     };
 
@@ -390,13 +419,28 @@ export default function EventsView({ projectId }: EventsViewProps) {
                     </button>
                 </div>
 
-                <button
-                    onClick={() => handleCreateClick()}
-                    className="flex items-center space-x-2 bg-olive-600 text-white px-5 py-3 rounded-xl hover:bg-olive-700 transition-all shadow-lg shadow-olive-600/20 font-bold"
-                >
-                    <Plus size={20} />
-                    <span>Nuevo Evento</span>
-                </button>
+                <div className="flex items-center space-x-3">
+                    <button
+                        onClick={handleExportToICal}
+                        disabled={exporting}
+                        className="flex items-center space-x-2 px-4 py-3 border border-neutral-300 dark:border-neutral-600 rounded-xl hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-all font-bold text-neutral-700 dark:text-neutral-300 disabled:opacity-50"
+                    >
+                        {exporting ? (
+                            <div className="w-5 h-5 border-2 border-neutral-400 border-t-transparent rounded-full animate-spin"></div>
+                        ) : (
+                            <FileDown size={20} />
+                        )}
+                        <span>Exportar</span>
+                    </button>
+
+                    <button
+                        onClick={() => handleCreateClick()}
+                        className="flex items-center space-x-2 bg-olive-600 text-white px-5 py-3 rounded-xl hover:bg-olive-700 transition-all shadow-lg shadow-olive-600/20 font-bold"
+                    >
+                        <Plus size={20} />
+                        <span>Nuevo Evento</span>
+                    </button>
+                </div>
             </div>
 
             {/* Legend */}

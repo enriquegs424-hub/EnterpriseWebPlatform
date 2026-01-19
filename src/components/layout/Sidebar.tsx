@@ -4,11 +4,27 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
     LayoutDashboard, Briefcase, Users, Settings,
-    Clock, FileText, FileCheck, BarChart, CheckSquare, FolderOpen, Calendar, Bell, MessageSquare, Activity, TrendingUp, Shield, Building2, UserCog
+    Clock, FileText, FileCheck, BarChart, CheckSquare, FolderOpen, Calendar, Bell, MessageSquare, Activity, TrendingUp, Shield, Building2, UserCog,
+    DollarSign, PieChart, Package, ClipboardList
 } from 'lucide-react';
 import Image from 'next/image';
 
-const navItems = [
+interface NavItem {
+    label: string;
+    href: string;
+    icon: React.ComponentType<{ className?: string }>;
+    desc: string;
+    managerOnly?: boolean;
+    adminOnly?: boolean;
+}
+
+interface NavSection {
+    section: string;
+    items: NavItem[];
+    roles: string[];
+}
+
+const navItems: NavSection[] = [
     {
         section: 'SuperAdmin', items: [
             { label: 'Panel Global', href: '/superadmin', icon: Shield, desc: 'Panel de control global' },
@@ -33,6 +49,7 @@ const navItems = [
             { label: 'Mi Hoja', href: '/control-horas/mi-hoja', icon: Calendar, desc: 'Mi hoja mensual de horas' },
             { label: 'Equipo', href: '/control-horas/equipo', icon: Users, desc: 'Vista global del equipo', managerOnly: true },
             { label: 'Por Proyecto', href: '/control-horas/proyectos', icon: Briefcase, desc: 'Horas por proyecto', managerOnly: true },
+            { label: 'Panel Global', href: '/control-horas/global', icon: ClipboardList, desc: 'Dashboard global de horas', adminOnly: true },
             { label: 'Anual', href: '/control-horas/anual', icon: BarChart, desc: 'Resumen anual', managerOnly: true },
         ], roles: ['SUPERADMIN', 'ADMIN', 'MANAGER', 'WORKER']
     },
@@ -41,6 +58,7 @@ const navItems = [
             { label: 'CRM', href: '/crm', icon: TrendingUp, desc: 'Gestión de leads y clientes' },
             { label: 'Presupuestos', href: '/quotes', icon: FileCheck, desc: 'Gestión de presupuestos' },
             { label: 'Facturas', href: '/invoices', icon: FileText, desc: 'Facturación y cobros' },
+            { label: 'Gastos', href: '/expenses', icon: DollarSign, desc: 'Control de gastos' },
             { label: 'Proyectos', href: '/admin/projects', icon: Briefcase, desc: 'Códigos y clientes' },
             { label: 'Clientes', href: '/admin/clients', icon: Users, desc: 'Cartera de clientes' },
         ], roles: ['SUPERADMIN', 'ADMIN', 'MANAGER']
@@ -48,7 +66,9 @@ const navItems = [
     {
         section: 'Administración', items: [
             { label: 'Analytics', href: '/analytics', icon: BarChart, desc: 'Métricas y reportes' },
+            { label: 'Finanzas', href: '/finance', icon: PieChart, desc: 'Resumen financiero' },
             { label: 'Horas Global', href: '/admin/hours', icon: Clock, desc: 'Control horario de usuarios' },
+            { label: 'Productos', href: '/admin/products', icon: Package, desc: 'Catálogo de productos/servicios' },
             { label: 'Usuarios', href: '/admin/users', icon: Users, desc: 'Gestión de equipo' },
             { label: 'Departamentos', href: '/admin/departments', icon: Building2, desc: 'Configuración por áreas' },
             { label: 'Equipos', href: '/admin/teams', icon: UserCog, desc: 'Organización de equipos' },
@@ -58,14 +78,13 @@ const navItems = [
     }
 ];
 
-import { useSession } from 'next-auth/react';
 
+import { useSession } from 'next-auth/react';
+import { useState, useEffect } from 'react';
 import { getUnreadCount } from '@/app/(protected)/notifications/actions';
 import { getUnreadCount as getChatUnreadCount } from '@/app/(protected)/chat/actions';
 import { getCurrentUser } from '@/app/(protected)/settings/actions';
-import { useState, useEffect } from 'react';
 
-// ... (imports)
 
 export default function Sidebar() {
     const pathname = usePathname();
@@ -113,8 +132,7 @@ export default function Sidebar() {
             <nav className="flex-1 py-6 px-3 space-y-8">
                 {navItems.map((section) => {
                     // Role-based visibility using roles array
-                    // @ts-ignore
-                    const userRole = session?.user?.role as string;
+                    const userRole = (session?.user as any)?.role as string || 'WORKER';
 
                     // Check if user's role is in the section's allowed roles
                     if (section.roles && !section.roles.includes(userRole)) return null;
@@ -135,7 +153,10 @@ export default function Sidebar() {
                                     if (item.label === 'Auditoría' && !['SUPERADMIN', 'ADMIN'].includes(userRole)) return null;
 
                                     // Hide managerOnly items from WORKER
-                                    if ((item as any).managerOnly && userRole === 'WORKER') return null;
+                                    if (item.managerOnly && userRole === 'WORKER') return null;
+
+                                    // Hide adminOnly items from WORKER and MANAGER
+                                    if (item.adminOnly && !['SUPERADMIN', 'ADMIN'].includes(userRole)) return null;
 
                                     return (
                                         <Link
