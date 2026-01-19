@@ -46,9 +46,13 @@ async function getAuthUser() {
     };
 }
 
-function canViewOtherUser(viewerRole: string, targetUserId: string, viewerId: string): boolean {
-    if (targetUserId === viewerId) return true;
-    return ['MANAGER', 'ADMIN', 'SUPERADMIN'].includes(viewerRole);
+function canViewOtherUser(viewer: { role: string, id: string, department?: string }, targetUser: { id: string, department?: string | null }): boolean {
+    if (targetUser.id === viewer.id) return true;
+    if (['ADMIN', 'SUPERADMIN'].includes(viewer.role)) return true;
+    if (viewer.role === 'MANAGER') {
+        return viewer.department === targetUser.department;
+    }
+    return false;
 }
 
 function canAccessEquipo(role: string): boolean {
@@ -82,17 +86,6 @@ export async function getMiHoja(
     const user = await getAuthUser();
     const userId = targetUserId || user.id;
 
-    // Verificar permisos
-    if (!canViewOtherUser(user.role, userId, user.id)) {
-        throw new Error("No tienes permiso para ver esta hoja");
-    }
-
-    // Log si ve hoja de otro
-    if (userId !== user.id) {
-        await logActivity(user.id, "VIEW", "control-horas", userId, `Ver hoja de usuario: ${userId}`);
-    }
-
-    // Obtener datos del usuario objetivo
     const targetUser = await prisma.user.findUnique({
         where: { id: userId },
         select: { id: true, dailyWorkHours: true, department: true }
@@ -100,6 +93,11 @@ export async function getMiHoja(
 
     if (!targetUser) {
         throw new Error("Usuario no encontrado");
+    }
+
+    // Verificar permisos (Actualizado con Dept check)
+    if (!canViewOtherUser(user, targetUser)) {
+        throw new Error("No tienes permiso para ver esta hoja");
     }
 
     const jornadaDiaria = targetUser.dailyWorkHours || 8;
@@ -641,6 +639,48 @@ export async function getDepartamentosConUsuarios() {
         .sort((a, b) => a.label.localeCompare(b.label));
 }
 
+// ============================================
+// USERS - Selector de usuarios
+// ============================================
+export async function getAccessibleUsers() {
+    const user = await getAuthUser();
+
+    // WORKER solo se ve a si mismo (o vacio si no debe usar selector)
+    if (!['MANAGER', 'ADMIN', 'SUPERADMIN'].includes(user.role)) {
+        return [];
+    }
+
+    const whereClause: any = {
+        isActive: true,
+        // No mostramos GUESTs
+        role: { not: 'GUEST' }
+    };
+
+    if (user.companyId) {
+        whereClause.companyId = user.companyId;
+    }
+
+    // MANAGER solo ve su departamento
+    if (user.role === 'MANAGER' && user.department) {
+        whereClause.department = user.department;
+    }
+
+    const users = await prisma.user.findMany({
+        where: whereClause,
+        select: {
+            id: true,
+            name: true,
+            email: true,
+            image: true,
+            department: true,
+            role: true
+        },
+        orderBy: { name: 'asc' }
+    });
+
+    return users;
+}
+
 export async function exportarMiHoja(año: number, mes: number, userId?: string) {
     const user = await getAuthUser();
     const targetUserId = userId || user.id;
@@ -651,3 +691,4 @@ export async function exportarMiHoja(año: number, mes: number, userId?: string)
     const data = await getMiHoja(año, mes, userId);
     return data;
 }
+

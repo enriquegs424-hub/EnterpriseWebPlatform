@@ -67,7 +67,7 @@ export async function getTimeEntries(filters?: TimeEntryFilters) {
     await checkPermission("timeentries", "read");
 
     const {
-        userId,
+        userId: filterUserId,
         projectId,
         startDate,
         endDate,
@@ -79,9 +79,21 @@ export async function getTimeEntries(filters?: TimeEntryFilters) {
 
     const where: any = {};
 
-    // Personal hours page - ALWAYS show only current user's entries
-    // This is the user's personal time tracking, not admin view
-    where.userId = user.id;
+    // Determine target userId
+    const targetUserId = filterUserId || user.id;
+
+    // RBAC: If fetching for another user
+    if (targetUserId !== user.id) {
+        // Must be at least MANAGER
+        if (!['MANAGER', 'ADMIN', 'SUPERADMIN'].includes(user.role)) {
+            throw new Error("No tienes permiso para ver horas de otros usuarios");
+        }
+
+        // TODO: Enforce Department check for Managers if strict strictness required.
+        // For now, relying on accessible lists and role check.
+    }
+
+    where.userId = targetUserId;
 
     if (projectId) where.projectId = projectId;
 

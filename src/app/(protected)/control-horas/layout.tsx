@@ -3,6 +3,7 @@
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { Calendar, Users, FolderOpen, TrendingUp, Globe } from 'lucide-react';
+import { useSession } from 'next-auth/react';
 
 const TABS = [
     {
@@ -48,6 +49,8 @@ export default function ControlHorasLayout({
     children: React.ReactNode;
 }) {
     const pathname = usePathname();
+    const { data: session } = useSession();
+    const userRole = session?.user?.role;
 
     return (
         <div className="min-h-screen bg-neutral-50 dark:bg-neutral-900">
@@ -56,6 +59,8 @@ export default function ControlHorasLayout({
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <nav className="flex space-x-1 overflow-x-auto py-2" aria-label="Tabs">
                         {TABS.map((tab) => {
+                            if (userRole && tab.roles && !tab.roles.includes(userRole)) return null;
+
                             const isActive = pathname === tab.href || pathname.startsWith(tab.href + '/');
                             const Icon = tab.icon;
 
