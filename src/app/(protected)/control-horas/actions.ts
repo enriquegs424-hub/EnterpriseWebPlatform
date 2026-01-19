@@ -95,8 +95,18 @@ export async function getMiHoja(
         throw new Error("Usuario no encontrado");
     }
 
+    // Obtener datos frescos del usuario actual (para asegurar que el departamento es correcto)
+    const currentUser = await prisma.user.findUnique({
+        where: { id: user.id },
+        select: { id: true, name: true, role: true, department: true }
+    });
+
+    if (!currentUser) throw new Error("Usuario actual no encontrado");
+
     // Verificar permisos (Actualizado con Dept check)
-    if (!canViewOtherUser(user, targetUser)) {
+    // Usamos currentUser en lugar de user (session) para garantizar consistencia
+    if (!canViewOtherUser(currentUser, targetUser)) {
+        console.log(`[PermissionDenied] Viewer: ${currentUser.name} (${currentUser.role}, Dept: ${currentUser.department}) -> Target: ${targetUser.id} (Dept: ${targetUser.department})`);
         throw new Error("No tienes permiso para ver esta hoja");
     }
 
