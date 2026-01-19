@@ -130,44 +130,14 @@ export default function InvoiceDetailPage({ params }: { params: Promise<{ id: st
         }
     }
 
-    function handleDownloadPDF() {
+    async function handleDownloadPDF() {
         if (!invoice) return;
-
-        // Prepare data for PDF
-        const pdfData = {
-            number: invoice.number,
-            date: new Date(invoice.date),
-            dueDate: new Date(invoice.dueDate),
-            client: {
-                name: invoice.client.name,
-                email: invoice.client.email || '',
-                taxId: invoice.client.companyName || undefined,
-                address: invoice.client.address || undefined,
-            },
-            company: {
-                name: 'MEP Projects S.L.',
-                taxId: 'B12345678',
-                address: 'Calle Example, 123\n28001 Madrid, España',
-                email: 'info@mep-projects.com',
-                phone: '+34 900 123 456',
-            },
-            items: invoice.items.map((item) => ({
-                description: item.description,
-                quantity: Number(item.quantity),
-                unitPrice: Number(item.unitPrice),
-                taxRate: Number(item.taxRate),
-                subtotal: Number(item.subtotal),
-                taxAmount: Number(item.taxAmount),
-                total: Number(item.total),
-            })),
-            subtotal: Number(invoice.subtotal),
-            taxTotal: Number(invoice.taxAmount),
-            total: Number(invoice.total),
-            notes: invoice.notes || undefined,
-            terms: invoice.terms || undefined,
-        };
-
-        generateInvoicePDF(pdfData);
+        try {
+            await generateInvoicePDF(invoice.id);
+        } catch (error) {
+            console.error('Error generating PDF:', error);
+            alert('Error al generar PDF');
+        }
     }
 
     if (loading) {
@@ -229,7 +199,7 @@ export default function InvoiceDetailPage({ params }: { params: Promise<{ id: st
                         <>
                             <button
                                 onClick={handleSend}
-                                className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                                className="inline-flex items-center gap-2 px-4 py-2 bg-olive-600 text-white rounded-lg hover:bg-olive-700 dark:bg-olive-700 dark:hover:bg-olive-600 transition-colors"
                             >
                                 <Send className="w-4 h-4" />
                                 Enviar

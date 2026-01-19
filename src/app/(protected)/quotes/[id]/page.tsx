@@ -199,7 +199,7 @@ export default function QuoteDetailPage({ params }: { params: Promise<{ id: stri
                     {quote.status === 'DRAFT' && (
                         <button
                             onClick={() => handleStatusChange('SENT')}
-                            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                            className="inline-flex items-center gap-2 px-4 py-2 bg-olive-600 text-white rounded-lg hover:bg-olive-700 dark:bg-olive-700 dark:hover:bg-olive-600"
                         >
                             <Send className="h-4 w-4" />
                             Enviar al Cliente

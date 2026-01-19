@@ -411,12 +411,14 @@ export async function getUsersForAssignment() {
             email: true,
             role: true,
             department: true,
-            image: true
+            image: true,
+            isActive: true
         },
         orderBy: {
             name: 'asc'
         }
     });
 
+    console.log(`[getUsersForAssignment] Found ${users.length} users for company ${(session.user as any).companyId}`);
     return users;
 }

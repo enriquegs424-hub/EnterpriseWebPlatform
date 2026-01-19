@@ -18,7 +18,7 @@ export default async function CRMDashboardPage() {
                 {/* Leads Count */}
                 <div className="card p-6">
                     <div className="flex items-center gap-4">
-                        <div className="p-3 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-xl">
+                        <div className="p-3 bg-olive-50 dark:bg-olive-900/30 text-olive-600 dark:text-olive-400 rounded-xl">
                             <TrendingUp size={24} />
                         </div>
                         <div>

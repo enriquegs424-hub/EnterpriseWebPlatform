@@ -178,43 +178,13 @@ function InvoicesContent() {
         setSelectedInvoices(newSelected);
     }
 
-    function downloadInvoicePDF(invoiceId: string) {
-        const invoice = invoices.find(inv => inv.id === invoiceId);
-        if (!invoice) return;
-
-        const companyInfo = {
-            name: 'MEP Projects',
-            taxId: 'B-12345678',
-            address: 'Calle Example, 123, 28001 Madrid',
-            email: 'info@mepprojects.com',
-            phone: '+34 900 000 000'
-        };
-
-        generateInvoicePDF({
-            number: invoice.number,
-            date: new Date(invoice.date),
-            dueDate: new Date(invoice.dueDate),
-            client: {
-                name: invoice.client.name,
-                email: invoice.client.email || '',
-                address: invoice.client.address || undefined
-            },
-            company: companyInfo,
-            items: invoice.items.map(item => ({
-                description: item.description,
-                quantity: Number(item.quantity),
-                unitPrice: Number(item.unitPrice),
-                taxRate: Number(item.taxRate),
-                subtotal: Number(item.subtotal),
-                taxAmount: Number(item.taxAmount),
-                total: Number(item.total)
-            })),
-            subtotal: Number(invoice.subtotal),
-            taxTotal: Number(invoice.taxAmount),
-            total: Number(invoice.total),
-            notes: invoice.notes,
-            terms: invoice.terms
-        });
+    async function downloadInvoicePDF(invoiceId: string) {
+        try {
+            await generateInvoicePDF(invoiceId);
+        } catch (error) {
+            console.error('Error generating PDF:', error);
+            alert('Error al generar PDF');
+        }
     }
 
     async function downloadSelectedInvoices() {
@@ -337,7 +307,7 @@ function InvoicesContent() {
                     {selectedInvoices.size > 0 && (
                         <button
                             onClick={downloadSelectedInvoices}
-                            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                            className="flex items-center gap-2 px-4 py-2 bg-olive-600 text-white rounded-lg hover:bg-olive-700 dark:bg-olive-700 dark:hover:bg-olive-600 transition-colors"
                         >
                             <FileDown className="w-4 h-4" />
                             Descargar ({selectedInvoices.size})

@@ -182,7 +182,7 @@ export default function NewQuotePage() {
                         <button
                             type="button"
                             onClick={addItem}
-                            className="inline-flex items-center gap-2 px-3 py-1.5 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                            className="inline-flex items-center gap-2 px-3 py-1.5 text-sm bg-olive-600 text-white rounded-lg hover:bg-olive-700 dark:bg-olive-700 dark:hover:bg-olive-600"
                         >
                             <Plus className="h-4 w-4" />
                             Añadir Item
@@ -332,7 +332,7 @@ export default function NewQuotePage() {
                     <button
                         type="submit"
                         disabled={loading || !formData.clientId || items.length === 0}
-                        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="px-4 py-2 bg-olive-600 text-white rounded-lg hover:bg-olive-700 dark:bg-olive-700 dark:hover:bg-olive-600 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         {loading ? 'Creando...' : 'Crear Presupuesto'}
                     </button>
