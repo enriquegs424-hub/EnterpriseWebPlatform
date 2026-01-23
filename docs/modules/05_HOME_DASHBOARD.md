@@ -1,34 +1,28 @@
-# 05_HOME_DASHBOARD
+# PRINCIPAL — Inicio (Dashboard)
 
-## 1. Objetivo del módulo
-[Descripción del objetivo]
+## Objetivo
+Mostrar al usuario su resumen operativo y accesos rápidos.
 
-## 2. Usuarios y permisos
-[Roles con acceso y sus permisos específicos]
+## Permisos
+- Autenticado: WORKER/MANAGER/ADMIN/SUPERADMIN
+- Invitado: versión limitada
 
-## 3. Navegación
-[Rutas y pantallas principales - Placeholder: TBD si no existe]
+## Navegación
+- `/inicio` (si existe otra home, mantener alias/redirect sin romper)
 
-## 4. Flujos exactos de usuario
-[Pasos detallados de las acciones principales]
+## Flujos
+- Ver “Mi día”:
+  - tareas hoy
+  - próximos eventos
+  - notificaciones recientes
+- Acciones rápidas: crear tarea, registrar horas, subir documento, crear proyecto (según permisos)
 
-## 5. Reglas de negocio y estados
-[Reglas lógicas y estados de las entidades]
+## Reglas
+- Todo filtrado por permisos (proyectos donde es miembro).
+- Invitado solo ve documentos públicos + aviso.
 
-## 6. Datos
-[Entidades principales y campos clave]
+## Auditoría
+- `VIEW_DASHBOARD` (INFO)
 
-## 7. Notificaciones
-[Disparadores de notificación y destinatarios]
-
-## 8. Auditoría
-[Eventos que deben registrarse en logs]
-
-## 9. Criterios de aceptación
-- Given [contexto] When [acción] Then [resultado esperado]
-
-## 10. Edge cases
-[Casos límite o errores comunes]
-
-## 11. Tests mínimos
-[Lista de pruebas requeridas]
+## Tests
+- invitado_sees_limited_home

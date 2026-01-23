@@ -1,34 +1,32 @@
-# 99_ROADMAP_AND_BACKLOG
+# Roadmap y Backlog ejecutable
 
-## 1. Objetivo del módulo
-[Descripción del objetivo]
+## Fase 1 — MVP robusto
+1) RBAC server-side unificado
+2) Auditoría unificada
+3) Documentos núcleo (carpeta PUBLIC + versionado)
+4) Usuarios (incluye Invitado protegido)
+5) Proyectos (miembros + tabs básicos)
+6) Tareas (vinculo a proyecto + estados + notificaciones)
+7) Inicio (widgets)
+8) Notificaciones (centro)
 
-## 2. Usuarios y permisos
-[Roles con acceso y sus permisos específicos]
+## Fase 2 — Gestión negocio
+9) Clientes + contactos + tabs
+10) CRM (leads + actividades + convertir a cliente)
+11) Presupuestos (PDF + workflow)
+12) Facturas (pagos + overdue job + PDF)
 
-## 3. Navegación
-[Rutas y pantallas principales - Placeholder: TBD si no existe]
+## Fase 3 — Operación y organización
+13) Control de horas (aprobación)
+14) Departamentos
+15) Equipos
+16) Analytics
+17) Auditoría UI completa
+18) Superadmin overview + logs
 
-## 4. Flujos exactos de usuario
-[Pasos detallados de las acciones principales]
-
-## 5. Reglas de negocio y estados
-[Reglas lógicas y estados de las entidades]
-
-## 6. Datos
-[Entidades principales y campos clave]
-
-## 7. Notificaciones
-[Disparadores de notificación y destinatarios]
-
-## 8. Auditoría
-[Eventos que deben registrarse en logs]
-
-## 9. Criterios de aceptación
-- Given [contexto] When [acción] Then [resultado esperado]
-
-## 10. Edge cases
-[Casos límite o errores comunes]
-
-## 11. Tests mínimos
-[Lista de pruebas requeridas]
+## Fase 4 — UX/automatismos (opcional)
+- Kanban drag&drop
+- Plantillas de proyecto
+- Email notifications
+- Integraciones (SMTP, almacenamiento externo)
+- Backups/export completos

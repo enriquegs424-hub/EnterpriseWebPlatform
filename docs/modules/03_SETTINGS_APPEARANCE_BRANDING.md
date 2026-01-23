@@ -1,34 +1,44 @@
-# 03_SETTINGS_APPEARANCE_BRANDING
+# Configuración — Apariencia / Branding (solo SUPERADMIN)
 
-## 1. Objetivo del módulo
-[Descripción del objetivo]
+## Objetivo
+Que SUPERADMIN pueda cambiar imagen corporativa y tema desde UI y que se aplique globalmente sin romper estilos existentes.
 
-## 2. Usuarios y permisos
-[Roles con acceso y sus permisos específicos]
+## Permisos
+- Solo SUPERADMIN.
 
-## 3. Navegación
-[Rutas y pantallas principales - Placeholder: TBD si no existe]
+## Navegación
+- `/admin/configuracion/apariencia`
 
-## 4. Flujos exactos de usuario
-[Pasos detallados de las acciones principales]
+## Flujos
+1. SUPERADMIN abre pantalla.
+2. Cambia colores/logos en modo previsualización (sin guardar).
+3. Pulsa Guardar -> se persiste.
+4. App refleja cambios globales (sin FOUC).
+5. Puede Restaurar defaults.
 
-## 5. Reglas de negocio y estados
-[Reglas lógicas y estados de las entidades]
+## Reglas
+- No eliminar Tailwind/CSS actual: se extiende con CSS variables.
+- Si Settings no existe: crear defaults equivalentes al look actual.
 
-## 6. Datos
-[Entidades principales y campos clave]
+## Datos (Settings singleton)
+- appName, companyName
+- logoSidebarUrl, logoHeaderUrl, faviconUrl
+- colors: primary, secondary, accent, background, text
+- themeDefault: dark|light
+- allowUserThemeToggle (bool)
+- sidebarMode: normal|compact
 
-## 7. Notificaciones
-[Disparadores de notificación y destinatarios]
+## Notificaciones
+- Opcional: notificación a admins “Branding actualizado”.
 
-## 8. Auditoría
-[Eventos que deben registrarse en logs]
+## Auditoría
+- `BRANDING_CHANGE` (CRITICAL) con diff completo.
 
-## 9. Criterios de aceptación
-- Given [contexto] When [acción] Then [resultado esperado]
+## Aceptación
+- Cambio de color afecta sidebar, botones y elementos principales.
+- Logos y favicon se actualizan con cache bust.
+- Sin parpadeos de tema al cargar.
 
-## 10. Edge cases
-[Casos límite o errores comunes]
-
-## 11. Tests mínimos
-[Lista de pruebas requeridas]
+## Tests
+- superadmin_only
+- settings_applies_css_variables

@@ -1,34 +1,41 @@
-# 02_SUPERADMIN_LOGS
+# SUPERADMIN — Logs Globales
 
-## 1. Objetivo del módulo
-[Descripción del objetivo]
+## Objetivo
+Permitir al SUPERADMIN auditar cualquier actividad del sistema con filtros avanzados y export seguro.
 
-## 2. Usuarios y permisos
-[Roles con acceso y sus permisos específicos]
+## Usuarios y permisos
+- Solo SUPERADMIN.
 
-## 3. Navegación
-[Rutas y pantallas principales - Placeholder: TBD si no existe]
+## Navegación
+- `/superadmin/logs`
+- `/superadmin/logs/:id`
 
-## 4. Flujos exactos de usuario
-[Pasos detallados de las acciones principales]
+## Flujos exactos
+1. Entrar a Logs.
+2. Filtrar por fecha/actor/entidad/acción/severidad.
+3. Abrir detalle.
+4. Exportar CSV (si procede).
 
-## 5. Reglas de negocio y estados
-[Reglas lógicas y estados de las entidades]
+## Reglas
+- Paginación server-side obligatoria.
+- No mostrar secretos (tokens/passwords).
 
-## 6. Datos
-[Entidades principales y campos clave]
+## Datos
+- Fuente: tabla de auditoría existente (AuditLog).
+- Campos: actorId, actionType, entityType, entityId, before/after, severity, metadata, createdAt.
 
-## 7. Notificaciones
-[Disparadores de notificación y destinatarios]
+## Notificaciones
+- Ninguna.
 
-## 8. Auditoría
-[Eventos que deben registrarse en logs]
+## Auditoría
+- `SUPERADMIN_VIEW_LOGS`
+- `EXPORT_AUDIT_LOGS` (CRITICAL)
 
-## 9. Criterios de aceptación
-- Given [contexto] When [acción] Then [resultado esperado]
+## Aceptación
+- Filtros combinables.
+- Detalle muestra diff legible.
+- Export genera log CRITICAL.
 
-## 10. Edge cases
-[Casos límite o errores comunes]
-
-## 11. Tests mínimos
-[Lista de pruebas requeridas]
+## Tests
+- superadmin_only_access
+- export_creates_audit_event

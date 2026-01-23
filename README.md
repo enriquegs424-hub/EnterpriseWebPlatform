@@ -159,7 +159,7 @@ npm run dev
 | Rol | Email | Contraseña |
 |-----|-------|------------|
 | Admin | admin@mep-projects.com | admin123 |
-| Worker | carlos.martinez@mep-projects.com | admin123 |
+| Worker | alfonso.mateos@mep-projects.com | admin123 |
 
 ---
 

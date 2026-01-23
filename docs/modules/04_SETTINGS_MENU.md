@@ -1,34 +1,32 @@
-# 04_SETTINGS_MENU
+# Configuración — Menú (solo SUPERADMIN)
 
-## 1. Objetivo del módulo
-[Descripción del objetivo]
+## Objetivo
+Permitir configurar el sidebar (orden, visibilidad y renombre) sin romper rutas existentes.
 
-## 2. Usuarios y permisos
-[Roles con acceso y sus permisos específicos]
+## Permisos
+- Solo SUPERADMIN.
 
-## 3. Navegación
-[Rutas y pantallas principales - Placeholder: TBD si no existe]
+## Navegación
+- `/admin/configuracion/menu`
 
-## 4. Flujos exactos de usuario
-[Pasos detallados de las acciones principales]
+## Flujos
+1. Reordenar módulos.
+2. Ocultar/mostrar módulos.
+3. Renombrar etiquetas.
+4. Guardar -> sidebar se construye desde menuConfig.
+5. Restaurar -> vuelve a default.
 
-## 5. Reglas de negocio y estados
-[Reglas lógicas y estados de las entidades]
+## Reglas
+- Ocultar solo afecta UI (la ruta sigue existiendo y protegida).
+- Nunca renombrar rutas por renombrar etiquetas.
+- Mantener compatibilidad con enlaces existentes.
 
-## 6. Datos
-[Entidades principales y campos clave]
+## Datos
+- Settings.menuConfig (json)
 
-## 7. Notificaciones
-[Disparadores de notificación y destinatarios]
+## Auditoría
+- `MENU_CHANGE` (CRITICAL)
 
-## 8. Auditoría
-[Eventos que deben registrarse en logs]
-
-## 9. Criterios de aceptación
-- Given [contexto] When [acción] Then [resultado esperado]
-
-## 10. Edge cases
-[Casos límite o errores comunes]
-
-## 11. Tests mínimos
-[Lista de pruebas requeridas]
+## Tests
+- superadmin_only
+- hidden_items_not_rendered

@@ -76,6 +76,20 @@ export async function getAllTasks(filters?: {
                     }
                 },
                 orderBy: { createdAt: 'desc' }
+            },
+            attachments: {
+                include: {
+                    uploadedBy: {
+                        select: { id: true, name: true, image: true }
+                    }
+                },
+                orderBy: { createdAt: 'desc' }
+            },
+            labels: {
+                orderBy: { createdAt: 'asc' }
+            },
+            checklistItems: {
+                orderBy: { order: 'asc' }
             }
         },
         orderBy: [

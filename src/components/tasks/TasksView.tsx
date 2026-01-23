@@ -13,6 +13,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import TaskDetailsModal from '@/components/tasks/TaskDetailsModal';
 import KanbanBoard from '@/app/(protected)/tasks/kanban/KanbanBoard';
 import CalendarView from '@/app/(protected)/tasks/calendar/CalendarView';
+import { useRealtimePolling } from '@/hooks/useRealtimePolling';
 
 type ViewMode = 'list' | 'kanban' | 'calendar';
 type TabView = 'my-tasks' | 'all-tasks' | 'delegated';
@@ -76,6 +77,18 @@ export default function TasksView({ projectId }: TasksViewProps) {
         setStats(statsData);
         setLoading(false);
     };
+
+    // Real-time polling for automatic updates
+    useRealtimePolling({
+        onPoll: async () => {
+            console.log('[TasksView] Polling for updates...');
+            const activeFilters = projectId ? { ...filters, projectId } : filters;
+            const tasksData = await getAllTasks(activeFilters);
+            setTasks(tasksData);
+        },
+        interval: 5000, // 5 seconds
+        enabled: true
+    });
 
     // Filter tasks based on tab view
     const getFilteredTasksByTab = () => {
@@ -156,33 +169,103 @@ export default function TasksView({ projectId }: TasksViewProps) {
     // Quick task creation
     const handleQuickTaskCreate = async (e: React.KeyboardEvent<HTMLInputElement>) => {
         if (e.key === 'Enter' && quickTaskInput.trim()) {
-            const result = await createTask({
+            const tempId = `temp-${Date.now()}`;
+            const tempTask = {
+                id: tempId,
                 title: quickTaskInput.trim(),
                 description: '',
+                status: 'PENDING',
                 priority: 'MEDIUM',
                 type: 'GENERAL',
-                dueDate: '',
+                dueDate: null,
+                projectId: projectId || null,
+                assignedToId: session?.user?.id,
+                createdById: session?.user?.id,
+                createdBy: {
+                    id: session?.user?.id,
+                    name: session?.user?.name,
+                    image: session?.user?.image
+                },
+                assignedTo: {
+                    id: session?.user?.id,
+                    name: session?.user?.name,
+                    image: session?.user?.image
+                },
+                assignees: [],
+                comments: [],
+                attachments: [],
+                labels: [],
+                checklistItems: [],
+                createdAt: new Date(),
+                updatedAt: new Date()
+            };
+
+            // Optimistic UI update
+            setTasks(prevTasks => [tempTask, ...prevTasks]);
+            setQuickTaskInput('');
+
+            const result = await createTask({
+                title: quickTaskInput.trim(),
+                priority: 'MEDIUM',
+                type: 'GENERAL',
                 assignedToId: session?.user?.id || '',
                 projectId: projectId || ''
             });
 
             if (result.success) {
-                setQuickTaskInput('');
-                fetchData();
+                // Replace temp task with real one from server
+                const tasksData = await getAllTasks(projectId ? { ...filters, projectId } : filters);
+                setTasks(tasksData);
+            } else {
+                // Remove temp task on error
+                setTasks(prevTasks => prevTasks.filter(t => t.id !== tempId));
             }
         }
     };
 
-    // Inline actions - FIXED
+    // Inline actions - IMPROVED: Allow changing from any status
     const handleToggleComplete = async (taskId: string, currentStatus: string, e: React.MouseEvent) => {
         e.stopPropagation();
         console.log('[handleToggleComplete] Task:', taskId, 'Current status:', currentStatus);
+
+        // Smart toggle: COMPLETED -> PENDING, anything else -> COMPLETED
         const newStatus = currentStatus === 'COMPLETED' ? 'PENDING' : 'COMPLETED';
+
+        // Optimistic UI update - update immediately for instant feedback
+        setTasks(prevTasks =>
+            prevTasks.map(task =>
+                task.id === taskId
+                    ? { ...task, status: newStatus }
+                    : task
+            )
+        );
+
         try {
-            await updateTask(taskId, { status: newStatus });
-            await fetchData();
+            const result = await updateTask(taskId, { status: newStatus });
+            if (result.success) {
+                // Server confirmed, data will be refreshed by polling
+                console.log('[handleToggleComplete] Update confirmed');
+            } else {
+                // Revert optimistic update on error
+                console.error('[handleToggleComplete] Update failed:', result.error);
+                setTasks(prevTasks =>
+                    prevTasks.map(task =>
+                        task.id === taskId
+                            ? { ...task, status: currentStatus }
+                            : task
+                    )
+                );
+            }
         } catch (error) {
             console.error('[handleToggleComplete] Error:', error);
+            // Revert optimistic update on error
+            setTasks(prevTasks =>
+                prevTasks.map(task =>
+                    task.id === taskId
+                        ? { ...task, status: currentStatus }
+                        : task
+                )
+            );
         }
     };
 
