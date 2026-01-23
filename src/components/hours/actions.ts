@@ -49,7 +49,7 @@ export async function saveTimerEntry(data: {
             return { error: validation.errors.join('; '), errors: validation.errors };
         }
 
-        // Create entry
+        // Create entry with proper status
         const entry = await prisma.timeEntry.create({
             data: {
                 userId: user.id,
@@ -57,19 +57,22 @@ export async function saveTimerEntry(data: {
                 date: today,
                 hours: data.hours,
                 notes: data.notes || null,
-                // Campos opcionales del schema mejorado
-                // startTime: data.startTime || null,
-                // endTime: data.endTime || null,
-                // billable: true,
-                // status: 'DRAFT' as any,
-            } as any
+                startTime: data.startTime || null,
+                endTime: data.endTime || null,
+                status: 'DRAFT',
+            }
         });
 
         await auditCrud('CREATE', 'TimeEntry', entry.id, entry);
 
+        // Revalidate all related paths for real-time updates
         revalidatePath('/hours/daily');
         revalidatePath('/hours');
+        revalidatePath('/hours/summary');
         revalidatePath('/dashboard');
+        revalidatePath('/control-horas');
+        revalidatePath('/control-horas/global');
+        revalidatePath('/control-horas/mi-hoja');
 
         return {
             success: true,

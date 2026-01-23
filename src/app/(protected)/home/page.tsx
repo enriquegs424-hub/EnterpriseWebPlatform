@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { getDashboardData } from './actions';
 
 export default function HomePage() {
     const [tasks, setTasks] = useState<any[]>([]);
@@ -22,13 +23,11 @@ export default function HomePage() {
 
     const loadDashboardData = async () => {
         try {
-            // TODO: Create server actions for dashboard data
-            // const dashboardData = await getDashboardData();
-            // setTasks(dashboardData.tasks);
-            // setEvents(dashboardData.events);
-            // setNotifications(dashboardData.notifications);
-            // setStats(dashboardData.stats);
-
+            const dashboardData = await getDashboardData();
+            setTasks(dashboardData.tasks);
+            setEvents(dashboardData.events);
+            setNotifications(dashboardData.notifications);
+            setStats(dashboardData.stats);
             setLoading(false);
         } catch (error) {
             console.error('Error loading dashboard:', error);

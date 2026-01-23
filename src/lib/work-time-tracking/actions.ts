@@ -88,7 +88,7 @@ export async function createTimeEntry(input: CreateTimeEntryInput) {
         throw new Error('No se pueden agregar horas a un proyecto inactivo');
     }
 
-    // Check daily limit
+    // Check daily limit (máximo 24h por día)
     const existingEntries = await prisma.timeEntry.findMany({
         where: {
             userId: user.id,
@@ -98,10 +98,10 @@ export async function createTimeEntry(input: CreateTimeEntryInput) {
     });
 
     const existingHours = existingEntries.reduce((sum, e) => sum + e.hours, 0);
-    const maxDaily = user.dailyWorkHours * 1.5; // Allow up to 150% of daily hours
+    const maxDaily = 24; // Un día no tiene más de 24 horas
 
     if (existingHours + input.hours > maxDaily) {
-        throw new Error(`Las horas totales del día (${existingHours + input.hours}h) exceden el máximo permitido (${maxDaily}h)`);
+        throw new Error(`Las horas totales del día (${existingHours + input.hours}h) exceden el máximo de 24h`);
     }
 
     const entry = await prisma.timeEntry.create({
@@ -353,8 +353,9 @@ export async function approveTimeEntries(entryIds: string[]) {
         if (!canManageUser(user, entry.userId, entry.user.department)) {
             throw new Error('No tienes permisos para aprobar algunas de las entradas');
         }
-        if (entry.status !== 'SUBMITTED') {
-            throw new Error('Solo se pueden aprobar entradas enviadas');
+        // Permitir aprobar entradas en DRAFT o SUBMITTED
+        if (entry.status !== 'SUBMITTED' && entry.status !== 'DRAFT') {
+            throw new Error('Solo se pueden aprobar entradas pendientes o en borrador');
         }
         if (entry.userId === user.id) {
             throw new Error('No puedes aprobar tus propias entradas');
@@ -402,6 +403,10 @@ export async function rejectTimeEntries(entryIds: string[], reason: string) {
     for (const entry of entries) {
         if (!canManageUser(user, entry.userId, entry.user.department)) {
             throw new Error('No tienes permisos para rechazar algunas de las entradas');
+        }
+        // Permitir rechazar entradas en DRAFT o SUBMITTED
+        if (entry.status !== 'SUBMITTED' && entry.status !== 'DRAFT') {
+            throw new Error('Solo se pueden rechazar entradas pendientes o en borrador');
         }
     }
 
@@ -839,6 +844,8 @@ export async function getGlobalDashboardData(filters?: {
     }
 
     const year = filters?.year || new Date().getFullYear();
+    const today = new Date();
+    const currentMonth = today.getMonth() + 1;
 
     // Build user filter
     const userWhere: any = {
@@ -869,43 +876,307 @@ export async function getGlobalDashboardData(filters?: {
         ]
     });
 
-    // Get reporting status for all workers
-    const statuses = await prisma.workerReportingStatus.findMany({
-        where: {
-            userId: { in: workers.map(w => w.id) }
+    // Get settings for attention threshold
+    const settings = await prisma.hoursControlSettings.findFirst();
+    const threshold = settings?.reminderThresholdDays ?? 3;
+
+    // Calculate real-time data for each worker directly from TimeEntry
+    const result = await Promise.all(workers.map(async (worker) => {
+        // Get last entry date
+        const lastEntry = await prisma.timeEntry.findFirst({
+            where: { userId: worker.id },
+            orderBy: { date: 'desc' },
+            select: { date: true }
+        });
+
+        // Calculate days since last entry
+        const daysSinceLastEntry = lastEntry
+            ? Math.floor((today.getTime() - new Date(lastEntry.date).getTime()) / (1000 * 60 * 60 * 24))
+            : 999;
+
+        // Get current month entries
+        const startOfMonth = new Date(year, currentMonth - 1, 1);
+        const endOfMonth = new Date(year, currentMonth, 0);
+
+        const monthEntries = await prisma.timeEntry.findMany({
+            where: {
+                userId: worker.id,
+                date: {
+                    gte: startOfMonth,
+                    lte: endOfMonth
+                }
+            },
+            select: { hours: true, status: true }
+        });
+
+        const currentMonthActual = monthEntries.reduce((sum, e) => sum + e.hours, 0);
+
+        // Calculate expected hours for current month (working days * daily hours)
+        const dailyHours = worker.dailyWorkHours || 8;
+        let workingDays = 0;
+        const tempDate = new Date(startOfMonth);
+        const todayDate = new Date();
+        todayDate.setHours(23, 59, 59, 999);
+
+        while (tempDate <= endOfMonth && tempDate <= todayDate) {
+            const dayOfWeek = tempDate.getDay();
+            // Monday to Friday (1-5 are working days)
+            if (dayOfWeek !== 0 && dayOfWeek !== 6) {
+                workingDays++;
+            }
+            tempDate.setDate(tempDate.getDate() + 1);
         }
-    });
 
-    const statusMap = new Map(statuses.map(s => [s.userId, s]));
+        const currentMonthExpected = workingDays * dailyHours;
+        const currentMonthDiff = currentMonthActual - currentMonthExpected;
 
-    // Combine data
-    let result = workers.map(worker => {
-        const status = statusMap.get(worker.id);
+        // Get YTD entries
+        const startOfYear = new Date(year, 0, 1);
+        const ytdEntries = await prisma.timeEntry.aggregate({
+            where: {
+                userId: worker.id,
+                date: {
+                    gte: startOfYear,
+                    lte: today
+                }
+            },
+            _sum: { hours: true }
+        });
+
+        const ytdActualHours = ytdEntries._sum.hours || 0;
+
+        // Calculate YTD expected (simple calculation)
+        let ytdWorkingDays = 0;
+        const ytdTempDate = new Date(startOfYear);
+        while (ytdTempDate <= today) {
+            const dayOfWeek = ytdTempDate.getDay();
+            if (dayOfWeek !== 0 && dayOfWeek !== 6) {
+                ytdWorkingDays++;
+            }
+            ytdTempDate.setDate(ytdTempDate.getDate() + 1);
+        }
+        const ytdExpectedHours = ytdWorkingDays * dailyHours;
+        const ytdDifference = ytdActualHours - ytdExpectedHours;
+
+        // Check for pending approvals (DRAFT or SUBMITTED)
+        const pendingCount = await prisma.timeEntry.count({
+            where: {
+                userId: worker.id,
+                status: { in: ['DRAFT', 'SUBMITTED'] }
+            }
+        });
+
         return {
             userId: worker.id,
             userName: worker.name,
             userEmail: worker.email,
             userImage: worker.image,
             department: worker.department,
-            dailyHours: worker.dailyWorkHours,
-            lastEntryDate: status?.lastEntryDate,
-            daysSinceLastEntry: status?.daysSinceLastEntry ?? 999,
-            currentMonthExpected: status?.currentMonthExpected ?? 0,
-            currentMonthActual: status?.currentMonthActual ?? 0,
-            currentMonthDiff: status?.currentMonthDiff ?? 0,
-            ytdExpectedHours: status?.ytdExpectedHours ?? 0,
-            ytdActualHours: status?.ytdActualHours ?? 0,
-            ytdDifference: status?.ytdDifference ?? 0,
-            needsAttention: status?.needsAttention ?? true,
-            hasPendingApprovals: status?.hasPendingApprovals ?? false
+            dailyHours,
+            lastEntryDate: lastEntry?.date,
+            daysSinceLastEntry,
+            currentMonthExpected,
+            currentMonthActual,
+            currentMonthDiff,
+            ytdExpectedHours,
+            ytdActualHours,
+            ytdDifference,
+            needsAttention: daysSinceLastEntry >= threshold,
+            hasPendingApprovals: pendingCount > 0
         };
-    });
+    }));
 
     if (filters?.onlyNeedsAttention) {
-        result = result.filter(r => r.needsAttention);
+        return result.filter(r => r.needsAttention);
     }
 
     return result;
+}
+
+// ============================================
+// ALL TIME ENTRIES FOR GLOBAL VIEW
+// ============================================
+
+export interface TimeEntryFilters {
+    userId?: string;
+    department?: Department;
+    projectId?: string;
+    status?: TimeEntryStatus;
+    startDate?: Date;
+    endDate?: Date;
+    sortBy?: 'date' | 'user' | 'project' | 'hours';
+    sortOrder?: 'asc' | 'desc';
+    page?: number;
+    limit?: number;
+}
+
+export async function getAllTimeEntries(filters?: TimeEntryFilters) {
+    const user = await getAuthenticatedUser();
+
+    if (user.role !== 'MANAGER' && user.role !== 'ADMIN' && user.role !== 'SUPERADMIN') {
+        throw new Error('No tienes permisos para ver todas las entradas');
+    }
+
+    const {
+        userId,
+        department,
+        projectId,
+        status,
+        startDate,
+        endDate,
+        sortBy = 'date',
+        sortOrder = 'desc',
+        page = 1,
+        limit = 50
+    } = filters || {};
+
+    // Build where clause
+    const whereClause: any = {};
+
+    // User filter
+    if (userId) {
+        whereClause.userId = userId;
+    }
+
+    // Department filter - get users from department first
+    if (department || user.role === 'MANAGER') {
+        const targetDepartment = department || user.department;
+        whereClause.user = {
+            department: targetDepartment
+        };
+    }
+
+    // Project filter
+    if (projectId) {
+        whereClause.projectId = projectId;
+    }
+
+    // Status filter
+    if (status) {
+        whereClause.status = status;
+    }
+
+    // Date range filter
+    if (startDate || endDate) {
+        whereClause.date = {};
+        if (startDate) whereClause.date.gte = startDate;
+        if (endDate) whereClause.date.lte = endDate;
+    }
+
+    // Build order by
+    let orderBy: any = {};
+    switch (sortBy) {
+        case 'user':
+            orderBy = { user: { name: sortOrder } };
+            break;
+        case 'project':
+            orderBy = { project: { code: sortOrder } };
+            break;
+        case 'hours':
+            orderBy = { hours: sortOrder };
+            break;
+        case 'date':
+        default:
+            orderBy = [{ date: sortOrder }, { createdAt: sortOrder }];
+    }
+
+    const [entries, total] = await Promise.all([
+        prisma.timeEntry.findMany({
+            where: whereClause,
+            include: {
+                user: {
+                    select: {
+                        id: true,
+                        name: true,
+                        email: true,
+                        department: true,
+                        image: true
+                    }
+                },
+                project: {
+                    select: {
+                        id: true,
+                        code: true,
+                        name: true
+                    }
+                },
+                approvedBy: {
+                    select: {
+                        id: true,
+                        name: true
+                    }
+                }
+            },
+            orderBy,
+            skip: (page - 1) * limit,
+            take: limit
+        }),
+        prisma.timeEntry.count({ where: whereClause })
+    ]);
+
+    return {
+        entries,
+        total,
+        page,
+        totalPages: Math.ceil(total / limit)
+    };
+}
+
+// Get list of users for filter dropdown
+export async function getFilterableUsers() {
+    const user = await getAuthenticatedUser();
+
+    if (user.role !== 'MANAGER' && user.role !== 'ADMIN' && user.role !== 'SUPERADMIN') {
+        return [];
+    }
+
+    const whereClause: any = {
+        isActive: true,
+        role: { in: ['WORKER', 'MANAGER'] }
+    };
+
+    if (user.role === 'MANAGER') {
+        whereClause.department = user.department;
+    }
+
+    return prisma.user.findMany({
+        where: whereClause,
+        select: {
+            id: true,
+            name: true,
+            email: true,
+            department: true
+        },
+        orderBy: { name: 'asc' }
+    });
+}
+
+// Get list of projects for filter dropdown
+export async function getFilterableProjects() {
+    const user = await getAuthenticatedUser();
+
+    if (user.role !== 'MANAGER' && user.role !== 'ADMIN' && user.role !== 'SUPERADMIN') {
+        return [];
+    }
+
+    const whereClause: any = {
+        isActive: true
+    };
+
+    if (user.role === 'MANAGER') {
+        whereClause.department = user.department;
+    }
+
+    return prisma.project.findMany({
+        where: whereClause,
+        select: {
+            id: true,
+            code: true,
+            name: true,
+            department: true
+        },
+        orderBy: { code: 'asc' }
+    });
 }
 
 // ============================================

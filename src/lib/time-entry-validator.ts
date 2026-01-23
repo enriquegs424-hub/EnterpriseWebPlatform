@@ -96,6 +96,7 @@ export async function validateDailyLimit(params: {
     });
 
     const dailyLimit = user?.dailyWorkHours || 8.0;
+    const maxLimit = 24; // Un día no tiene más de 24 horas
 
     // Normalizar fecha
     const dayStart = new Date(date);
@@ -119,29 +120,27 @@ export async function validateDailyLimit(params: {
     const currentTotal = existingEntries.reduce((sum, entry) => sum + Number(entry.hours), 0);
     const newTotal = currentTotal + hours;
 
-    // Permitir hasta 1.5x el límite diario (flexibilidad)
-    const maxLimit = dailyLimit * 1.5;
-
+    // El límite absoluto es 24 horas (un día completo)
     if (newTotal > maxLimit) {
         return {
             valid: false,
-            error: `Límite diario excedido: ${newTotal.toFixed(2)}h supera el máximo de ${maxLimit}h (${currentTotal.toFixed(2)}h registradas + ${hours.toFixed(2)}h nuevas)`,
+            error: `Límite diario excedido: ${newTotal.toFixed(2)}h supera el máximo de 24h por día`,
             currentTotal,
             limit: maxLimit
         };
     }
 
-    // Advertencia si supera el límite normal pero no el máximo
-    if (newTotal > dailyLimit && newTotal <= maxLimit) {
+    // Advertencia informativa si supera la jornada normal (pero sigue siendo válido)
+    if (newTotal > dailyLimit) {
         return {
             valid: true,
-            error: `Advertencia: Total de ${newTotal.toFixed(2)}h supera la jornada normal de ${dailyLimit}h`,
+            error: `Nota: Total de ${newTotal.toFixed(2)}h supera la jornada estándar de ${dailyLimit}h`,
             currentTotal,
-            limit: dailyLimit
+            limit: maxLimit
         };
     }
 
-    return { valid: true, currentTotal, limit: dailyLimit };
+    return { valid: true, currentTotal, limit: maxLimit };
 }
 
 /**

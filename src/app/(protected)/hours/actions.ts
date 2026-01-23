@@ -379,17 +379,24 @@ export async function submitTimeEntryForApproval(id: string) {
     const entry = await prisma.timeEntry.findUnique({ where: { id } });
     if (!entry) throw new Error('Entrada no encontrada');
 
+    // Only allow submitting DRAFT entries
+    if (entry.status !== 'DRAFT') {
+        throw new Error('Solo se pueden enviar entradas en borrador');
+    }
+
     const updated = await prisma.timeEntry.update({
         where: { id },
         data: {
-            notes: entry.notes // Placeholder - schema no tiene status
-        } as any
+            status: 'SUBMITTED',
+            submittedAt: new Date()
+        }
     });
 
     await auditCrud('UPDATE', 'TimeEntry', id, { action: 'submit_for_approval' });
     revalidatePath('/hours');
-
-    // TODO: Crear notificación para manager/admin
+    revalidatePath('/hours/approvals');
+    revalidatePath('/control-horas');
+    revalidatePath('/control-horas/global');
 
     return { success: true, message: "Entrada enviada para aprobación", entry: updated };
 }
@@ -416,11 +423,24 @@ export async function approveTimeEntry(id: string, notes?: string) {
     const entry = await prisma.timeEntry.findUnique({ where: { id } });
     if (!entry) throw new Error('Entrada no encontrada');
 
+    // Only allow approving SUBMITTED entries
+    if (entry.status !== 'SUBMITTED') {
+        throw new Error('Solo se pueden aprobar entradas enviadas');
+    }
+
+    // Cannot approve own entries
+    if (entry.userId === user.id) {
+        throw new Error('No puedes aprobar tus propias entradas');
+    }
+
     const updated = await prisma.timeEntry.update({
         where: { id },
         data: {
-            notes: `${entry.notes || ''} [APPROVED by ${user.name}: ${notes || 'OK'}]`.trim()
-        } as any
+            status: 'APPROVED',
+            approvedAt: new Date(),
+            approvedById: user.id,
+            notes: notes ? `${entry.notes || ''} [Aprobado: ${notes}]`.trim() : entry.notes
+        }
     });
 
     await auditCrud('UPDATE', 'TimeEntry', id, {
@@ -430,9 +450,10 @@ export async function approveTimeEntry(id: string, notes?: string) {
     });
 
     revalidatePath('/hours');
+    revalidatePath('/hours/approvals');
     revalidatePath('/admin/hours');
-
-    // TODO: Crear notificación para el usuario
+    revalidatePath('/control-horas');
+    revalidatePath('/control-horas/global');
 
     return { success: true, message: "Entrada aprobada correctamente", entry: updated };
 }
@@ -463,11 +484,17 @@ export async function rejectTimeEntry(id: string, reason: string) {
     const entry = await prisma.timeEntry.findUnique({ where: { id } });
     if (!entry) throw new Error('Entrada no encontrada');
 
+    // Cannot reject own entries
+    if (entry.userId === user.id) {
+        throw new Error('No puedes rechazar tus propias entradas');
+    }
+
     const updated = await prisma.timeEntry.update({
         where: { id },
         data: {
-            notes: `${entry.notes || ''} [REJECTED by ${user.name}: ${reason}]`.trim()
-        } as any
+            status: 'REJECTED',
+            rejectionReason: reason
+        }
     });
 
     await auditCrud('UPDATE', 'TimeEntry', id, {
@@ -477,9 +504,10 @@ export async function rejectTimeEntry(id: string, reason: string) {
     });
 
     revalidatePath('/hours');
+    revalidatePath('/hours/approvals');
     revalidatePath('/admin/hours');
-
-    // TODO: Crear notificación para el usuario
+    revalidatePath('/control-horas');
+    revalidatePath('/control-horas/global');
 
     return { success: true, message: "Entrada rechazada", entry: updated };
 }
@@ -491,7 +519,7 @@ export async function bulkApproveTimeEntries(ids: string[], notes?: string) {
     const user = await getAuthenticatedUser();
     if (!user) throw new Error("No autenticado");
 
-    if (!['MANAGER', 'ADMIN'].includes(user.role)) {
+    if (!['MANAGER', 'ADMIN', 'SUPERADMIN'].includes(user.role)) {
         throw new Error("Solo managers y admins pueden aprobar horas");
     }
 
@@ -502,9 +530,94 @@ export async function bulkApproveTimeEntries(ids: string[], notes?: string) {
     const succeeded = results.filter(r => r.status === 'fulfilled').length;
     const failed = results.filter(r => r.status === 'rejected').length;
 
+    revalidatePath('/hours');
+    revalidatePath('/hours/approvals');
+    revalidatePath('/control-horas');
+    revalidatePath('/control-horas/global');
+
     return {
         success: true,
         message: `${succeeded} entradas aprobadas, ${failed} fallaron`,
+        succeeded,
+        failed
+    };
+}
+
+/**
+ * Bulk submit time entries for approval
+ */
+export async function bulkSubmitTimeEntries(ids: string[]) {
+    const user = await getAuthenticatedUser();
+    if (!user) throw new Error("No autenticado");
+
+    await checkPermission("timeentries", "update");
+
+    // Verify all entries belong to user and are in DRAFT status
+    const entries = await prisma.timeEntry.findMany({
+        where: {
+            id: { in: ids },
+            userId: user.id
+        }
+    });
+
+    if (entries.length !== ids.length) {
+        throw new Error('Algunas entradas no fueron encontradas o no te pertenecen');
+    }
+
+    const nonDraftEntries = entries.filter(e => e.status !== 'DRAFT');
+    if (nonDraftEntries.length > 0) {
+        throw new Error('Solo se pueden enviar entradas en estado borrador');
+    }
+
+    await prisma.timeEntry.updateMany({
+        where: { id: { in: ids } },
+        data: {
+            status: 'SUBMITTED',
+            submittedAt: new Date()
+        }
+    });
+
+    await auditCrud('UPDATE', 'TimeEntry', ids.join(','), { action: 'bulk_submit_for_approval', count: ids.length });
+
+    revalidatePath('/hours');
+    revalidatePath('/hours/daily');
+    revalidatePath('/hours/approvals');
+    revalidatePath('/control-horas');
+    revalidatePath('/control-horas/global');
+
+    return { success: true, count: entries.length, message: `${entries.length} entradas enviadas para aprobación` };
+}
+
+/**
+ * Bulk reject time entries
+ */
+export async function bulkRejectTimeEntries(ids: string[], reason: string) {
+    const user = await getAuthenticatedUser();
+    if (!user) throw new Error("No autenticado");
+
+    if (!['MANAGER', 'ADMIN', 'SUPERADMIN'].includes(user.role)) {
+        throw new Error("Solo managers y admins pueden rechazar horas");
+    }
+
+    if (!reason?.trim()) {
+        throw new Error("Se requiere un motivo de rechazo");
+    }
+
+    const results = await Promise.allSettled(
+        ids.map(id => rejectTimeEntry(id, reason))
+    );
+
+    const succeeded = results.filter(r => r.status === 'fulfilled').length;
+    const failed = results.filter(r => r.status === 'rejected').length;
+
+    revalidatePath('/hours');
+    revalidatePath('/hours/approvals');
+    revalidatePath('/control-horas');
+    revalidatePath('/control-horas/global');
+
+    return {
+        success: true,
+        message: `${succeeded} entradas rechazadas, ${failed} fallaron`,
         succeeded,
         failed
     };
@@ -735,23 +848,32 @@ export async function getPendingApprovals() {
     const user = await getAuthenticatedUser();
     if (!user) throw new Error("No autenticado");
 
-    if (!['MANAGER', 'ADMIN'].includes(user.role)) {
+    if (!['MANAGER', 'ADMIN', 'SUPERADMIN'].includes(user.role)) {
         throw new Error("Solo managers y admins pueden ver aprobaciones pendientes");
     }
 
+    const whereClause: any = {
+        status: 'SUBMITTED',
+        user: {
+            companyId: user.companyId as string
+        }
+    };
+
+    // Managers only see their department
+    if (user.role === 'MANAGER') {
+        whereClause.user.department = user.department;
+    }
+
     const entries = await prisma.timeEntry.findMany({
-        where: {
-            // status: 'SUBMITTED' as any, // Si el schema no tiene status
-            user: {
-                companyId: user.companyId as string
-            }
-        } as any,
+        where: whereClause,
         include: {
             user: {
                 select: {
                     id: true,
                     name: true,
-                    email: true
+                    email: true,
+                    department: true,
+                    image: true
                 }
             },
             project: {
@@ -762,9 +884,10 @@ export async function getPendingApprovals() {
                 }
             }
         },
-        orderBy: {
-            createdAt: 'desc' // Usar createdAt en lugar de submittedAt
-        }
+        orderBy: [
+            { date: 'desc' },
+            { submittedAt: 'asc' }
+        ]
     });
 
     return entries;

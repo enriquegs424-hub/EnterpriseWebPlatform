@@ -14,10 +14,26 @@ import {
     RefreshCw,
     ChevronDown,
     Search,
-    Building2
+    Building2,
+    CheckCircle,
+    XCircle,
+    ArrowUpDown,
+    User,
+    Briefcase,
+    SortAsc,
+    SortDesc
 } from 'lucide-react';
-import { getGlobalDashboardData, getPendingApprovals, approveTimeEntries, rejectTimeEntries } from '@/lib/work-time-tracking/actions';
-import { Department } from '@prisma/client';
+import {
+    getGlobalDashboardData,
+    getPendingApprovals,
+    approveTimeEntries,
+    rejectTimeEntries,
+    getAllTimeEntries,
+    getFilterableUsers,
+    getFilterableProjects,
+    type TimeEntryFilters
+} from '@/lib/work-time-tracking/actions';
+import { Department, TimeEntryStatus } from '@prisma/client';
 
 // Department labels and colors
 const DEPARTMENT_CONFIG: Record<string, { label: string; color: string; bgColor: string }> = {
@@ -31,32 +47,25 @@ const DEPARTMENT_CONFIG: Record<string, { label: string; color: string; bgColor:
     OTHER: { label: 'Otros', color: 'text-neutral-700', bgColor: 'bg-neutral-100' }
 };
 
-interface WorkerStatus {
-    userId: string;
-    userName: string;
-    userEmail: string;
-    userImage: string | null;
-    department: string;
-    dailyHours: number;
-    lastEntryDate: Date | null | undefined;
-    daysSinceLastEntry: number;
-    currentMonthExpected: number;
-    currentMonthActual: number;
-    currentMonthDiff: number;
-    ytdExpectedHours: number;
-    ytdActualHours: number;
-    ytdDifference: number;
-    needsAttention: boolean;
-    hasPendingApprovals: boolean;
-}
+const STATUS_CONFIG: Record<string, { label: string; color: string; bgColor: string }> = {
+    DRAFT: { label: 'Borrador', color: 'text-neutral-700', bgColor: 'bg-neutral-100' },
+    SUBMITTED: { label: 'Pendiente', color: 'text-amber-700', bgColor: 'bg-amber-100' },
+    APPROVED: { label: 'Aprobado', color: 'text-green-700', bgColor: 'bg-green-100' },
+    REJECTED: { label: 'Rechazado', color: 'text-red-700', bgColor: 'bg-red-100' }
+};
 
-interface PendingApproval {
+interface TimeEntry {
     id: string;
     userId: string;
     date: Date;
     hours: number;
     notes: string | null;
-    status: string;
+    status: TimeEntryStatus;
+    startTime: string | null;
+    endTime: string | null;
+    submittedAt: Date | null;
+    approvedAt: Date | null;
+    rejectionReason: string | null;
     user: {
         id: string;
         name: string;
@@ -69,43 +78,106 @@ interface PendingApproval {
         code: string;
         name: string;
     };
+    approvedBy?: {
+        id: string;
+        name: string;
+    } | null;
+}
+
+interface FilterUser {
+    id: string;
+    name: string;
+    email: string;
+    department: string;
+}
+
+interface FilterProject {
+    id: string;
+    code: string;
+    name: string;
+    department: string;
 }
 
 export default function GlobalHoursControlPage() {
-    const [workers, setWorkers] = useState<WorkerStatus[]>([]);
-    const [pendingApprovals, setPendingApprovals] = useState<PendingApproval[]>([]);
+    // View mode: 'entries' shows all time entries, 'summary' shows worker summary
+    const [viewMode, setViewMode] = useState<'entries' | 'summary'>('entries');
+
+    // Entries data
+    const [entries, setEntries] = useState<TimeEntry[]>([]);
+    const [totalEntries, setTotalEntries] = useState(0);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+
+    // Filter options
+    const [users, setUsers] = useState<FilterUser[]>([]);
+    const [projects, setProjects] = useState<FilterProject[]>([]);
+
+    // Active filters
+    const [selectedUser, setSelectedUser] = useState<string>('');
+    const [selectedDepartment, setSelectedDepartment] = useState<string>('');
+    const [selectedProject, setSelectedProject] = useState<string>('');
+    const [selectedStatus, setSelectedStatus] = useState<string>('');
+    const [sortBy, setSortBy] = useState<'date' | 'user' | 'project' | 'hours'>('date');
+    const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+    const [searchTerm, setSearchTerm] = useState('');
+
+    // Loading and error states
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    // Filters
-    const [selectedDepartment, setSelectedDepartment] = useState<string>('all');
-    const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
-    const [showOnlyAlerts, setShowOnlyAlerts] = useState(false);
-    const [searchTerm, setSearchTerm] = useState('');
+    // Selection for bulk actions
+    const [selectedEntries, setSelectedEntries] = useState<Set<string>>(new Set());
+    const [processingAction, setProcessingAction] = useState(false);
 
-    // Approval modal
-    const [selectedApprovals, setSelectedApprovals] = useState<Set<string>>(new Set());
-    const [rejectReason, setRejectReason] = useState('');
+    // Reject modal
     const [showRejectModal, setShowRejectModal] = useState(false);
-    const [processingApproval, setProcessingApproval] = useState(false);
+    const [rejectReason, setRejectReason] = useState('');
+    const [rejectingEntryId, setRejectingEntryId] = useState<string | null>(null);
+    const [processingEntryId, setProcessingEntryId] = useState<string | null>(null);
 
-    const currentYear = new Date().getFullYear();
-    const years = [currentYear - 2, currentYear - 1, currentYear, currentYear + 1];
+    // Load filter options on mount
+    useEffect(() => {
+        loadFilterOptions();
+    }, []);
 
-    const fetchData = async () => {
+    // Load entries when filters change
+    useEffect(() => {
+        loadEntries();
+    }, [selectedUser, selectedDepartment, selectedProject, selectedStatus, sortBy, sortOrder, currentPage]);
+
+    const loadFilterOptions = async () => {
+        try {
+            const [usersData, projectsData] = await Promise.all([
+                getFilterableUsers(),
+                getFilterableProjects()
+            ]);
+            setUsers(usersData);
+            setProjects(projectsData);
+        } catch (err) {
+            console.error('Error loading filter options:', err);
+        }
+    };
+
+    const loadEntries = async () => {
         setLoading(true);
         setError(null);
         try {
-            const [workersData, approvalsData] = await Promise.all([
-                getGlobalDashboardData({
-                    department: selectedDepartment !== 'all' ? selectedDepartment as Department : undefined,
-                    year: selectedYear,
-                    onlyNeedsAttention: showOnlyAlerts
-                }),
-                getPendingApprovals()
-            ]);
-            setWorkers(workersData);
-            setPendingApprovals(approvalsData);
+            const filters: TimeEntryFilters = {
+                sortBy,
+                sortOrder,
+                page: currentPage,
+                limit: 50
+            };
+
+            if (selectedUser) filters.userId = selectedUser;
+            if (selectedDepartment) filters.department = selectedDepartment as Department;
+            if (selectedProject) filters.projectId = selectedProject;
+            if (selectedStatus) filters.status = selectedStatus as TimeEntryStatus;
+
+            const result = await getAllTimeEntries(filters);
+            setEntries(result.entries);
+            setTotalEntries(result.total);
+            setTotalPages(result.totalPages);
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Error al cargar datos');
         } finally {
@@ -113,114 +185,136 @@ export default function GlobalHoursControlPage() {
         }
     };
 
-    useEffect(() => {
-        fetchData();
-    }, [selectedDepartment, selectedYear, showOnlyAlerts]);
-
-    // Filter workers by search term
-    const filteredWorkers = useMemo(() => {
-        if (!searchTerm) return workers;
+    // Filter entries by search term (client-side)
+    const filteredEntries = useMemo(() => {
+        if (!searchTerm) return entries;
         const term = searchTerm.toLowerCase();
-        return workers.filter(w =>
-            w.userName.toLowerCase().includes(term) ||
-            w.userEmail.toLowerCase().includes(term)
+        return entries.filter(e =>
+            e.user.name.toLowerCase().includes(term) ||
+            e.user.email.toLowerCase().includes(term) ||
+            e.project.code.toLowerCase().includes(term) ||
+            e.project.name.toLowerCase().includes(term) ||
+            e.notes?.toLowerCase().includes(term)
         );
-    }, [workers, searchTerm]);
+    }, [entries, searchTerm]);
 
-    // Group workers by department
-    const workersByDepartment = useMemo(() => {
-        const grouped: Record<string, WorkerStatus[]> = {};
-        filteredWorkers.forEach(worker => {
-            if (!grouped[worker.department]) {
-                grouped[worker.department] = [];
-            }
-            grouped[worker.department].push(worker);
-        });
-        return grouped;
-    }, [filteredWorkers]);
-
-    // Summary stats
+    // Stats calculation
     const stats = useMemo(() => {
-        const total = workers.length;
-        const needingAttention = workers.filter(w => w.needsAttention).length;
-        const withPending = workers.filter(w => w.hasPendingApprovals).length;
-        const totalExpected = workers.reduce((sum, w) => sum + w.currentMonthExpected, 0);
-        const totalActual = workers.reduce((sum, w) => sum + w.currentMonthActual, 0);
+        const total = filteredEntries.length;
+        const totalHours = filteredEntries.reduce((sum, e) => sum + e.hours, 0);
+        const pending = filteredEntries.filter(e => e.status === 'SUBMITTED').length;
+        const approved = filteredEntries.filter(e => e.status === 'APPROVED').length;
+        const draft = filteredEntries.filter(e => e.status === 'DRAFT').length;
 
-        return {
-            total,
-            needingAttention,
-            withPending,
-            totalExpected,
-            totalActual,
-            compliance: totalExpected > 0 ? (totalActual / totalExpected) * 100 : 0
-        };
-    }, [workers]);
+        return { total, totalHours, pending, approved, draft };
+    }, [filteredEntries]);
 
-    // Handle approval actions
-    const handleApprove = async () => {
-        if (selectedApprovals.size === 0) return;
-        setProcessingApproval(true);
-        try {
-            await approveTimeEntries(Array.from(selectedApprovals));
-            setSelectedApprovals(new Set());
-            fetchData();
-        } catch (err) {
-            alert(err instanceof Error ? err.message : 'Error al aprobar');
-        } finally {
-            setProcessingApproval(false);
-        }
-    };
-
-    const handleReject = async () => {
-        if (selectedApprovals.size === 0 || !rejectReason.trim()) return;
-        setProcessingApproval(true);
-        try {
-            await rejectTimeEntries(Array.from(selectedApprovals), rejectReason);
-            setSelectedApprovals(new Set());
-            setRejectReason('');
-            setShowRejectModal(false);
-            fetchData();
-        } catch (err) {
-            alert(err instanceof Error ? err.message : 'Error al rechazar');
-        } finally {
-            setProcessingApproval(false);
-        }
-    };
-
-    const toggleApprovalSelection = (id: string) => {
-        const newSet = new Set(selectedApprovals);
+    // Selection handlers
+    const toggleEntrySelection = (id: string) => {
+        const newSet = new Set(selectedEntries);
         if (newSet.has(id)) {
             newSet.delete(id);
         } else {
             newSet.add(id);
         }
-        setSelectedApprovals(newSet);
+        setSelectedEntries(newSet);
     };
 
-    const selectAllApprovals = () => {
-        if (selectedApprovals.size === pendingApprovals.length) {
-            setSelectedApprovals(new Set());
+    const selectAllSubmitted = () => {
+        const submittedIds = filteredEntries
+            .filter(e => e.status === 'SUBMITTED')
+            .map(e => e.id);
+
+        if (selectedEntries.size === submittedIds.length) {
+            setSelectedEntries(new Set());
         } else {
-            setSelectedApprovals(new Set(pendingApprovals.map(a => a.id)));
+            setSelectedEntries(new Set(submittedIds));
         }
     };
 
-    const formatDate = (date: Date | null | undefined) => {
-        if (!date) return 'Nunca';
+    // Action handlers
+    const handleApprove = async () => {
+        if (selectedEntries.size === 0) return;
+        setProcessingAction(true);
+        try {
+            await approveTimeEntries(Array.from(selectedEntries));
+            setSelectedEntries(new Set());
+            await loadEntries();
+        } catch (err) {
+            alert(err instanceof Error ? err.message : 'Error al aprobar');
+        } finally {
+            setProcessingAction(false);
+        }
+    };
+
+    const handleReject = async () => {
+        if (!rejectReason.trim()) return;
+        setProcessingAction(true);
+        try {
+            // If rejecting a single entry
+            if (rejectingEntryId) {
+                await rejectTimeEntries([rejectingEntryId], rejectReason);
+                setRejectingEntryId(null);
+            } else if (selectedEntries.size > 0) {
+                // Bulk reject
+                await rejectTimeEntries(Array.from(selectedEntries), rejectReason);
+                setSelectedEntries(new Set());
+            }
+            setRejectReason('');
+            setShowRejectModal(false);
+            await loadEntries();
+        } catch (err) {
+            alert(err instanceof Error ? err.message : 'Error al rechazar');
+        } finally {
+            setProcessingAction(false);
+        }
+    };
+
+    // Individual approve
+    const handleApproveOne = async (entryId: string) => {
+        setProcessingEntryId(entryId);
+        try {
+            await approveTimeEntries([entryId]);
+            await loadEntries();
+        } catch (err) {
+            alert(err instanceof Error ? err.message : 'Error al aprobar');
+        } finally {
+            setProcessingEntryId(null);
+        }
+    };
+
+    // Individual reject - opens modal
+    const handleRejectOne = (entryId: string) => {
+        setRejectingEntryId(entryId);
+        setShowRejectModal(true);
+    };
+
+    const toggleSort = (field: 'date' | 'user' | 'project' | 'hours') => {
+        if (sortBy === field) {
+            setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+        } else {
+            setSortBy(field);
+            setSortOrder('desc');
+        }
+    };
+
+    const clearFilters = () => {
+        setSelectedUser('');
+        setSelectedDepartment('');
+        setSelectedProject('');
+        setSelectedStatus('');
+        setSortBy('date');
+        setSortOrder('desc');
+        setSearchTerm('');
+        setCurrentPage(1);
+    };
+
+    const formatDate = (date: Date) => {
         return new Date(date).toLocaleDateString('es-ES', {
             day: '2-digit',
-            month: 'short'
+            month: 'short',
+            year: 'numeric'
         });
-    };
-
-    const formatHours = (hours: number) => {
-        return hours.toFixed(1) + 'h';
-    };
-
-    const formatDiff = (diff: number) => {
-        const prefix = diff >= 0 ? '+' : '';
-        return prefix + diff.toFixed(1) + 'h';
     };
 
     return (
@@ -232,13 +326,13 @@ export default function GlobalHoursControlPage() {
                         Control Global de Horas
                     </h1>
                     <p className="text-neutral-600 dark:text-neutral-400 font-medium">
-                        Estado de imputación de todos los trabajadores
+                        Gestión y aprobación de horas de todos los trabajadores
                     </p>
                 </div>
 
                 <div className="flex items-center gap-3">
                     <button
-                        onClick={fetchData}
+                        onClick={loadEntries}
                         disabled={loading}
                         className="flex items-center gap-2 px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-xl hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-all"
                     >
@@ -249,7 +343,7 @@ export default function GlobalHoursControlPage() {
             </div>
 
             {/* Summary Cards */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -257,11 +351,11 @@ export default function GlobalHoursControlPage() {
                 >
                     <div className="flex items-center gap-3">
                         <div className="w-12 h-12 rounded-xl bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
-                            <Users className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+                            <Clock className="w-6 h-6 text-blue-600 dark:text-blue-400" />
                         </div>
                         <div>
-                            <p className="text-sm text-neutral-500 dark:text-neutral-400">Trabajadores</p>
-                            <p className="text-2xl font-bold text-neutral-900 dark:text-neutral-100">{stats.total}</p>
+                            <p className="text-sm text-neutral-500 dark:text-neutral-400">Total Entradas</p>
+                            <p className="text-2xl font-bold text-neutral-900 dark:text-neutral-100">{totalEntries}</p>
                         </div>
                     </div>
                 </motion.div>
@@ -273,12 +367,12 @@ export default function GlobalHoursControlPage() {
                     className="bg-white dark:bg-neutral-800 rounded-2xl p-5 border border-neutral-200 dark:border-neutral-700"
                 >
                     <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 rounded-xl bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
-                            <AlertTriangle className="w-6 h-6 text-red-600 dark:text-red-400" />
+                        <div className="w-12 h-12 rounded-xl bg-olive-100 dark:bg-olive-900/30 flex items-center justify-center">
+                            <TrendingUp className="w-6 h-6 text-olive-600 dark:text-olive-400" />
                         </div>
                         <div>
-                            <p className="text-sm text-neutral-500 dark:text-neutral-400">Requieren Atención</p>
-                            <p className="text-2xl font-bold text-red-600 dark:text-red-400">{stats.needingAttention}</p>
+                            <p className="text-sm text-neutral-500 dark:text-neutral-400">Total Horas</p>
+                            <p className="text-2xl font-bold text-olive-600 dark:text-olive-400">{stats.totalHours.toFixed(1)}h</p>
                         </div>
                     </div>
                 </motion.div>
@@ -291,11 +385,11 @@ export default function GlobalHoursControlPage() {
                 >
                     <div className="flex items-center gap-3">
                         <div className="w-12 h-12 rounded-xl bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
-                            <Clock className="w-6 h-6 text-amber-600 dark:text-amber-400" />
+                            <AlertTriangle className="w-6 h-6 text-amber-600 dark:text-amber-400" />
                         </div>
                         <div>
-                            <p className="text-sm text-neutral-500 dark:text-neutral-400">Pendientes Aprobación</p>
-                            <p className="text-2xl font-bold text-amber-600 dark:text-amber-400">{pendingApprovals.length}</p>
+                            <p className="text-sm text-neutral-500 dark:text-neutral-400">Pendientes</p>
+                            <p className="text-2xl font-bold text-amber-600 dark:text-amber-400">{stats.pending}</p>
                         </div>
                     </div>
                 </motion.div>
@@ -307,18 +401,29 @@ export default function GlobalHoursControlPage() {
                     className="bg-white dark:bg-neutral-800 rounded-2xl p-5 border border-neutral-200 dark:border-neutral-700"
                 >
                     <div className="flex items-center gap-3">
-                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${stats.compliance >= 90 ? 'bg-green-100 dark:bg-green-900/30' : stats.compliance >= 70 ? 'bg-amber-100 dark:bg-amber-900/30' : 'bg-red-100 dark:bg-red-900/30'}`}>
-                            {stats.compliance >= 90 ? (
-                                <TrendingUp className="w-6 h-6 text-green-600 dark:text-green-400" />
-                            ) : (
-                                <TrendingDown className="w-6 h-6 text-amber-600 dark:text-amber-400" />
-                            )}
+                        <div className="w-12 h-12 rounded-xl bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+                            <CheckCircle className="w-6 h-6 text-green-600 dark:text-green-400" />
                         </div>
                         <div>
-                            <p className="text-sm text-neutral-500 dark:text-neutral-400">Cumplimiento Mes</p>
-                            <p className={`text-2xl font-bold ${stats.compliance >= 90 ? 'text-green-600' : stats.compliance >= 70 ? 'text-amber-600' : 'text-red-600'}`}>
-                                {stats.compliance.toFixed(0)}%
-                            </p>
+                            <p className="text-sm text-neutral-500 dark:text-neutral-400">Aprobados</p>
+                            <p className="text-2xl font-bold text-green-600 dark:text-green-400">{stats.approved}</p>
+                        </div>
+                    </div>
+                </motion.div>
+
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.4 }}
+                    className="bg-white dark:bg-neutral-800 rounded-2xl p-5 border border-neutral-200 dark:border-neutral-700"
+                >
+                    <div className="flex items-center gap-3">
+                        <div className="w-12 h-12 rounded-xl bg-neutral-100 dark:bg-neutral-700 flex items-center justify-center">
+                            <Clock className="w-6 h-6 text-neutral-600 dark:text-neutral-400" />
+                        </div>
+                        <div>
+                            <p className="text-sm text-neutral-500 dark:text-neutral-400">Borradores</p>
+                            <p className="text-2xl font-bold text-neutral-600 dark:text-neutral-400">{stats.draft}</p>
                         </div>
                     </div>
                 </motion.div>
@@ -332,48 +437,99 @@ export default function GlobalHoursControlPage() {
                         <span className="font-medium text-neutral-700 dark:text-neutral-300">Filtros:</span>
                     </div>
 
+                    {/* Search */}
                     <div className="relative">
                         <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
                         <input
                             type="text"
-                            placeholder="Buscar trabajador..."
+                            placeholder="Buscar..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                             className="pl-10 pr-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-xl bg-white dark:bg-neutral-800 text-sm w-48"
                         />
                     </div>
 
+                    {/* User filter */}
                     <select
-                        value={selectedDepartment}
-                        onChange={(e) => setSelectedDepartment(e.target.value)}
+                        value={selectedUser}
+                        onChange={(e) => { setSelectedUser(e.target.value); setCurrentPage(1); }}
                         className="px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-xl bg-white dark:bg-neutral-800 text-sm"
                     >
-                        <option value="all">Todos los departamentos</option>
+                        <option value="">Todos los usuarios</option>
+                        {users.map(u => (
+                            <option key={u.id} value={u.id}>{u.name}</option>
+                        ))}
+                    </select>
+
+                    {/* Department filter */}
+                    <select
+                        value={selectedDepartment}
+                        onChange={(e) => { setSelectedDepartment(e.target.value); setCurrentPage(1); }}
+                        className="px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-xl bg-white dark:bg-neutral-800 text-sm"
+                    >
+                        <option value="">Todos los departamentos</option>
                         {Object.entries(DEPARTMENT_CONFIG).map(([key, { label }]) => (
                             <option key={key} value={key}>{label}</option>
                         ))}
                     </select>
 
+                    {/* Project filter */}
                     <select
-                        value={selectedYear}
-                        onChange={(e) => setSelectedYear(Number(e.target.value))}
+                        value={selectedProject}
+                        onChange={(e) => { setSelectedProject(e.target.value); setCurrentPage(1); }}
                         className="px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-xl bg-white dark:bg-neutral-800 text-sm"
                     >
-                        {years.map(year => (
-                            <option key={year} value={year}>{year}</option>
+                        <option value="">Todos los proyectos</option>
+                        {projects.map(p => (
+                            <option key={p.id} value={p.id}>{p.code} - {p.name}</option>
                         ))}
                     </select>
 
-                    <label className="flex items-center gap-2 cursor-pointer">
-                        <input
-                            type="checkbox"
-                            checked={showOnlyAlerts}
-                            onChange={(e) => setShowOnlyAlerts(e.target.checked)}
-                            className="w-4 h-4 rounded border-neutral-300 text-red-600 focus:ring-red-500"
-                        />
-                        <span className="text-sm text-neutral-700 dark:text-neutral-300">Solo alertas</span>
-                    </label>
+                    {/* Status filter */}
+                    <select
+                        value={selectedStatus}
+                        onChange={(e) => { setSelectedStatus(e.target.value); setCurrentPage(1); }}
+                        className="px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-xl bg-white dark:bg-neutral-800 text-sm"
+                    >
+                        <option value="">Todos los estados</option>
+                        {Object.entries(STATUS_CONFIG).map(([key, { label }]) => (
+                            <option key={key} value={key}>{label}</option>
+                        ))}
+                    </select>
+
+                    {/* Clear filters button */}
+                    <button
+                        onClick={clearFilters}
+                        className="px-3 py-2 text-sm text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100"
+                    >
+                        Limpiar filtros
+                    </button>
                 </div>
+
+                {/* Bulk action buttons */}
+                {selectedEntries.size > 0 && (
+                    <div className="flex items-center gap-3 mt-4 pt-4 border-t border-neutral-200 dark:border-neutral-700">
+                        <span className="text-sm text-neutral-600 dark:text-neutral-400">
+                            {selectedEntries.size} seleccionadas
+                        </span>
+                        <button
+                            onClick={handleApprove}
+                            disabled={processingAction}
+                            className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-xl hover:bg-green-700 transition-all text-sm font-bold disabled:opacity-50"
+                        >
+                            <CheckCircle size={16} />
+                            Aprobar
+                        </button>
+                        <button
+                            onClick={() => setShowRejectModal(true)}
+                            disabled={processingAction}
+                            className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-xl hover:bg-red-700 transition-all text-sm font-bold disabled:opacity-50"
+                        >
+                            <XCircle size={16} />
+                            Rechazar
+                        </button>
+                    </div>
+                )}
             </div>
 
             {/* Error State */}
@@ -383,212 +539,220 @@ export default function GlobalHoursControlPage() {
                 </div>
             )}
 
-            {/* Pending Approvals Section */}
-            {pendingApprovals.length > 0 && (
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="bg-white dark:bg-neutral-800 rounded-2xl border border-neutral-200 dark:border-neutral-700 overflow-hidden"
-                >
-                    <div className="p-4 border-b border-neutral-200 dark:border-neutral-700 flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-xl bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
-                                <Clock className="w-5 h-5 text-amber-600" />
-                            </div>
-                            <div>
-                                <h2 className="font-bold text-neutral-900 dark:text-neutral-100">Entradas Pendientes de Aprobación</h2>
-                                <p className="text-sm text-neutral-500">{pendingApprovals.length} entradas esperando revisión</p>
-                            </div>
-                        </div>
-
-                        <div className="flex items-center gap-2">
-                            {selectedApprovals.size > 0 && (
-                                <>
-                                    <button
-                                        onClick={handleApprove}
-                                        disabled={processingApproval}
-                                        className="px-4 py-2 bg-green-600 text-white rounded-xl hover:bg-green-700 transition-all text-sm font-bold disabled:opacity-50"
-                                    >
-                                        Aprobar ({selectedApprovals.size})
-                                    </button>
-                                    <button
-                                        onClick={() => setShowRejectModal(true)}
-                                        disabled={processingApproval}
-                                        className="px-4 py-2 bg-red-600 text-white rounded-xl hover:bg-red-700 transition-all text-sm font-bold disabled:opacity-50"
-                                    >
-                                        Rechazar
-                                    </button>
-                                </>
-                            )}
-                        </div>
-                    </div>
-
-                    <div className="overflow-x-auto">
-                        <table className="w-full">
-                            <thead className="bg-neutral-50 dark:bg-neutral-800/50">
-                                <tr>
-                                    <th className="px-4 py-3 text-left">
-                                        <input
-                                            type="checkbox"
-                                            checked={selectedApprovals.size === pendingApprovals.length && pendingApprovals.length > 0}
-                                            onChange={selectAllApprovals}
-                                            className="w-4 h-4 rounded border-neutral-300"
-                                        />
-                                    </th>
-                                    <th className="px-4 py-3 text-left text-xs font-bold text-neutral-500 uppercase">Trabajador</th>
-                                    <th className="px-4 py-3 text-left text-xs font-bold text-neutral-500 uppercase">Fecha</th>
-                                    <th className="px-4 py-3 text-left text-xs font-bold text-neutral-500 uppercase">Proyecto</th>
-                                    <th className="px-4 py-3 text-right text-xs font-bold text-neutral-500 uppercase">Horas</th>
-                                    <th className="px-4 py-3 text-left text-xs font-bold text-neutral-500 uppercase">Notas</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-neutral-100 dark:divide-neutral-700">
-                                {pendingApprovals.map(approval => (
-                                    <tr key={approval.id} className="hover:bg-neutral-50 dark:hover:bg-neutral-700/30">
-                                        <td className="px-4 py-3">
-                                            <input
-                                                type="checkbox"
-                                                checked={selectedApprovals.has(approval.id)}
-                                                onChange={() => toggleApprovalSelection(approval.id)}
-                                                className="w-4 h-4 rounded border-neutral-300"
-                                            />
-                                        </td>
-                                        <td className="px-4 py-3">
-                                            <div className="flex items-center gap-3">
-                                                <div className="w-8 h-8 rounded-full bg-neutral-200 dark:bg-neutral-700 flex items-center justify-center text-sm font-bold">
-                                                    {approval.user.name.charAt(0)}
-                                                </div>
-                                                <div>
-                                                    <p className="font-medium text-neutral-900 dark:text-neutral-100">{approval.user.name}</p>
-                                                    <p className="text-xs text-neutral-500">{DEPARTMENT_CONFIG[approval.user.department]?.label}</p>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td className="px-4 py-3 text-neutral-700 dark:text-neutral-300">
-                                            {new Date(approval.date).toLocaleDateString('es-ES')}
-                                        </td>
-                                        <td className="px-4 py-3">
-                                            <span className="text-neutral-900 dark:text-neutral-100">{approval.project.code}</span>
-                                            <span className="text-neutral-500 ml-2">{approval.project.name}</span>
-                                        </td>
-                                        <td className="px-4 py-3 text-right font-bold text-neutral-900 dark:text-neutral-100">
-                                            {approval.hours.toFixed(2)}h
-                                        </td>
-                                        <td className="px-4 py-3 text-neutral-500 text-sm max-w-xs truncate">
-                                            {approval.notes || '-'}
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-                </motion.div>
-            )}
-
-            {/* Workers Table by Department */}
-            <div className="space-y-6">
-                {Object.entries(workersByDepartment).map(([dept, deptWorkers]) => {
-                    const config = DEPARTMENT_CONFIG[dept] || DEPARTMENT_CONFIG.OTHER;
-
-                    return (
-                        <motion.div
-                            key={dept}
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            className="bg-white dark:bg-neutral-800 rounded-2xl border border-neutral-200 dark:border-neutral-700 overflow-hidden"
+            {/* Entries Table */}
+            <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="bg-white dark:bg-neutral-800 rounded-2xl border border-neutral-200 dark:border-neutral-700 overflow-hidden"
+            >
+                <div className="p-4 border-b border-neutral-200 dark:border-neutral-700 flex items-center justify-between">
+                    <h2 className="font-bold text-neutral-900 dark:text-neutral-100">
+                        Registros de Horas ({totalEntries})
+                    </h2>
+                    <div className="flex items-center gap-2">
+                        <button
+                            onClick={selectAllSubmitted}
+                            className="text-sm text-olive-600 dark:text-olive-400 hover:underline"
                         >
-                            <div className={`p-4 border-b border-neutral-200 dark:border-neutral-700 flex items-center gap-3 ${config.bgColor} dark:bg-opacity-20`}>
-                                <Building2 className={`w-5 h-5 ${config.color}`} />
-                                <h2 className={`font-bold ${config.color}`}>{config.label}</h2>
-                                <span className="text-sm text-neutral-500">({deptWorkers.length} trabajadores)</span>
-                            </div>
+                            {selectedEntries.size > 0 ? 'Deseleccionar' : 'Seleccionar pendientes'}
+                        </button>
+                    </div>
+                </div>
 
-                            <div className="overflow-x-auto">
-                                <table className="w-full">
-                                    <thead className="bg-neutral-50 dark:bg-neutral-800/50">
-                                        <tr>
-                                            <th className="px-4 py-3 text-left text-xs font-bold text-neutral-500 uppercase">Trabajador</th>
-                                            <th className="px-4 py-3 text-center text-xs font-bold text-neutral-500 uppercase">Última Entrada</th>
-                                            <th className="px-4 py-3 text-center text-xs font-bold text-neutral-500 uppercase">Días Sin Imputar</th>
-                                            <th className="px-4 py-3 text-right text-xs font-bold text-neutral-500 uppercase">Previstas Mes</th>
-                                            <th className="px-4 py-3 text-right text-xs font-bold text-neutral-500 uppercase">Reales Mes</th>
-                                            <th className="px-4 py-3 text-right text-xs font-bold text-neutral-500 uppercase">Diferencia</th>
-                                            <th className="px-4 py-3 text-right text-xs font-bold text-neutral-500 uppercase">YTD</th>
-                                            <th className="px-4 py-3 text-center text-xs font-bold text-neutral-500 uppercase">Estado</th>
+                <div className="overflow-x-auto">
+                    <table className="w-full">
+                        <thead className="bg-neutral-50 dark:bg-neutral-800/50">
+                            <tr>
+                                <th className="px-4 py-3 text-left w-10">
+                                    <input
+                                        type="checkbox"
+                                        onChange={selectAllSubmitted}
+                                        checked={selectedEntries.size > 0 && selectedEntries.size === filteredEntries.filter(e => e.status === 'SUBMITTED').length}
+                                        className="w-4 h-4 rounded border-neutral-300"
+                                    />
+                                </th>
+                                <th
+                                    className="px-4 py-3 text-left text-xs font-bold text-neutral-500 uppercase cursor-pointer hover:bg-neutral-100 dark:hover:bg-neutral-700"
+                                    onClick={() => toggleSort('date')}
+                                >
+                                    <div className="flex items-center gap-1">
+                                        Fecha
+                                        {sortBy === 'date' && (sortOrder === 'desc' ? <SortDesc size={14} /> : <SortAsc size={14} />)}
+                                    </div>
+                                </th>
+                                <th
+                                    className="px-4 py-3 text-left text-xs font-bold text-neutral-500 uppercase cursor-pointer hover:bg-neutral-100 dark:hover:bg-neutral-700"
+                                    onClick={() => toggleSort('user')}
+                                >
+                                    <div className="flex items-center gap-1">
+                                        Trabajador
+                                        {sortBy === 'user' && (sortOrder === 'desc' ? <SortDesc size={14} /> : <SortAsc size={14} />)}
+                                    </div>
+                                </th>
+                                <th className="px-4 py-3 text-left text-xs font-bold text-neutral-500 uppercase">Departamento</th>
+                                <th
+                                    className="px-4 py-3 text-left text-xs font-bold text-neutral-500 uppercase cursor-pointer hover:bg-neutral-100 dark:hover:bg-neutral-700"
+                                    onClick={() => toggleSort('project')}
+                                >
+                                    <div className="flex items-center gap-1">
+                                        Proyecto
+                                        {sortBy === 'project' && (sortOrder === 'desc' ? <SortDesc size={14} /> : <SortAsc size={14} />)}
+                                    </div>
+                                </th>
+                                <th
+                                    className="px-4 py-3 text-right text-xs font-bold text-neutral-500 uppercase cursor-pointer hover:bg-neutral-100 dark:hover:bg-neutral-700"
+                                    onClick={() => toggleSort('hours')}
+                                >
+                                    <div className="flex items-center justify-end gap-1">
+                                        Horas
+                                        {sortBy === 'hours' && (sortOrder === 'desc' ? <SortDesc size={14} /> : <SortAsc size={14} />)}
+                                    </div>
+                                </th>
+                                <th className="px-4 py-3 text-center text-xs font-bold text-neutral-500 uppercase">Estado</th>
+                                <th className="px-4 py-3 text-left text-xs font-bold text-neutral-500 uppercase">Notas</th>
+                                <th className="px-4 py-3 text-center text-xs font-bold text-neutral-500 uppercase">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-neutral-100 dark:divide-neutral-700">
+                            {loading ? (
+                                <tr>
+                                    <td colSpan={9} className="px-4 py-12 text-center">
+                                        <div className="flex items-center justify-center gap-2">
+                                            <div className="w-6 h-6 border-3 border-olive-600 border-t-transparent rounded-full animate-spin"></div>
+                                            <span className="text-neutral-500">Cargando...</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                            ) : filteredEntries.length === 0 ? (
+                                <tr>
+                                    <td colSpan={9} className="px-4 py-12 text-center text-neutral-500">
+                                        <Clock size={48} className="mx-auto mb-4 opacity-30" />
+                                        <p className="text-lg font-medium">No hay registros de horas</p>
+                                        <p className="text-sm">Intenta ajustar los filtros</p>
+                                    </td>
+                                </tr>
+                            ) : (
+                                filteredEntries.map(entry => {
+                                    const deptConfig = DEPARTMENT_CONFIG[entry.user.department] || DEPARTMENT_CONFIG.OTHER;
+                                    const statusConfig = STATUS_CONFIG[entry.status];
+                                    const canSelect = entry.status === 'SUBMITTED';
+
+                                    return (
+                                        <tr key={entry.id} className={`hover:bg-neutral-50 dark:hover:bg-neutral-700/30 ${selectedEntries.has(entry.id) ? 'bg-olive-50 dark:bg-olive-900/20' : ''}`}>
+                                            <td className="px-4 py-3">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={selectedEntries.has(entry.id)}
+                                                    onChange={() => toggleEntrySelection(entry.id)}
+                                                    disabled={!canSelect}
+                                                    className="w-4 h-4 rounded border-neutral-300 disabled:opacity-30"
+                                                />
+                                            </td>
+                                            <td className="px-4 py-3 text-neutral-700 dark:text-neutral-300 font-medium">
+                                                {formatDate(entry.date)}
+                                            </td>
+                                            <td className="px-4 py-3">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="w-8 h-8 rounded-full bg-neutral-200 dark:bg-neutral-700 flex items-center justify-center text-sm font-bold">
+                                                        {entry.user.name.charAt(0)}
+                                                    </div>
+                                                    <div>
+                                                        <p className="font-medium text-neutral-900 dark:text-neutral-100">{entry.user.name}</p>
+                                                        <p className="text-xs text-neutral-500">{entry.user.email}</p>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td className="px-4 py-3">
+                                                <span className={`px-2 py-1 rounded-full text-xs font-bold ${deptConfig.bgColor} ${deptConfig.color}`}>
+                                                    {deptConfig.label}
+                                                </span>
+                                            </td>
+                                            <td className="px-4 py-3">
+                                                <span className="font-bold text-olive-600 dark:text-olive-400">{entry.project.code}</span>
+                                                <span className="text-neutral-500 ml-2">{entry.project.name}</span>
+                                            </td>
+                                            <td className="px-4 py-3 text-right font-bold text-neutral-900 dark:text-neutral-100">
+                                                {entry.hours.toFixed(2)}h
+                                            </td>
+                                            <td className="px-4 py-3 text-center">
+                                                <span className={`px-2 py-1 rounded-full text-xs font-bold ${statusConfig.bgColor} ${statusConfig.color}`}>
+                                                    {statusConfig.label}
+                                                </span>
+                                            </td>
+                                            <td className="px-4 py-3 text-neutral-500 text-sm max-w-xs truncate">
+                                                {entry.notes || '-'}
+                                            </td>
+                                            <td className="px-4 py-3">
+                                                <div className="flex items-center justify-center gap-1">
+                                                    {(entry.status === 'SUBMITTED' || entry.status === 'DRAFT') && (
+                                                        <>
+                                                            <button
+                                                                onClick={() => handleApproveOne(entry.id)}
+                                                                disabled={processingEntryId === entry.id}
+                                                                className="p-2 text-green-600 hover:bg-green-100 dark:hover:bg-green-900/30 rounded-lg transition-colors disabled:opacity-50 border border-green-200 dark:border-green-800"
+                                                                title="Aprobar"
+                                                            >
+                                                                {processingEntryId === entry.id ? (
+                                                                    <div className="w-4 h-4 border-2 border-green-600 border-t-transparent rounded-full animate-spin" />
+                                                                ) : (
+                                                                    <CheckCircle size={18} />
+                                                                )}
+                                                            </button>
+                                                            <button
+                                                                onClick={() => handleRejectOne(entry.id)}
+                                                                disabled={processingEntryId === entry.id}
+                                                                className="p-2 text-red-600 hover:bg-red-100 dark:hover:bg-red-900/30 rounded-lg transition-colors disabled:opacity-50 border border-red-200 dark:border-red-800"
+                                                                title="Rechazar"
+                                                            >
+                                                                <XCircle size={18} />
+                                                            </button>
+                                                        </>
+                                                    )}
+                                                    {entry.status === 'APPROVED' && (
+                                                        <span className="text-xs text-green-600 font-medium flex items-center gap-1">
+                                                            <CheckCircle size={14} /> Aprobado
+                                                        </span>
+                                                    )}
+                                                    {entry.status === 'REJECTED' && (
+                                                        <span className="text-xs text-red-600 font-medium flex items-center gap-1" title={entry.rejectionReason || ''}>
+                                                            <XCircle size={14} /> Rechazado
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            </td>
                                         </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-neutral-100 dark:divide-neutral-700">
-                                        {deptWorkers.map(worker => (
-                                            <tr key={worker.userId} className="hover:bg-neutral-50 dark:hover:bg-neutral-700/30">
-                                                <td className="px-4 py-3">
-                                                    <div className="flex items-center gap-3">
-                                                        <div className="w-10 h-10 rounded-full bg-neutral-200 dark:bg-neutral-700 flex items-center justify-center text-sm font-bold">
-                                                            {worker.userName.charAt(0)}
-                                                        </div>
-                                                        <div>
-                                                            <p className="font-medium text-neutral-900 dark:text-neutral-100">{worker.userName}</p>
-                                                            <p className="text-xs text-neutral-500">{worker.userEmail}</p>
-                                                        </div>
-                                                    </div>
-                                                </td>
-                                                <td className="px-4 py-3 text-center text-neutral-700 dark:text-neutral-300">
-                                                    {formatDate(worker.lastEntryDate)}
-                                                </td>
-                                                <td className="px-4 py-3 text-center">
-                                                    <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-bold ${worker.daysSinceLastEntry > 5 ? 'bg-red-100 text-red-700' : worker.daysSinceLastEntry > 2 ? 'bg-amber-100 text-amber-700' : 'bg-green-100 text-green-700'}`}>
-                                                        {worker.daysSinceLastEntry}
-                                                    </span>
-                                                </td>
-                                                <td className="px-4 py-3 text-right text-neutral-700 dark:text-neutral-300">
-                                                    {formatHours(worker.currentMonthExpected)}
-                                                </td>
-                                                <td className="px-4 py-3 text-right font-bold text-neutral-900 dark:text-neutral-100">
-                                                    {formatHours(worker.currentMonthActual)}
-                                                </td>
-                                                <td className={`px-4 py-3 text-right font-bold ${worker.currentMonthDiff >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                                                    {formatDiff(worker.currentMonthDiff)}
-                                                </td>
-                                                <td className={`px-4 py-3 text-right font-medium ${worker.ytdDifference >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                                                    {formatDiff(worker.ytdDifference)}
-                                                </td>
-                                                <td className="px-4 py-3 text-center">
-                                                    <div className="flex items-center justify-center gap-1">
-                                                        {worker.needsAttention && (
-                                                            <span className="w-3 h-3 rounded-full bg-red-500" title="Requiere atención" />
-                                                        )}
-                                                        {worker.hasPendingApprovals && (
-                                                            <span className="w-3 h-3 rounded-full bg-amber-500" title="Tiene pendientes" />
-                                                        )}
-                                                        {!worker.needsAttention && !worker.hasPendingApprovals && (
-                                                            <span className="w-3 h-3 rounded-full bg-green-500" title="OK" />
-                                                        )}
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
-                        </motion.div>
-                    );
-                })}
-            </div>
-
-            {/* Loading State */}
-            {loading && (
-                <div className="flex items-center justify-center py-12">
-                    <div className="w-8 h-8 border-4 border-olive-600 border-t-transparent rounded-full animate-spin" />
+                                    );
+                                })
+                            )}
+                        </tbody>
+                    </table>
                 </div>
-            )}
 
-            {/* Empty State */}
-            {!loading && filteredWorkers.length === 0 && (
-                <div className="text-center py-12 text-neutral-500">
-                    <Users size={48} className="mx-auto mb-4 opacity-30" />
-                    <p className="text-lg font-medium">No se encontraron trabajadores</p>
-                    <p className="text-sm">Intenta ajustar los filtros</p>
-                </div>
-            )}
+                {/* Pagination */}
+                {totalPages > 1 && (
+                    <div className="p-4 border-t border-neutral-200 dark:border-neutral-700 flex items-center justify-between">
+                        <p className="text-sm text-neutral-500">
+                            Página {currentPage} de {totalPages}
+                        </p>
+                        <div className="flex items-center gap-2">
+                            <button
+                                onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                                disabled={currentPage === 1}
+                                className="px-3 py-1 border border-neutral-300 dark:border-neutral-600 rounded-lg disabled:opacity-50 hover:bg-neutral-100 dark:hover:bg-neutral-700"
+                            >
+                                Anterior
+                            </button>
+                            <button
+                                onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                                disabled={currentPage === totalPages}
+                                className="px-3 py-1 border border-neutral-300 dark:border-neutral-600 rounded-lg disabled:opacity-50 hover:bg-neutral-100 dark:hover:bg-neutral-700"
+                            >
+                                Siguiente
+                            </button>
+                        </div>
+                    </div>
+                )}
+            </motion.div>
 
             {/* Reject Modal */}
             {showRejectModal && (
@@ -599,33 +763,37 @@ export default function GlobalHoursControlPage() {
                         className="bg-white dark:bg-neutral-800 rounded-2xl p-6 w-full max-w-md"
                     >
                         <h3 className="text-lg font-bold text-neutral-900 dark:text-neutral-100 mb-4">
-                            Rechazar Entradas
+                            Rechazar {rejectingEntryId ? 'Entrada' : 'Entradas'}
                         </h3>
                         <p className="text-sm text-neutral-500 mb-4">
-                            Se rechazarán {selectedApprovals.size} entradas. Por favor, indica el motivo:
+                            {rejectingEntryId
+                                ? 'Se rechazará esta entrada. Por favor, indica el motivo:'
+                                : `Se rechazarán ${selectedEntries.size} entradas. Por favor, indica el motivo:`
+                            }
                         </p>
                         <textarea
                             value={rejectReason}
                             onChange={(e) => setRejectReason(e.target.value)}
                             placeholder="Motivo del rechazo..."
-                            className="w-full px-4 py-3 border border-neutral-300 dark:border-neutral-600 rounded-xl bg-white dark:bg-neutral-800 resize-none h-24"
+                            className="w-full px-4 py-3 border border-neutral-300 dark:border-neutral-600 rounded-xl bg-white dark:bg-neutral-800 resize-none h-24 text-neutral-900 dark:text-neutral-100"
                         />
                         <div className="flex justify-end gap-3 mt-4">
                             <button
                                 onClick={() => {
                                     setShowRejectModal(false);
                                     setRejectReason('');
+                                    setRejectingEntryId(null);
                                 }}
-                                className="px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-xl hover:bg-neutral-100 dark:hover:bg-neutral-700"
+                                className="px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-xl hover:bg-neutral-100 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-300"
                             >
                                 Cancelar
                             </button>
                             <button
                                 onClick={handleReject}
-                                disabled={!rejectReason.trim() || processingApproval}
-                                className="px-4 py-2 bg-red-600 text-white rounded-xl hover:bg-red-700 disabled:opacity-50"
+                                disabled={!rejectReason.trim() || processingAction}
+                                className="px-4 py-2 bg-red-600 text-white rounded-xl hover:bg-red-700 disabled:opacity-50 font-bold"
                             >
-                                Rechazar
+                                {processingAction ? 'Rechazando...' : 'Rechazar'}
                             </button>
                         </div>
                     </motion.div>

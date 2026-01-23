@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { Clock, Plus, Calendar, ChevronLeft, ChevronRight, X, Trash2, Pencil } from 'lucide-react';
-import { createTimeEntry, getActiveProjects, getTimeEntries, deleteTimeEntry, updateTimeEntry } from '@/app/(protected)/hours/actions';
+import { Clock, Plus, Calendar, ChevronLeft, ChevronRight, X, Trash2, Pencil, Send, CheckCircle, XCircle, FileText } from 'lucide-react';
+import { createTimeEntry, getActiveProjects, getTimeEntries, deleteTimeEntry, updateTimeEntry, bulkSubmitTimeEntries } from '@/app/(protected)/hours/actions';
 
 interface Project {
     id: string;
@@ -15,13 +15,15 @@ interface TimeEntry {
     date: Date;
     hours: number;
     notes?: string | null;
+    status: 'DRAFT' | 'SUBMITTED' | 'APPROVED' | 'REJECTED';
+    startTime?: string | null;
+    endTime?: string | null;
     project: {
         id: string;
         code: string;
         name: string;
     };
     createdAt: Date;
-    // startTime/endTime might be added to backend later, supporting here if present
 }
 
 interface DailyHoursViewProps {
@@ -57,6 +59,8 @@ export default function DailyHoursView({ userId, readOnly = false }: DailyHoursV
     const [entryMode, setEntryMode] = useState<'total' | 'range'>('total');
     const [startTime, setStartTime] = useState('');
     const [endTime, setEndTime] = useState('');
+    const [selectedEntries, setSelectedEntries] = useState<Set<string>>(new Set());
+    const [submittingBulk, setSubmittingBulk] = useState(false);
 
     useEffect(() => {
         loadData();
@@ -309,6 +313,59 @@ export default function DailyHoursView({ userId, readOnly = false }: DailyHoursV
         }
     };
 
+    const toggleEntrySelection = (id: string, status: string) => {
+        if (status !== 'DRAFT') return; // Only draft entries can be selected
+        const newSet = new Set(selectedEntries);
+        if (newSet.has(id)) {
+            newSet.delete(id);
+        } else {
+            newSet.add(id);
+        }
+        setSelectedEntries(newSet);
+    };
+
+    const handleBulkSubmit = async () => {
+        if (selectedEntries.size === 0) return;
+        setSubmittingBulk(true);
+        try {
+            const result = await bulkSubmitTimeEntries(Array.from(selectedEntries));
+            if (result.success) {
+                setMessage({ type: 'success', text: result.message });
+                setSelectedEntries(new Set());
+                await loadData();
+                setTimeout(() => setMessage(null), 3000);
+            }
+        } catch (error: any) {
+            setMessage({ type: 'error', text: error.message || 'Error al enviar para aprobación' });
+        } finally {
+            setSubmittingBulk(false);
+        }
+    };
+
+    const draftEntries = entries.filter(e => e.status === 'DRAFT');
+    const selectAllDrafts = () => {
+        if (selectedEntries.size === draftEntries.length) {
+            setSelectedEntries(new Set());
+        } else {
+            setSelectedEntries(new Set(draftEntries.map(e => e.id)));
+        }
+    };
+
+    const getStatusBadge = (status: string) => {
+        switch (status) {
+            case 'DRAFT':
+                return <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-neutral-100 text-neutral-600 dark:bg-neutral-700 dark:text-neutral-300">Borrador</span>;
+            case 'SUBMITTED':
+                return <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">Pendiente</span>;
+            case 'APPROVED':
+                return <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">Aprobado</span>;
+            case 'REJECTED':
+                return <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400">Rechazado</span>;
+            default:
+                return null;
+        }
+    };
+
     // Calculate totals
     const totalHours = entries.reduce((sum, entry) => sum + Number(entry.hours), 0);
     const weekDays = getWeekDays();
@@ -358,6 +415,27 @@ export default function DailyHoursView({ userId, readOnly = false }: DailyHoursV
                 </div>
                 {!readOnly && (
                     <div className="flex items-center gap-3">
+                        {draftEntries.length > 0 && (
+                            <>
+                                <button
+                                    onClick={selectAllDrafts}
+                                    className="flex items-center gap-2 px-3 py-2 text-neutral-600 dark:text-neutral-300 border border-neutral-200 dark:border-neutral-700 rounded-xl hover:bg-neutral-50 dark:hover:bg-neutral-800 text-sm font-bold"
+                                >
+                                    <FileText className="w-4 h-4" />
+                                    {selectedEntries.size === draftEntries.length ? 'Deseleccionar' : `Seleccionar (${draftEntries.length})`}
+                                </button>
+                                {selectedEntries.size > 0 && (
+                                    <button
+                                        onClick={handleBulkSubmit}
+                                        disabled={submittingBulk}
+                                        className="flex items-center gap-2 px-4 py-2 bg-amber-600 text-white rounded-xl hover:bg-amber-700 transition-all font-bold shadow-lg shadow-amber-600/20 disabled:opacity-50"
+                                    >
+                                        <Send className="w-4 h-4" />
+                                        {submittingBulk ? 'Enviando...' : `Enviar (${selectedEntries.size})`}
+                                    </button>
+                                )}
+                            </>
+                        )}
                         <button
                             onClick={() => openNewForm()}
                             className="flex items-center gap-2 px-4 py-2 bg-olive-600 text-white rounded-xl hover:bg-olive-700 transition-all font-bold shadow-lg shadow-olive-600/20"
@@ -369,21 +447,37 @@ export default function DailyHoursView({ userId, readOnly = false }: DailyHoursV
                 )}
             </div>
 
+            {/* Message Toast */}
+            {message && (
+                <div className={`fixed top-4 right-4 z-50 p-4 rounded-xl shadow-lg font-bold ${message.type === 'success'
+                    ? 'bg-green-600 text-white'
+                    : 'bg-red-600 text-white'
+                    }`}>
+                    {message.text}
+                </div>
+            )}
+
             {/* Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div className="bg-white dark:bg-neutral-900 p-5 rounded-2xl border border-neutral-200 dark:border-neutral-800 shadow-sm">
                     <p className="text-xs font-bold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider mb-1">Total Registrado</p>
                     <p className="text-3xl font-black text-neutral-900 dark:text-neutral-100">{totalHours.toFixed(1)}h</p>
                 </div>
                 <div className="bg-white dark:bg-neutral-900 p-5 rounded-2xl border border-neutral-200 dark:border-neutral-800 shadow-sm">
-                    <p className="text-xs font-bold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider mb-1">Entradas</p>
-                    <p className="text-3xl font-black text-neutral-900 dark:text-neutral-100">{entries.length}</p>
+                    <p className="text-xs font-bold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider mb-1">Aprobadas</p>
+                    <p className="text-3xl font-black text-green-600 dark:text-green-400">
+                        {entries.filter(e => e.status === 'APPROVED').reduce((sum, e) => sum + Number(e.hours), 0).toFixed(1)}h
+                    </p>
                 </div>
                 <div className="bg-white dark:bg-neutral-900 p-5 rounded-2xl border border-neutral-200 dark:border-neutral-800 shadow-sm">
-                    <p className="text-xs font-bold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider mb-1">Promedio/Día</p>
-                    <p className="text-3xl font-black text-neutral-900 dark:text-neutral-100">
-                        {entries.length > 0 ? (totalHours / new Set(entries.map(e => new Date(e.date).toDateString())).size).toFixed(1) : 0}h
+                    <p className="text-xs font-bold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider mb-1">Pendientes</p>
+                    <p className="text-3xl font-black text-amber-600 dark:text-amber-400">
+                        {entries.filter(e => e.status === 'DRAFT' || e.status === 'SUBMITTED').reduce((sum, e) => sum + Number(e.hours), 0).toFixed(1)}h
                     </p>
+                </div>
+                <div className="bg-white dark:bg-neutral-900 p-5 rounded-2xl border border-neutral-200 dark:border-neutral-800 shadow-sm">
+                    <p className="text-xs font-bold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider mb-1">Entradas</p>
+                    <p className="text-3xl font-black text-neutral-900 dark:text-neutral-100">{entries.length}</p>
                 </div>
             </div>
 
@@ -546,20 +640,31 @@ export default function DailyHoursView({ userId, readOnly = false }: DailyHoursV
                     ) : (
                         <div className="space-y-3">
                             {(entriesByDate[selectedDate] || []).map(entry => (
-                                <div key={entry.id} className="flex items-center justify-between p-4 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl hover:shadow-md transition-shadow">
+                                <div key={entry.id} className={`flex items-center gap-3 p-4 bg-white dark:bg-neutral-800 border rounded-xl hover:shadow-md transition-shadow ${selectedEntries.has(entry.id) ? 'border-olive-500 ring-2 ring-olive-500/20' : 'border-neutral-200 dark:border-neutral-700'}`}>
+                                    {!readOnly && entry.status === 'DRAFT' && (
+                                        <input
+                                            type="checkbox"
+                                            checked={selectedEntries.has(entry.id)}
+                                            onChange={() => toggleEntrySelection(entry.id, entry.status)}
+                                            className="w-4 h-4 rounded border-neutral-300 text-olive-600 focus:ring-olive-500"
+                                        />
+                                    )}
                                     <div className="flex-1">
-                                        <p className="font-bold text-neutral-900 dark:text-neutral-100">
-                                            <span className="text-olive-600 dark:text-olive-400 font-black">{entry.project.code}</span> · {entry.project.name}
-                                        </p>
-                                        <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-1">
+                                        <div className="flex items-center gap-2 mb-1">
+                                            <p className="font-bold text-neutral-900 dark:text-neutral-100">
+                                                <span className="text-olive-600 dark:text-olive-400 font-black">{entry.project.code}</span> · {entry.project.name}
+                                            </p>
+                                            {getStatusBadge(entry.status)}
+                                        </div>
+                                        <p className="text-sm text-neutral-500 dark:text-neutral-400">
                                             <span className="font-bold text-neutral-700 dark:text-neutral-300">{Number(entry.hours)}h</span>
-                                            {(entry as any).startTime && (entry as any).endTime && (
-                                                <span className="text-xs ml-2 opacity-75">({(entry as any).startTime} - {(entry as any).endTime})</span>
+                                            {entry.startTime && entry.endTime && (
+                                                <span className="text-xs ml-2 opacity-75">({entry.startTime} - {entry.endTime})</span>
                                             )}
                                             {entry.notes && ` · ${entry.notes}`}
                                         </p>
                                     </div>
-                                    {!readOnly && (
+                                    {!readOnly && entry.status === 'DRAFT' && (
                                         <div className="flex items-center gap-2">
                                             <button
                                                 onClick={() => openEditForm(entry)}
@@ -576,6 +681,12 @@ export default function DailyHoursView({ userId, readOnly = false }: DailyHoursV
                                                 <Trash2 className="w-4 h-4" />
                                             </button>
                                         </div>
+                                    )}
+                                    {entry.status === 'APPROVED' && (
+                                        <CheckCircle className="w-5 h-5 text-green-500" />
+                                    )}
+                                    {entry.status === 'REJECTED' && (
+                                        <XCircle className="w-5 h-5 text-red-500" />
                                     )}
                                 </div>
                             ))}
