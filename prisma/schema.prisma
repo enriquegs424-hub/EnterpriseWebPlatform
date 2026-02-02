@@ -104,7 +104,24 @@ model User {
   // Economic tracking
   hourCost          Decimal?          @db.Decimal(10, 2)  // Cost per hour for economic analysis
 
+  // === RRHH / HR Fields ===
+  employeeCode      String?           @unique  // EMP-001, auto-generated
+  hireDate          DateTime?         // Fecha de contratación
+  contractType      ContractType?     // INDEFINIDO, TEMPORAL, etc.
+  contractEndDate   DateTime?         // Para contratos temporales
+  salary            Decimal?          @db.Decimal(10, 2)  // Salario base mensual
+  bankAccount       String?           // IBAN (should be encrypted in production)
+  ssNumber          String?           // Número Seguridad Social
+  emergencyContact  Json?             // {name, phone, relation}
+  vacationDays      Int               @default(22)  // Días de vacaciones anuales
+  
+  // HR Relations
+  absences          Absence[]
+  payrollRecords    PayrollRecord[]
+  approvedAbsences  Absence[]         @relation("ApprovedAbsences")
+
   @@index([companyId])
+  @@index([employeeCode])
 }
 
 model Project {
@@ -455,6 +472,42 @@ enum PresenceStatus {
   BE_RIGHT_BACK     // Vuelvo enseguida (amarillo)
   AWAY              // Ausente (amarillo)
   OFFLINE           // Desconectado (gris)
+}
+
+// ============================================
+// RRHH / HR ENUMS
+// ============================================
+
+enum ContractType {
+  INDEFINIDO        // Contrato indefinido
+  TEMPORAL          // Contrato temporal
+  OBRA_SERVICIO     // Por obra o servicio
+  PRACTICAS         // Prácticas
+  FORMACION         // Formación
+}
+
+enum AbsenceType {
+  VACATION          // Vacaciones
+  SICK              // Enfermedad
+  PERSONAL          // Asuntos personales
+  MATERNITY         // Maternidad
+  PATERNITY         // Paternidad
+  UNPAID            // Sin sueldo
+  OTHER             // Otros
+}
+
+enum AbsenceStatus {
+  PENDING           // Pendiente de aprobación
+  APPROVED          // Aprobada
+  REJECTED          // Rechazada
+  CANCELLED         // Cancelada
+}
+
+enum PayrollStatus {
+  DRAFT             // Borrador
+  PROCESSING        // En proceso
+  COMPLETED         // Completada
+  PAID              // Pagada
 }
 
 enum TaskStatus {
@@ -1260,4 +1313,69 @@ model WorkerReportingStatus {
 
   @@index([lastEntryDate])
   @@index([needsAttention])
+}
+
+// ============================================
+// RRHH / HR MODULE - ABSENCE MANAGEMENT
+// ============================================
+
+model Absence {
+  id            String        @id @default(cuid())
+  userId        String
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  type          AbsenceType   // VACATION, SICK, PERSONAL, etc.
+  startDate     DateTime      @db.Date
+  endDate       DateTime      @db.Date
+  totalDays     Float         // Permite medios días (0.5)
+  
+  status        AbsenceStatus @default(PENDING)
+  reason        String?       // Motivo de la ausencia
+  
+  // Approval workflow
+  approvedById  String?
+  approvedBy    User?         @relation("ApprovedAbsences", fields: [approvedById], references: [id])
+  approvedAt    DateTime?
+  rejectionNote String?       // Nota si es rechazada
+  
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@index([userId])
+  @@index([startDate, endDate])
+  @@index([status])
+  @@index([type])
+}
+
+// ============================================
+// RRHH / HR MODULE - PAYROLL RECORDS
+// ============================================
+
+model PayrollRecord {
+  id            String        @id @default(cuid())
+  userId        String
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  period        String        // "2026-01" formato YYYY-MM
+  
+  // Salary breakdown
+  baseSalary    Decimal       @db.Decimal(10, 2)
+  overtime      Decimal       @default(0) @db.Decimal(10, 2)
+  bonuses       Decimal       @default(0) @db.Decimal(10, 2)
+  deductions    Decimal       @default(0) @db.Decimal(10, 2)
+  netSalary     Decimal       @db.Decimal(10, 2)
+  
+  // Status
+  status        PayrollStatus @default(DRAFT)
+  paidAt        DateTime?     // Cuando se pagó
+  
+  // Notes
+  notes         String?
+  
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@unique([userId, period])
+  @@index([period])
+  @@index([status])
 }

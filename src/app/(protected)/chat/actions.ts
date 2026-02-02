@@ -81,7 +81,8 @@ export async function getOrCreateProjectChat(projectId: string) {
                             select: {
                                 id: true,
                                 name: true,
-                                email: true
+                                email: true,
+                                image: true
                             }
                         },
                         replyTo: {
@@ -212,7 +213,8 @@ export async function getOrCreateDirectChat(otherUserId: string) {
                             select: {
                                 id: true,
                                 name: true,
-                                email: true
+                                email: true,
+                                image: true
                             }
                         },
                         replyTo: {
@@ -451,7 +453,8 @@ export async function sendMessage(
                 select: {
                     id: true,
                     name: true,
-                    email: true
+                    email: true,
+                    image: true
                 }
             },
             replyTo: {
@@ -609,7 +612,8 @@ export async function editMessage(messageId: string, newContent: string) {
                 select: {
                     id: true,
                     name: true,
-                    email: true
+                    email: true,
+                    image: true
                 }
             }
         }

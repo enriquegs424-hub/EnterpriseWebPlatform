@@ -60,6 +60,12 @@ export async function getUsers(params?: {
                 dailyWorkHours: true,
                 createdAt: true,
                 image: true,
+                // HR fields for synchronization
+                employeeCode: true,
+                hireDate: true,
+                contractType: true,
+                contractEndDate: true,
+                vacationDays: true,
                 activityLogs: {
                     take: 1,
                     orderBy: { createdAt: 'desc' },

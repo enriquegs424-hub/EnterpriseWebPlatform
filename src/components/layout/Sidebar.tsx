@@ -64,6 +64,16 @@ const navItems: NavSection[] = [
         ], roles: ['SUPERADMIN', 'ADMIN', 'MANAGER']
     },
     {
+        section: 'RRHH', items: [
+            { label: 'Dashboard RRHH', href: '/hr', icon: Users, desc: 'Panel de Recursos Humanos' },
+            { label: 'Empleados', href: '/hr/employees', icon: Users, desc: 'Gestión de empleados' },
+            { label: 'Ausencias', href: '/hr/absences', icon: Calendar, desc: 'Vacaciones y ausencias' },
+            { label: 'Nóminas', href: '/hr/payroll', icon: DollarSign, desc: 'Gestión de nóminas', adminOnly: true },
+            { label: 'Informes RRHH', href: '/hr/reports', icon: BarChart, desc: 'Reportes y estadísticas', adminOnly: true },
+            { label: 'Organigrama', href: '/hr/organization', icon: Building2, desc: 'Estructura organizacional' },
+        ], roles: ['SUPERADMIN', 'ADMIN', 'MANAGER']
+    },
+    {
         section: 'Administración', items: [
             { label: 'Analytics', href: '/analytics', icon: BarChart, desc: 'Métricas y reportes' },
             { label: 'Finanzas', href: '/finance', icon: PieChart, desc: 'Resumen financiero' },
